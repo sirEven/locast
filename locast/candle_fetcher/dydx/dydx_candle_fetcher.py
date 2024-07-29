@@ -119,11 +119,10 @@ async def test():
     candles = await DydxCandleFetcher.fetch_historic_candles(
         Exchange.DYDX_V4,
         LINK_USD,
-        CandlesResolution.ONE_MINUTE,
-        "2024-05-05T14:15:00.000Z",
+        CandlesResolution.FOUR_HOURS,
+        "2024-05-01T00:00:00.000Z",
         DydxCandleFetcher.datetime_to_dydx_iso_str(datetime.now(timezone.utc)),
     )
-
     print(f"{len(candles)} candles")
     print(f"Oldest candle started at: {candles[-1].started_at}")
     print(f"Newest candle started at: {candles[0].started_at}")

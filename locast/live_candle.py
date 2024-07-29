@@ -47,7 +47,6 @@ class DydxV4LiveCandle:
 
     def handle_live_candle_message(self, ws: IndexerSocket, message: Dict[str, Any]):
         if message["type"] == "connected":
-            print(message)
             for market, res in self._markets_resolutions.items():
                 print(f"Subscribing to {res.value} candles for {market}.")
                 ws.candles.subscribe(market, res)  # type: ignore
@@ -56,7 +55,6 @@ class DydxV4LiveCandle:
             print(f"Subscription successful ({message['channel']}, {message['id']}).")
 
         if message["type"] == "channel_batch_data":
-            print(message)
             if candle_dict := message["contents"][0]:
                 new_candle = ExchangeCandleMapper.dict_to_candle(
                     self._exchange,
@@ -68,12 +66,6 @@ class DydxV4LiveCandle:
                         self._newest_ended_candle[new_candle.market] = current_candle
                 # Update to the active candle -> update active
                 self._active_candle[new_candle.market] = new_candle
-
-        market = message["contents"][0]["ticker"]
-        if active_candle := self._active_candle.get(market):
-            print(f"Active {market} Candle started at: {active_candle.started_at}")
-        if ended_candle := self._newest_ended_candle.get(market):
-            print(f"Ended  {market} Candle started at: {ended_candle.started_at}")
 
 
 async def test():
