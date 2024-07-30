@@ -36,6 +36,8 @@ def candles_left_to_fetch(
     return int(range_seconds / oldest_fetched_candle.resolution)
 
 
+# TODO: Implement a check to verify that the newest candle (at 0) has started_at == utc_now (rounded to resolution)
+# If it doesn't, fill the gap.
 class DydxV4Fetcher:
     client = IndexerClient(TESTNET.rest_indexer)
 

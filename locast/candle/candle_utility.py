@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import Resolution
+from locast.candle.resolution import ResolutionSeconds
 
 EnumType = TypeVar("EnumType", bound=Enum)
 
@@ -26,7 +26,7 @@ class CandleUtility:
         return started_at == valid_up_to
 
     @classmethod
-    def valid_up_to(cls, resolution: Resolution) -> datetime:
+    def valid_up_to(cls, resolution: ResolutionSeconds) -> datetime:
         # check the most recent date at which candles for this resolution are valid
         last_tick = cls.last_tick(resolution)
         return (last_tick - timedelta(seconds=resolution)).replace(
@@ -45,7 +45,7 @@ class CandleUtility:
         return datetime.fromtimestamp(last_tick_sec, ZoneInfo("UTC"))
 
     @classmethod
-    def norm_date(cls, date: datetime, res: Resolution) -> datetime:
+    def norm_date(cls, date: datetime, res: ResolutionSeconds) -> datetime:
         # Calculate the number of seconds since a reference datetime (e.g., epoch)
         seconds_since_reference = (
             date - datetime(1970, 1, 1, tzinfo=date.tzinfo)
@@ -98,14 +98,14 @@ class CandleUtility:
         cls,
         exchange: Exchange,
         market: str,
-        resolution: Resolution,
+        resolution: ResolutionSeconds,
     ) -> str:
         return cls._concat_id(exchange, market, resolution)
 
     @classmethod
     def details_from_cluster_id(
         cls, cluster_id: str
-    ) -> Tuple[Exchange, str, Resolution]:
+    ) -> Tuple[Exchange, str, ResolutionSeconds]:
         details_str = cluster_id.split("_", maxsplit=2)
         exchange_str = details_str[0]
         market_str = details_str[1]
@@ -114,14 +114,16 @@ class CandleUtility:
         exchange: Exchange | None = cls._find_enum_entry_by_value(
             exchange_str, Exchange
         )
-        resolution: Resolution | None = cls._find_enum_entry_by_name(
-            res_str, Resolution
+        resolution: ResolutionSeconds | None = cls._find_enum_entry_by_name(
+            res_str, ResolutionSeconds
         )
         assert exchange and resolution, f"Exchagne or resolution unkown ({__name__})."
         return (exchange, market_str, resolution)
 
     @classmethod
-    def _concat_id(cls, exchange: Exchange, market: str, resolution: Resolution) -> str:
+    def _concat_id(
+        cls, exchange: Exchange, market: str, resolution: ResolutionSeconds
+    ) -> str:
         return f"{exchange.value}_{market}_{resolution.name}"
 
     @classmethod

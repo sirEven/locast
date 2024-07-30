@@ -3,9 +3,11 @@
 # - as well as via api requests (historic) ✅
 # -- build basic infrastructure to fetch historic candles cleanly --
 # -- build basic subscribe and unsubscribe from live candle update --
-# - Opening & closing a position
-# - Querying position data such as pnl...
-# - Querying account balance
+
+# - For another project:
+#   - Opening & closing a position
+#   - Querying position data such as pnl...
+#   - Querying account balance
 
 import asyncio
 from typing import Any, Dict
@@ -31,10 +33,9 @@ LINK_USD = "LINK-USD"
 class DydxV4LiveCandle:
     def __init__(
         self,
-        exchange: Exchange,
         markets_resolutions: Dict[str, CandlesResolution],
     ) -> None:
-        self._exchange = exchange
+        self._exchange = Exchange.DYDX_V4
         self._markets_resolutions = markets_resolutions
         self._newest_ended_candle: Dict[str, Candle] = {}
         self._active_candle: Dict[str, Candle] = {}
@@ -70,7 +71,6 @@ class DydxV4LiveCandle:
 
 async def test():
     live_candle = DydxV4LiveCandle(
-        exchange=Exchange.DYDX_V4,
         markets_resolutions={
             ETH_USD: CandlesResolution.ONE_MINUTE,
             BTC_USD: CandlesResolution.FIVE_MINUTES,

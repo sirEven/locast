@@ -1,15 +1,15 @@
 from locast.candle.resolution import (
-    ResolutionTrait,
-    Resolution,
+    ResolutionDetail,
+    ResolutionSeconds,
     ExchangeResolution,
 )
 
 
 class DydxResolution(ExchangeResolution):
-    r_1DAY = ResolutionTrait(Resolution.r_1DAY, "1DAY")
-    r_4HOURS = ResolutionTrait(Resolution.r_4HOURS, "4HOURS")
-    r_1HOUR = ResolutionTrait(Resolution.r_1HOUR, "1HOUR")
-    r_30MINS = ResolutionTrait(Resolution.r_30MINS, "30MINS")
-    r_15MINS = ResolutionTrait(Resolution.r_15MINS, "15MINS")
-    r_5MINS = ResolutionTrait(Resolution.r_5MINS, "5MINS")
-    r_1MIN = ResolutionTrait(Resolution.r_1MIN, "1MIN")
+    ONE_DAY = ResolutionDetail(ResolutionSeconds.ONE_DAY, "1DAY")
+    FOUR_HOURS = ResolutionDetail(ResolutionSeconds.FOUR_HOURS, "4HOURS")
+    ONE_HOUR = ResolutionDetail(ResolutionSeconds.ONE_HOUR, "1HOUR")
+    THIRTY_MINUTES = ResolutionDetail(ResolutionSeconds.THIRTY_MINUTES, "30MINS")
+    FIFTEEN_MINUTES = ResolutionDetail(ResolutionSeconds.FIFTEEN_MINUTES, "15MINS")
+    FIVE_MINUTES = ResolutionDetail(ResolutionSeconds.FIVE_MINUTES, "5MINS")
+    ONE_MINUTE = ResolutionDetail(ResolutionSeconds.ONE_MINUTE, "1MIN")

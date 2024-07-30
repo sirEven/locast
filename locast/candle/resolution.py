@@ -6,15 +6,15 @@ from enum import IntEnum
 from zoneinfo import ZoneInfo
 
 
-class Resolution(IntEnum):
-    r_1WEEK = 60 * 60 * 24 * 7
-    r_1DAY = 60 * 60 * 24
-    r_4HOURS = 60 * 60 * 4
-    r_1HOUR = 60 * 60
-    r_30MINS = 60 * 30
-    r_15MINS = 60 * 15
-    r_5MINS = 60 * 5
-    r_1MIN = 60
+class ResolutionSeconds(IntEnum):
+    ONE_WEEK = 60 * 60 * 24 * 7
+    ONE_DAY = 60 * 60 * 24
+    FOUR_HOURS = 60 * 60 * 4
+    ONE_HOUR = 60 * 60
+    THIRTY_MINUTES = 60 * 30
+    FIFTEEN_MINUTES = 60 * 15
+    FIVE_MINUTES = 60 * 5
+    ONE_MINUTE = 60
 
     def next_tick(self) -> datetime:
         res_sec = self.value
@@ -29,14 +29,14 @@ class Resolution(IntEnum):
 
 
 @dataclass
-class ResolutionTrait:
-    seconds: Resolution
+class ResolutionDetail:
+    seconds: ResolutionSeconds
     notation: str
 
 
 class ExchangeResolution(ABC):
     @classmethod
-    def has_resolution(cls, res: Resolution) -> bool:
+    def has_resolution(cls, res: ResolutionSeconds) -> bool:
         resolutions = cls._resolution_list()
         for resolution in resolutions:
             if resolution.seconds == res:
@@ -46,7 +46,7 @@ class ExchangeResolution(ABC):
         )
 
     @classmethod
-    def notation_to_seconds(cls, notation: str) -> Resolution:
+    def notation_to_seconds(cls, notation: str) -> ResolutionSeconds:
         resolutions = cls._resolution_list()
 
         for resolution in resolutions:
@@ -55,7 +55,7 @@ class ExchangeResolution(ABC):
         raise ValueError(f"Invalid notation: {notation}.")
 
     @classmethod
-    def seconds_to_notation(cls, seconds: Resolution) -> str:
+    def seconds_to_notation(cls, seconds: ResolutionSeconds) -> str:
         resolutions = cls._resolution_list()
 
         for resolution in resolutions:
@@ -64,9 +64,9 @@ class ExchangeResolution(ABC):
         raise ValueError(f"Invalid seconds: {seconds}")
 
     @classmethod
-    def _resolution_list(cls) -> List[ResolutionTrait]:
+    def _resolution_list(cls) -> List[ResolutionDetail]:
         return [
             getattr(cls, attr)
             for attr in dir(cls)
-            if isinstance(getattr(cls, attr), ResolutionTrait)
+            if isinstance(getattr(cls, attr), ResolutionDetail)
         ]
