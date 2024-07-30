@@ -5,14 +5,11 @@
 # - Querying position data such as pnl...
 # - Querying account balance
 
-import asyncio
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, List
 
 from dydx_v4_client.indexer.rest.indexer_client import IndexerClient  # type: ignore
 from dydx_v4_client.network import TESTNET  # type: ignore
-
-from dydx_v4_client.indexer.socket.websocket import CandlesResolution  # type: ignore
 
 
 from locast.candle.candle import Candle
@@ -20,12 +17,6 @@ from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
-
-
-TEST_ADDRESS = "dydx1ms05ewt4my7t2w62lz52xv65y5f42ttn4zcevp"
-ETH_USD = "ETH-USD"
-BTC_USD = "BTC-USD"
-LINK_USD = "LINK-USD"
 
 
 def candles_left_to_fetch(
@@ -37,14 +28,15 @@ def candles_left_to_fetch(
 
 
 # TODO: Implement a check to verify that the newest candle (at 0) has started_at == utc_now (rounded to resolution)
-# If it doesn't, fill the gap.
+# If it doesn't, fill the gap. NOTE: This can't be implemeented as there is still a bug in the client, preventing historic
+# candle fetches up to present candle.
 class DydxV4Fetcher:
     client = IndexerClient(TESTNET.rest_indexer)
 
     async def fetch(
         self,
         market: str,
-        resolution: CandlesResolution,
+        resolution: str,
         start_date: str,
         end_date: str,
     ) -> List[Candle]:
@@ -52,7 +44,7 @@ class DydxV4Fetcher:
             str, Any
         ] = await self.client.markets.get_perpetual_market_candles(  # type: ignore
             market=market,
-            resolution=resolution.value,
+            resolution=resolution,
             from_iso=start_date,
             to_iso=end_date,
         )
@@ -78,7 +70,7 @@ class DydxCandleFetcher:
     async def fetch_historic_candles(
         exchange: Exchange,
         market: str,
-        resolution: CandlesResolution,
+        resolution: str,
         start_date: str,
         end_date: str,
     ) -> List[Candle]:
@@ -117,17 +109,17 @@ class DydxCandleFetcher:
         return candles
 
 
-async def test():
-    candles = await DydxCandleFetcher.fetch_historic_candles(
-        Exchange.DYDX_V4,
-        LINK_USD,
-        CandlesResolution.FOUR_HOURS,
-        "2024-05-01T00:00:00.000Z",
-        DydxCandleFetcher.datetime_to_dydx_iso_str(datetime.now(timezone.utc)),
-    )
-    print(f"{len(candles)} candles")
-    print(f"Oldest candle started at: {candles[-1].started_at}")
-    print(f"Newest candle started at: {candles[0].started_at}")
+# async def test():
+#     candles = await DydxCandleFetcher.fetch_historic_candles(
+#         Exchange.DYDX_V4,
+#         LINK_USD,
+#         DydxResolution.ONE_MINUTE.notation,
+#         "2024-05-01T00:00:00.000Z",
+#         DydxCandleFetcher.datetime_to_dydx_iso_str(datetime.now(timezone.utc)),
+#     )
+#     print(f"{len(candles)} candles")
+#     print(f"Oldest candle started at: {candles[-1].started_at}")
+#     print(f"Newest candle started at: {candles[0].started_at}")
 
 
-asyncio.run(test())
+# asyncio.run(test())

@@ -6,7 +6,7 @@ from enum import IntEnum
 from zoneinfo import ZoneInfo
 
 
-class ResolutionSeconds(IntEnum):
+class Seconds(IntEnum):
     ONE_WEEK = 60 * 60 * 24 * 7
     ONE_DAY = 60 * 60 * 24
     FOUR_HOURS = 60 * 60 * 4
@@ -30,13 +30,13 @@ class ResolutionSeconds(IntEnum):
 
 @dataclass
 class ResolutionDetail:
-    seconds: ResolutionSeconds
+    seconds: Seconds
     notation: str
 
 
 class ExchangeResolution(ABC):
     @classmethod
-    def has_resolution(cls, res: ResolutionSeconds) -> bool:
+    def has_resolution(cls, res: Seconds) -> bool:
         resolutions = cls._resolution_list()
         for resolution in resolutions:
             if resolution.seconds == res:
@@ -46,7 +46,7 @@ class ExchangeResolution(ABC):
         )
 
     @classmethod
-    def notation_to_seconds(cls, notation: str) -> ResolutionSeconds:
+    def notation_to_seconds(cls, notation: str) -> Seconds:
         resolutions = cls._resolution_list()
 
         for resolution in resolutions:
@@ -55,7 +55,7 @@ class ExchangeResolution(ABC):
         raise ValueError(f"Invalid notation: {notation}.")
 
     @classmethod
-    def seconds_to_notation(cls, seconds: ResolutionSeconds) -> str:
+    def seconds_to_notation(cls, seconds: Seconds) -> str:
         resolutions = cls._resolution_list()
 
         for resolution in resolutions:

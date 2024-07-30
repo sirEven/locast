@@ -3,7 +3,7 @@ from typing import Optional
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from locast.candle.resolution import ResolutionSeconds
+from locast.candle.resolution import Seconds
 from locast.candle.exchange import Exchange
 
 
@@ -19,7 +19,7 @@ class Candle:
     id: Optional[int]
     exchange: Exchange
     market: str
-    resolution: ResolutionSeconds
+    resolution: Seconds
 
     started_at: datetime
 
