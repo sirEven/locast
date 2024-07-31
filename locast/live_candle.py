@@ -14,34 +14,25 @@ import asyncio
 import logging
 from typing import Any, Dict, List
 
-from dydx_v4_client.indexer.socket.websocket import CandlesResolution, IndexerSocket  # type: ignore
+from dydx_v4_client.indexer.socket.websocket import IndexerSocket, CandlesResolution  # type: ignore
 from dydx_v4_client.network import TESTNET  # type: ignore
 
 from locast.candle.candle import Candle
+from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
-from locast.candle.exchange_candle_mapper import ExchangeCandleMapper  # type: ignore
-
+from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 
 logging.basicConfig(level=logging.DEBUG)
 
-ETH_USD = "ETH-USD"
-BTC_USD = "BTC-USD"
-LINK_USD = "LINK-USD"
 
 # TODO: implement subscribe and unsubscribe funcs with code from test().
-# TODO: replace CandlesResolution with str, and use DydxResolution throughout.
-# TODO: Remove market constants.
-
-
-# This provides a live updated price candle where every change is sent with immediate irregular & regular messages
-# The regular websocket messages simply announce the new candle from current timestamp corresponding to its startedAt
 class DydxV4LiveCandle:
     def __init__(
         self,
-        resolutions_for_markets: Dict[str, CandlesResolution],
+        resolutions_for_markets: Dict[str, str],
     ) -> None:
         self._exchange = Exchange.DYDX_V4
-        self._resolutions = resolutions_for_markets
+        self._resolutions = self._convert_to_client_res_dict(resolutions_for_markets)
         self._market_candles: Dict[str, List[Candle]] = {}
 
     def get_active_candle(self, market: str) -> Candle | None:
@@ -80,9 +71,10 @@ class DydxV4LiveCandle:
                 if active_needs_update:
                     self._update_active_candle(new_candle)
 
-        if active_candle := self.get_active_candle(ETH_USD):
+        # DEBUG PRINTS
+        if active_candle := self.get_active_candle("ETH-USD"):
             print(f"Active candle started at: {active_candle.started_at}")
-        if active_candle := self.get_newest_ended_candle(ETH_USD):
+        if active_candle := self.get_newest_ended_candle("ETH-USD"):
             print(f"Newest candle started at: {active_candle.started_at}\n")
 
     def _begin_new_active_candle(self, market: str, new_candle: Candle) -> None:
@@ -95,12 +87,37 @@ class DydxV4LiveCandle:
         else:
             self._market_candles[new_candle.market] = [new_candle]
 
+    def _convert_to_client_res_dict(
+        self,
+        resolutions_for_markets: Dict[str, str],
+    ) -> Dict[str, CandlesResolution]:
+        return {
+            key: self._map_to_client_resolution(value)
+            for key, value in resolutions_for_markets.items()
+        }
+
+    def _map_to_client_resolution(
+        self,
+        dydx_resolution_notation: str,
+    ) -> CandlesResolution:
+        if key := next(
+            (
+                key
+                for key, value in CandlesResolution.__members__.items()
+                if value.value == dydx_resolution_notation
+            ),
+            None,
+        ):
+            return CandlesResolution[key]
+        else:
+            raise ValueError(f"Invalid resolution: {dydx_resolution_notation}.")
+
 
 async def test():
     live_candle = DydxV4LiveCandle(
         resolutions_for_markets={
-            ETH_USD: CandlesResolution.ONE_MINUTE,
-            BTC_USD: CandlesResolution.FIVE_MINUTES,
+            "ETH-USD": DydxResolution.ONE_MINUTE.notation,
+            "BTC-USD": DydxResolution.FIVE_MINUTES.notation,
         },
     )
     await IndexerSocket(
