@@ -48,7 +48,7 @@ class DydxV4LiveCandle:
         if message["type"] == "connected":
             for market, res in self._resolutions.items():
                 print(f"Subscribing to {res.value} candles for {market}.")
-                ws.candles.subscribe(market, res)  # type: ignore
+                ws.candles.subscribe(market, res)
 
         if message["type"] == "subscribed":
             print(f"Subscription successful ({message['channel']}, {message['id']}).")
