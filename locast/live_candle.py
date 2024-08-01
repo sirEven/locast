@@ -25,15 +25,27 @@ from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 logging.basicConfig(level=logging.DEBUG)
 
 
-# TODO: implement subscribe and unsubscribe funcs with code from test().
+# TODO: Refine such that:
+# - IndexerSocket is a property of DydxV4LiveCandle
+# - DydxV4LiveCandle initializes IndexerSocket with its handle_message function
+# - In test() we call .connect() on DydxV4LiveCandle instance to start live candle updates
+# - In test() we try out another co-routine that we can call along .connect in asyncio.gather(), to simulate different independent components.
+# - Finally implement subscribe and unsubscribe functinos to individually subscribe and unsubscribe to/from markets
 class DydxV4LiveCandle:
     def __init__(
         self,
+        host_url: str,
         resolutions_for_markets: Dict[str, str],
     ) -> None:
+        self._ws = IndexerSocket(host_url, on_message=self.handle_message)  # type: ignore
         self._exchange = Exchange.DYDX_V4
-        self._resolutions = self._convert_to_client_res_dict(resolutions_for_markets)
+        self._resolutions = resolutions_for_markets
         self._market_candles: Dict[str, List[Candle]] = {}
+        self._connected = False
+
+    async def connect(self) -> None:
+        await self._ws.connect()  # type: ignore
+        self._connected = True
 
     def get_active_candle(self, market: str) -> Candle | None:
         if candles := self._market_candles.get(market):
@@ -44,11 +56,18 @@ class DydxV4LiveCandle:
             if len(candles) > 1:
                 return candles[1]
 
-    def handle_live_candle_message(self, ws: IndexerSocket, message: Dict[str, Any]):
+    def subscribe_to_candles(self, market: str, resolution: str):
+        print(f"Subscribing to {resolution} candles for {market}.")
+        res = self._map_to_client_resolution(resolution)
+        self._ws.candles.subscribe(market, res)
+
+    def _subscribe_to_all_candles(self):
+        for market, res in self._resolutions.items():
+            self.subscribe_to_candles(market, res)
+
+    def handle_message(self, ws: IndexerSocket, message: Dict[str, Any]):
         if message["type"] == "connected":
-            for market, res in self._resolutions.items():
-                print(f"Subscribing to {res.value} candles for {market}.")
-                ws.candles.subscribe(market, res)
+            self._subscribe_to_all_candles()
 
         if message["type"] == "subscribed":
             print(f"Subscription successful ({message['channel']}, {message['id']}).")
@@ -115,15 +134,13 @@ class DydxV4LiveCandle:
 
 async def test():
     live_candle = DydxV4LiveCandle(
+        host_url=TESTNET.websocket_indexer,
         resolutions_for_markets={
             "ETH-USD": DydxResolution.ONE_MINUTE.notation,
             "BTC-USD": DydxResolution.FIVE_MINUTES.notation,
         },
     )
-    await IndexerSocket(
-        TESTNET.websocket_indexer,
-        on_message=live_candle.handle_live_candle_message,  # type: ignore
-    ).connect()
+    await live_candle.connect()
 
 
 asyncio.run(test())
