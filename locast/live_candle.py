@@ -1,7 +1,7 @@
 # Stuff that will be needed down the line:
 # - Getting candles via websocket (live) ✅
 # - as well as via api requests (historic) ✅
-# - sqlite database to store & retrievecandles
+# - sqlite database to store & retrieve candles
 # -- build basic infrastructure to fetch historic candles cleanly --
 # -- build basic subscribe and unsubscribe from live candle update --
 
@@ -26,9 +26,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 # TODO: Refine such that:
-# - IndexerSocket is a property of DydxV4LiveCandle
-# - DydxV4LiveCandle initializes IndexerSocket with its handle_message function
-# - In test() we call .connect() on DydxV4LiveCandle instance to start live candle updates
 # - In test() we try out another co-routine that we can call along .connect in asyncio.gather(), to simulate different independent components.
 # - Finally implement subscribe and unsubscribe functinos to individually subscribe and unsubscribe to/from markets
 class DydxV4LiveCandle:
@@ -53,8 +50,7 @@ class DydxV4LiveCandle:
 
     def get_newest_ended_candle(self, market: str) -> Candle | None:
         if candles := self._market_candles.get(market):
-            if len(candles) > 1:
-                return candles[1]
+            return candles[1] if len(candles) > 1 else None
 
     def subscribe_to_candles(self, market: str, resolution: str):
         print(f"Subscribing to {resolution} candles for {market}.")
@@ -106,15 +102,6 @@ class DydxV4LiveCandle:
         else:
             self._market_candles[new_candle.market] = [new_candle]
 
-    def _convert_to_client_res_dict(
-        self,
-        resolutions_for_markets: Dict[str, str],
-    ) -> Dict[str, CandlesResolution]:
-        return {
-            key: self._map_to_client_resolution(value)
-            for key, value in resolutions_for_markets.items()
-        }
-
     def _map_to_client_resolution(
         self,
         dydx_resolution_notation: str,
@@ -140,7 +127,9 @@ async def test():
             "BTC-USD": DydxResolution.FIVE_MINUTES.notation,
         },
     )
-    await live_candle.connect()
+    await live_candle.connect()  # TODO: How to run multiple components concurrently next to this websocket loop?????
+    nc = live_candle.get_newest_ended_candle("ETH-USD")
+    print("something something")
 
 
 asyncio.run(test())
