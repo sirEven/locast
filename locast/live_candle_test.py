@@ -10,8 +10,13 @@ ETH_USD = "ETH-USD"
 def handle_message(ws: IndexerSocket, message: dict):
     if message["type"] == "connected":
         ws.candles.subscribe(ETH_USD, CandlesResolution.ONE_MINUTE)
-    print(message)
-    print("")
+
+    if message["type"] == "subscribed":
+        print(f"Subscription successful ({message['channel']}, {message['id']}).")
+
+    if message["type"] == "channel_batch_data":
+        if candle_dict := message["contents"][0]:
+            print(f"Active candle: {candle_dict['startedAt']}")
 
 
 async def test():
