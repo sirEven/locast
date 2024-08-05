@@ -11,7 +11,6 @@
 #   - Querying account balance
 
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import logging
 import threading
 from typing import Any, Dict, List
@@ -36,7 +35,6 @@ class DydxV4LiveCandle:
         host_url: str,
         resolutions_for_markets: Dict[str, str],
     ) -> None:
-        self._executor = ThreadPoolExecutor()
         self._ws = IndexerSocket(host_url, on_message=self.handle_message)  # type: ignore
         self._exchange = Exchange.DYDX_V4
         self._resolutions = resolutions_for_markets
