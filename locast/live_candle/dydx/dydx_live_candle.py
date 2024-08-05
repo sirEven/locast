@@ -3,7 +3,6 @@
 # - as well as via api requests (historic) ✅
 # - sqlite database to store & retrieve candles
 # -- build basic infrastructure to fetch historic candles cleanly --
-# -- build basic subscribe and unsubscribe from live candle update --
 
 # - For another project:
 #   - Opening & closing a position
@@ -20,35 +19,19 @@ from dydx_v4_client.indexer.socket.websocket import IndexerSocket, CandlesResolu
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
+from locast.live_candle.live_candle import LiveCandle
 
 logging.basicConfig(level=logging.DEBUG)
 
-"""
-The idea of this part of the LOCAST component is to have the live candle turn on at the begining of execution, either by itself within init, or by the glue project
-that calls its start function. And stop function at shut down. 
-What can be considered unnecessary is dynamic subscribing and unsubscribing to certain markets - instead we could pause
-publishing those candles if desired. But even that might be unnecessary. We should think about what exactly we would want to 
-pause, once a position has beend opened. Naturally we would keep candles being created and published but would simply stop forming fresh 
-predictions.
-Also we should update (or create) all candle clusters of the corresponding markets and resolutions that we also start as live candles.
-The orchestration of this would be implemented in glue project, meaning Locast only has very rudimentary API methods:
-- create cluster
-- update cluster
-- start live candle
-- stop live candle
 
-This guarantees, that it can be reused in model training project as well where different glue code is needed but same basic functionality.
-For example: create / update clusters, train models. Whereas glue project would want to just start a live candle and feed it into prediction module.
-Later on maybe have glue code updated to incorporate some sort of regularily update clusters (every n resolutions), retrain models etc, such that prediction module always
-loads the latest trained model before performing predictions.
-"""
-
-
-class DydxV4LiveCandle:
+# TODO: Pull in event_systems and publish finished candles
+class DydxV4LiveCandle(LiveCandle):
     def __init__(
         self,
         host_url: str,
-        resolutions_for_markets: Dict[str, str],
+        resolutions_for_markets: Dict[
+            str, str
+        ],  # TODO: Change to [str, List[str]]->{resolution: [markets]}
     ) -> None:
         self._ws = IndexerSocket(host_url, on_message=self.handle_message)  # type: ignore
         self._exchange = Exchange.DYDX_V4
@@ -56,16 +39,17 @@ class DydxV4LiveCandle:
         self._market_candles: Dict[str, List[Candle]] = {}
         self.subscriptions: Dict[str, bool] = {}
 
-    async def connect(self) -> None:
-        # NOTE: ._ws.connect() is a blocking async function call that needs to be wrapped
-        await self._ws.connect()  # type: ignore
+    def _wrap_async_func(self) -> None:
+        # self._ws.connect() is a blocking async function call that needs to be wrapped
+        asyncio.run(self._ws.connect())  # type: ignore
 
-    def wrap_async_func(self) -> None:
-        asyncio.run(self.connect())
-
-    def start_live_candle_connection(self) -> None:
-        t = threading.Thread(target=self.wrap_async_func)
+    def start(self) -> None:
+        t = threading.Thread(target=self._wrap_async_func)
         t.start()
+
+    def stop(self) -> None:
+        self._unsubscribe_from_all_candles()
+        self._ws.close()  # type: ignore
 
     def get_active_candle(self, market: str) -> Candle | None:
         if candles := self._market_candles.get(market):
@@ -81,12 +65,17 @@ class DydxV4LiveCandle:
         self._ws.candles.subscribe(market, res)
 
     def unsubscribe(self, market: str, resolution: str) -> None:
+        print(f"Unsubscribing from {resolution} candles for {market}.")
         res = self._map_to_client_resolution(resolution)
         self._ws.candles.unsubscribe(market, res)
 
-    def _subscribe_to_all_candles(self):
+    def _subscribe_to_all_candles(self) -> None:
         for market, res in self._resolutions.items():
             self.subscribe(market, res)
+
+    def _unsubscribe_from_all_candles(self) -> None:
+        for market, res in self._resolutions.items():
+            self.unsubscribe(market, res)
 
     def _set_subscription_state(self, channel_id: str, state: bool) -> None:
         market = channel_id.split("/")[0]

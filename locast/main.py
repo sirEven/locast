@@ -1,6 +1,6 @@
 import asyncio
 from typing import List
-from locast.live_candle import DydxV4LiveCandle
+from locast.live_candle.dydx.dydx_live_candle import DydxV4LiveCandle
 from dydx_v4_client.network import TESTNET  # type: ignore
 from locast.candle.dydx.dydx_resolution import DydxResolution
 
@@ -44,9 +44,8 @@ async def subscribe_after_delay(
     live_candle.subscribe(market, DydxResolution.ONE_MINUTE.notation)
 
 
-# TODO: Would it be possible to have the tasks List be managed globally in order to add/remove tasks dynamically?
 async def main():
-    live_candle.start_live_candle_connection()
+    live_candle.start()
     tasks = [
         asyncio.create_task(price_query(live_candle, ["ETH-USD", "BTC-USD"])),
         asyncio.create_task(unsubscribe_after_delay(live_candle, "ETH-USD", 80)),
