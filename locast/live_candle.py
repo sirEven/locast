@@ -12,6 +12,7 @@
 
 import asyncio
 import logging
+import threading
 from typing import Any, Dict, List
 
 from dydx_v4_client.indexer.socket.websocket import IndexerSocket, CandlesResolution  # type: ignore
@@ -38,15 +39,17 @@ class DydxV4LiveCandle:
         self._exchange = Exchange.DYDX_V4
         self._resolutions = resolutions_for_markets
         self._market_candles: Dict[str, List[Candle]] = {}
-        self._connected = False
 
     async def connect(self) -> None:
-        while True:
-            await asyncio.sleep(0)
-            if not self._connected:
-                print("connecting...")
-                await self._ws.connect()  # type: ignore
-            self._connected = True
+        # NOTE: ._ws.connect() is a blocking async function call that needs to be wrapped
+        await self._ws.connect()  # type: ignore
+
+    def wrap_async_func(self) -> None:
+        asyncio.run(self.connect())
+
+    def start_live_candle_connection(self) -> None:
+        t = threading.Thread(target=self.wrap_async_func)
+        t.start()
 
     def get_active_candle(self, market: str) -> Candle | None:
         if candles := self._market_candles.get(market):
@@ -123,6 +126,7 @@ class DydxV4LiveCandle:
             raise ValueError(f"Invalid resolution: {dydx_resolution_notation}.")
 
 
+# This simulates a different component trying to query the live candle for data
 async def price_query(live_candle: DydxV4LiveCandle) -> None:
     print("debug, entering price_query!")
     while True:
@@ -140,10 +144,9 @@ async def test():
             "BTC-USD": DydxResolution.FIVE_MINUTES.notation,
         },
     )
-    tasks = [
-        asyncio.create_task(live_candle.connect()),
-        asyncio.create_task(price_query(live_candle)),
-    ]
+    live_candle.start_live_candle_connection()
+
+    tasks = [asyncio.create_task(price_query(live_candle))]
     await asyncio.gather(*tasks)
 
 
