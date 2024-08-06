@@ -14,7 +14,10 @@ import logging
 import threading
 from typing import Any, Dict, List
 
-from dydx_v4_client.indexer.socket.websocket import IndexerSocket, CandlesResolution  # type: ignore
+from dydx_v4_client.indexer.socket.websocket import (  # type: ignore
+    CandlesResolution,
+    IndexerSocket,
+)
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
@@ -26,29 +29,39 @@ logging.basicConfig(level=logging.DEBUG)
 
 # TODO: Next: write tests for this
 # TODO: Pull in event_systems and publish finished candles
-# TODO: Change to [str, List[str]]->{resolution: [markets]}
 class DydxV4LiveCandle(LiveCandle):
     def __init__(
         self,
         host_url: str,
         markets_per_resolution: Dict[str, List[str]],
     ) -> None:
+        self._connection_id: str | None = None
         self._ws = IndexerSocket(host_url, on_message=self.handle_message)  # type: ignore
         self._exchange = Exchange.DYDX_V4
         self._markets_per_resolution = markets_per_resolution
         self._market_candles: Dict[str, List[Candle]] = {}
         self.subscriptions: Dict[str, bool] = {}
 
-    def start(self) -> None:
+    async def start(self) -> None:
+        print("Starting live candle.")
         t = threading.Thread(target=self._wrap_async_func, name="live_candle")
         t.start()
 
+        while not self._connection_id:
+            await asyncio.sleep(0)
+
+        await self._subscribe_to_all_candles()
+
+        while not self.all_are_live():
+            await asyncio.sleep(0)
+
     async def stop(self) -> None:
         print("Stopping live candle.")
-        self._unsubscribe_from_all_candles()
-        while self.is_live():
+        await self._unsubscribe_from_all_candles()
+        while self.some_are_live():
             await asyncio.sleep(0)
         self._ws.close()  # type: ignore
+        self._connection_id = None
 
     def get_active_candle(self, market: str) -> Candle | None:
         if candles := self._market_candles.get(market):
@@ -58,22 +71,35 @@ class DydxV4LiveCandle(LiveCandle):
         if candles := self._market_candles.get(market):
             return candles[1] if len(candles) > 1 else None
 
-    def subscribe(self, market: str, resolution: str):
+    async def subscribe(self, market: str, resolution: str):
         print(f"Subscribing to {resolution} candles for {market}.")
         res = self._map_to_client_resolution(resolution)
         self._ws.candles.subscribe(market, res)
+        while not self.subscriptions.get(market):
+            await asyncio.sleep(0)
 
-    def unsubscribe(self, market: str, resolution: str) -> None:
+    async def unsubscribe(self, market: str, resolution: str) -> None:
         print(f"Unsubscribing from {resolution} candles for {market}.")
         res = self._map_to_client_resolution(resolution)
         self._ws.candles.unsubscribe(market, res)
+        while self.subscriptions.get(market):
+            await asyncio.sleep(0)
 
-    def is_live(self) -> bool:
-        return any(self.subscriptions.get(market) for market in self.subscriptions)
+    def all_are_live(self) -> bool:
+        return bool(self.subscriptions) and all(
+            self.subscriptions.get(market) for market in self.subscriptions
+        )
+
+    def some_are_live(self) -> bool:
+        return any(
+            self.subscriptions.get(market) for market in list(self.subscriptions.keys())
+        )
 
     def handle_message(self, ws: IndexerSocket, message: Dict[str, Any]):
         if message["type"] == "connected":
-            self._subscribe_to_all_candles()
+            connection_id = message["connection_id"]
+            self._connection_id = connection_id
+            print(f"Connection successful (id: {connection_id}).")
 
         if message["type"] == "subscribed":
             print(f"Subscription successful ({message['channel']}, {message['id']}).")
@@ -115,15 +141,15 @@ class DydxV4LiveCandle(LiveCandle):
         # self._ws.connect() is a blocking async function call that needs to be wrapped
         asyncio.run(self._ws.connect())  # type: ignore
 
-    def _subscribe_to_all_candles(self) -> None:
+    async def _subscribe_to_all_candles(self) -> None:
         for res, markets in self._markets_per_resolution.items():
             for market in markets:
-                self.subscribe(market, res)
+                await self.subscribe(market, res)
 
-    def _unsubscribe_from_all_candles(self) -> None:
+    async def _unsubscribe_from_all_candles(self) -> None:
         for res, markets in self._markets_per_resolution.items():
             for market in markets:
-                self.unsubscribe(market, res)
+                await self.unsubscribe(market, res)
 
     def _set_subscription_state(self, channel_id: str, state: bool) -> None:
         market = channel_id.split("/")[0]
