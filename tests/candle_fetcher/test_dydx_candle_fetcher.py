@@ -12,7 +12,7 @@ async def test_v4_fetch_600_historic_candles() -> None:
     end = "2024-04-01T10:00:00.000Z"
 
     # when
-    candles = await fetcher.fetch_historic_candles(
+    candles = await fetcher.fetch_candles(
         Exchange.DYDX_V4,
         "ETH-USD",
         DydxResolution.ONE_MINUTE.notation,

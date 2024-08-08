@@ -6,17 +6,14 @@
 # - Querying account balance
 
 from datetime import datetime
-from typing import Any, Dict, List
-
-from dydx_v4_client.indexer.rest.indexer_client import IndexerClient  # type: ignore
-from dydx_v4_client.network import TESTNET  # type: ignore
+from typing import List
 
 
 from locast.candle.candle import Candle
 from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.exchange import Exchange
-from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
+from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 
 
 def candles_left_to_fetch(
@@ -28,46 +25,22 @@ def candles_left_to_fetch(
 
 
 # TODO: Implement a check to verify that the newest candle (at 0) has started_at == utc_now (rounded to resolution)
-# If it doesn't, fill the gap. NOTE: This can't be implemeented as there is still a bug in the client, preventing historic
+# If it doesn't, fill the gap. NOTE: This can't be implemented as there is still a bug in the client, preventing historic
 # candle fetches up to present candle.
-class DydxV4Fetcher:
-    client = IndexerClient(TESTNET.rest_indexer)
-
-    async def fetch(
-        self,
-        market: str,
-        resolution: str,
-        start_date: str,
-        end_date: str,
-    ) -> List[Candle]:
-        response: Dict[
-            str, Any
-        ] = await self.client.markets.get_perpetual_market_candles(  # type: ignore
-            market=market,
-            resolution=resolution,
-            from_iso=start_date,
-            to_iso=end_date,
-        )
-        assert response["candles"]
-        return ExchangeCandleMapper.dicts_to_candles(
-            Exchange.DYDX_V4,
-            response["candles"],
-        )
-
-
-class DydxV3Fetcher:
-    pass
 
 
 class DydxCandleFetcher:
-    @staticmethod
-    def datetime_to_dydx_iso_str(date: datetime) -> str:
+    def __init__(self, dydx_v4_fetcher: DydxV4Fetcher | None = DydxV4Fetcher()) -> None:
+        if dydx_v4_fetcher:
+            self._fetchers = {Exchange.DYDX_V4: dydx_v4_fetcher}
+
+    def datetime_to_dydx_iso_str(self, date: datetime) -> str:
         return date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     fetchers = {Exchange.DYDX_V4: DydxV4Fetcher()}
 
-    @staticmethod
-    async def fetch_historic_candles(
+    async def fetch_candles(
+        self,
         exchange: Exchange,
         market: str,
         resolution: str,
@@ -82,7 +55,7 @@ class DydxCandleFetcher:
 
         if not (fetcher := DydxCandleFetcher.fetchers.get(exchange)):
             raise ValueError(
-                f"Fetcher can't be selected for unknown exchange: {exchange}."
+                f"Candlefetcher can't be selected for unknown exchange: {exchange}."
             )
 
         try:
@@ -99,27 +72,41 @@ class DydxCandleFetcher:
                 print(
                     f"Candles left to download: {candles_left_to_fetch(start_date_dt, candles[-1])}"
                 )
-                temp_end_date = DydxCandleFetcher.datetime_to_dydx_iso_str(
-                    candles[-1].started_at
-                )
+                temp_end_date = self.datetime_to_dydx_iso_str(candles[-1].started_at)
                 count += 1
         except Exception as e:
             print(e)
 
         return candles
 
+    # NOTE: These two are actually a higher level functions that should be named create_cluster and update_cluster
+    async def fetch_cluster(
+        self,
+        exchange: Exchange,
+        market: str,
+        resolution: str,
+        start_date: str,
+    ) -> List[Candle]:
+        """
+        Fetches a cluster of candles, which is a group of chronologically sorted, uninterrupted candles ranging
+        from a given start date up to the most recently finished candle.
+        """
+        candles: List[Candle] = []
 
-# async def test():
-#     candles = await DydxCandleFetcher.fetch_historic_candles(
-#         Exchange.DYDX_V4,
-#         LINK_USD,
-#         DydxResolution.ONE_MINUTE.notation,
-#         "2024-05-01T00:00:00.000Z",
-#         DydxCandleFetcher.datetime_to_dydx_iso_str(datetime.now(timezone.utc)),
-#     )
-#     print(f"{len(candles)} candles")
-#     print(f"Oldest candle started at: {candles[-1].started_at}")
-#     print(f"Newest candle started at: {candles[0].started_at}")
+        # while loop:
+        # now = DydxCandleFetcher.datetime_to_dydx_iso_str(datetime.now(timezone.utc)) TODO: Rounded to minutes
+        # while (not candles) or candles[-1].started_at > start_date_dt or candles[0].started_at < now:
+        # fetch_historic_candles(dydx, eth, 1min, start_date, now)
 
+    async def update_cluster(self, cluster_head: Candle) -> List[Candle]:
+        """
+        Updates the cluster by adding new candles based on the provided cluster_head.
 
-# asyncio.run(test())
+        Parameters:
+            cluster_head (Candle): The head of the cluster to be updated.
+
+        Returns:
+            List[Candle]: The updated list of candles in the cluster.
+        """
+
+        pass

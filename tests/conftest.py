@@ -7,6 +7,7 @@ from dydx_v4_client.network import TESTNET  # type: ignore
 
 ETH_USD = "ETH-USD"
 BTC_USD = "BTC-USD"
+LINK_USD = "LINK-USD"
 ONE_MIN = DydxResolution.ONE_MINUTE
 
 
