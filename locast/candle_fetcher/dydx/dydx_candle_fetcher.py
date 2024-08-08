@@ -24,9 +24,9 @@ def candles_left_to_fetch(
     return int(range_seconds / oldest_fetched_candle.resolution)
 
 
-# TODO: Implement a check to verify that the newest candle (at 0) has started_at == utc_now (rounded to resolution)
+# WIP: Implement a check to verify that the newest candle (at 0) has started_at == utc_now (rounded to resolution)
 # If it doesn't, fill the gap. NOTE: This can't be implemented as there is still a bug in the client, preventing historic
-# candle fetches up to present candle.
+# candle fetches up to present candle. - BUT we can do it now with mocked candles.
 
 
 class DydxCandleFetcher:
@@ -36,8 +36,6 @@ class DydxCandleFetcher:
 
     def datetime_to_dydx_iso_str(self, date: datetime) -> str:
         return date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-    fetchers = {Exchange.DYDX_V4: DydxV4Fetcher()}
 
     async def fetch_candles(
         self,
@@ -53,7 +51,7 @@ class DydxCandleFetcher:
         temp_end_date = end_date
         count = 0
 
-        if not (fetcher := DydxCandleFetcher.fetchers.get(exchange)):
+        if not (fetcher := self._fetchers.get(exchange)):
             raise ValueError(
                 f"Candlefetcher can't be selected for unknown exchange: {exchange}."
             )
@@ -79,7 +77,7 @@ class DydxCandleFetcher:
 
         return candles
 
-    # NOTE: These two are actually a higher level functions that should be named create_cluster and update_cluster
+    # NOTE: These two are actually higher level functions that should be named fetch_cluster and update_cluster
     async def fetch_cluster(
         self,
         exchange: Exchange,
@@ -95,8 +93,8 @@ class DydxCandleFetcher:
 
         # while loop:
         # now = DydxCandleFetcher.datetime_to_dydx_iso_str(datetime.now(timezone.utc)) TODO: Rounded to minutes
-        # while (not candles) or candles[-1].started_at > start_date_dt or candles[0].started_at < now:
-        # fetch_historic_candles(dydx, eth, 1min, start_date, now)
+        # while (not candles) or candles[0].started_at < now:
+        # fetch_historic_candles(dydx, eth, 1min, temp_start_date, now)
 
     async def update_cluster(self, cluster_head: Candle) -> List[Candle]:
         """

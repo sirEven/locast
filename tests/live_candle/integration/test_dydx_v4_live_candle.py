@@ -1,7 +1,7 @@
 import pytest
 
 from locast.live_candle.dydx.dydx_live_candle import DydxV4LiveCandle
-from ..conftest import ETH_USD, ONE_MIN
+from tests.conftest import ETH_USD, ONE_MIN
 
 
 @pytest.mark.asyncio
