@@ -24,8 +24,8 @@ def candles_left_to_fetch(
     return int(range_seconds / oldest_fetched_candle.resolution)
 
 
-# WIP: Implement a check to verify that the newest candle (at 0) has started_at == utc_now (rounded to resolution)
-# If it doesn't, fill the gap. NOTE: This can't be implemented as there is still a bug in the client, preventing historic
+# TODO: Implement a check to verify that the newest candle (at 0) has started_at == (utc_now rounded to resolution - 1 resolution)
+# If it doesn't, fill the gap. NOTE: This can't be implemented as there is still a bug or restriction in the testnet backend, preventing historic
 # candle fetches up to present candle. - BUT we can do it now with mocked candles.
 
 
@@ -66,6 +66,7 @@ class DydxCandleFetcher:
                 )
 
                 candles.extend(candle_batch)
+                # DEBUG prints
                 print(f"Batch #{count} size: {len(candle_batch)}")
                 print(
                     f"Candles left to download: {candles_left_to_fetch(start_date_dt, candles[-1])}"
@@ -77,7 +78,7 @@ class DydxCandleFetcher:
 
         return candles
 
-    # NOTE: These two are actually higher level functions that should be named fetch_cluster and update_cluster
+    # WIP: Implement and test against new mocked component
     async def fetch_cluster(
         self,
         exchange: Exchange,
