@@ -10,6 +10,7 @@ from locast.candle.resolution import Seconds
 EnumType = TypeVar("EnumType", bound=Enum)
 
 
+# TODO: Write tests for this tool
 class CandleUtility:
     @classmethod
     def is_newest_valid_candle(
@@ -46,6 +47,17 @@ class CandleUtility:
 
     @classmethod
     def norm_date(cls, date: datetime, res: Seconds) -> datetime:
+        """
+        Normalize a given datetime to the nearest lower multiple of a given resolution.
+        In other words: Round down a date to a given resolution.
+
+        Args:
+            date (datetime): The datetime to be normalized.
+            res (Seconds): The resolution to which the datetime should be normalized.
+
+        Returns:
+            datetime: The normalized datetime.
+        """
         # Calculate the number of seconds since a reference datetime (e.g., epoch)
         seconds_since_reference = (
             date - datetime(1970, 1, 1, tzinfo=date.tzinfo)
