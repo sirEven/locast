@@ -53,8 +53,6 @@ async def test_v4_fetch_600_historic_candles_mainnet(
     # then
     assert len(candles) == 600
 
-
-# https://indexer.dydx.trade/v4/v4/candles/perpetualMarkets/ETH-USD?resolution=5MINS&fromISO=2024-07-23%2007:45:00+0000&toISO=2024-08-09T16:25:00.000000Z
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
     dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher,
@@ -63,18 +61,19 @@ async def test_v4_fetch_cluster_is_up_to_date(
     fetcher = dydx_v4_candle_fetcher_mainnet
 
     res = DydxResolution.FIVE_MINUTES
-    amount_back = 50
+    amount_back = 600
     now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
-    start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
+    # FIXME: Needs to be turned into dydx specific string!!
+    start_date = fetcher.datetime_to_dydx_iso_str(now_rounded - timedelta(seconds=res.seconds * amount_back)) 
     # TODO: Think of a way to check if a fetch that takes longer than 1 res, leads
-    # to correct candles (gap filled) - probably needs integration test against mainnet api
-    # when
+    # to correct candles (gap filled) - 
+    # TODO: Check for corrrect candle properties and candle integrity as well (in all tests)
     candles = await fetcher.fetch_cluster(
         Exchange.DYDX_V4,
         "ETH-USD",
         res.notation,
-        datetime_to_string(start_date),
+        start_date,
     )
 
     # then
-    assert len(candles) == 50
+    assert len(candles) == 600

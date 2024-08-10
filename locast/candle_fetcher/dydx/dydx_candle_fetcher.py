@@ -36,7 +36,7 @@ class DydxCandleFetcher:
     def __init__(self, dydx_v4_fetcher: DydxV4Fetcher | None = DydxV4Fetcher()) -> None:
         if dydx_v4_fetcher:
             self._fetchers = {Exchange.DYDX_V4: dydx_v4_fetcher}
-
+    # TODO: Move this function out of this component?
     def datetime_to_dydx_iso_str(self, date: datetime) -> str:
         return date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
@@ -72,7 +72,7 @@ class DydxCandleFetcher:
                 # DEBUG prints
                 print(f"Batch #{count} size: {len(candle_batch)}")
                 print(
-                    f"Candles left to download: {candles_left_to_fetch(start_date_dt, candles[-1])}"
+                    f"Candles left: {candles_left_to_fetch(start_date_dt, candles[-1])}"
                 )
                 temp_end_date = self.datetime_to_dydx_iso_str(candles[-1].started_at)
                 count += 1
