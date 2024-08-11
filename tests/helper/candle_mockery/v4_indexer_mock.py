@@ -60,12 +60,15 @@ class V4MarketsClientMock(MarketsClient):
             recent one chronologically aka the newest one) will only reach to the to_iso date from its startedAt date which
             is one resolution earlier.
             3) Because of this strategy (adding the first candle by hand) we need to subtract 1 from the range input in our
-            for loop, since we want every batch to be either 100 candles wide or less, if the provided range entails less.
+            for loop, since we want every batch to be either 1000 candles (batch size by which mainnet backend responds) wide 
+            or less, if the provided range entails less.
 
         """
         assert to_iso, "to_iso must be provided when mocking candles."
         assert from_iso, "from_iso must be provided when mocking candles."
 
+        batch_size = 1000
+        
         self._temp_candle = self._replace_date(
             self._temp_candle,
             self._subtract_resolution(to_iso, resolution),
@@ -74,7 +77,7 @@ class V4MarketsClientMock(MarketsClient):
         self._temp_candle["resolution"] = resolution
         candle_dicts_batch: List[Dict[str, Any]] = [self._temp_candle]
 
-        amount = min(self._amount_of_candles(from_iso, to_iso, resolution), 100)
+        amount = min(self._amount_of_candles(from_iso, to_iso, resolution), batch_size)
         for i in range(amount - 1):
             new_date = self._subtract_resolution(
                 candle_dicts_batch[i]["startedAt"],

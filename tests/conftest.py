@@ -2,7 +2,7 @@ from typing import AsyncGenerator
 import pytest_asyncio
 
 from locast.candle.dydx.dydx_resolution import DydxResolution
-from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
+from locast.candle_fetcher.dydx.dydx_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 from locast.candle_fetcher.dydx.dydx_candle_fetcher import DydxCandleFetcher
 from locast.live_candle.dydx.dydx_live_candle import DydxV4LiveCandle
 

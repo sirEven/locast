@@ -2,7 +2,7 @@ from datetime import timedelta
 import pytest
 
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
-from locast.candle.candle_utility import CandleUtility
+from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
 from locast.candle_fetcher.dydx.dydx_candle_fetcher import DydxCandleFetcher
@@ -14,6 +14,7 @@ async def test_v4_fetch_600_historic_candles(
 ) -> None:
     # given
     fetcher = mock_dydx_v4_candle_fetcher
+    res = DydxResolution.ONE_MINUTE
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T10:00:00.000Z")
 
@@ -21,13 +22,15 @@ async def test_v4_fetch_600_historic_candles(
     candles = await fetcher.fetch_candles(
         Exchange.DYDX_V4,
         "ETH-USD",
-        DydxResolution.ONE_MINUTE.notation,
+        res.notation,
         start,
         end,
     )
 
     # then
     assert len(candles) == 600
+    assert candles[-1].started_at == start
+    assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
 @pytest.mark.asyncio
@@ -36,13 +39,11 @@ async def test_v4_fetch_cluster_is_up_to_date(
 ) -> None:
     # given
     fetcher = mock_dydx_v4_candle_fetcher
-
-    res = DydxResolution.FIVE_MINUTES
+    res = DydxResolution.ONE_MINUTE
     amount_back = 5000
-    now_rounded = CandleUtility.norm_date(now_utc_iso(), res.seconds)
+    now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
-    # TODO: Think of a way to check if a fetch that takes longer than 1 res, leads
-    # to correct candles (gap filled) - probably needs integration test against mainnet api
+
     # when
     candles = await fetcher.fetch_cluster(
         Exchange.DYDX_V4,
@@ -52,4 +53,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
     )
 
     # then
-    assert len(candles) == 5000
+    cu.assert_candle_unity(candles)
+    cu.assert_chronologic_order(candles)
+    assert cu.is_newest_valid_candle(candles[0])
+    assert len(candles) >= amount_back

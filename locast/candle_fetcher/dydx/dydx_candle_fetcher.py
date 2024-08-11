@@ -14,7 +14,7 @@ from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
-from locast.candle_fetcher.dydx.api_fetcher.api_fetcher import APIFetcher
+from locast.candle_fetcher.api_fetcher import APIFetcher
 
 
 def candles_left_to_fetch(
