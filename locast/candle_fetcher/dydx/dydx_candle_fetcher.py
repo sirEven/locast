@@ -6,7 +6,7 @@
 # - Querying account balance
 
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import Dict, List
 
 
 from locast.candle.candle import Candle
@@ -16,6 +16,7 @@ from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import Seconds
+from locast.candle_fetcher.dydx.api_fetcher.api_fetcher import APIFetcher
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 
 
@@ -27,16 +28,20 @@ def candles_left_to_fetch(
     return int(range_seconds / oldest_fetched_candle.resolution)
 
 
-# TODO: Implement a check to verify that the newest candle (at 0) has started_at == (utc_now rounded to resolution - 1 resolution)
+# WIP: Implement a check to verify that the newest candle (at 0) has started_at == (utc_now rounded to resolution - 1 resolution)
 # If it doesn't, fill the gap. NOTE: This can't be implemented as there is still a bug or restriction in the testnet backend, preventing historic
 # candle fetches up to present candle. - BUT we can do it now with mocked candles.
 
 
 class DydxCandleFetcher:
-    def __init__(self, dydx_v4_fetcher: DydxV4Fetcher | None = DydxV4Fetcher()) -> None:
-        if dydx_v4_fetcher:
-            self._fetchers = {Exchange.DYDX_V4: dydx_v4_fetcher}
+    def __init__(self, api_fetchers: List[APIFetcher]) -> None:
+        self._fetchers: Dict[Exchange, APIFetcher] = {}
+        
+        for fetcher in api_fetchers:
+            self._fetchers[fetcher.exchange] = fetcher
+
     # TODO: Move this function out of this component?
+    # TODO: Make the dydx-format-application inside this component. 
     def datetime_to_dydx_iso_str(self, date: datetime) -> str:
         return date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 

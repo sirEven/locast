@@ -16,8 +16,6 @@ BTC_USD = "BTC-USD"
 LINK_USD = "LINK-USD"
 ONE_MIN = DydxResolution.ONE_MINUTE
 
-# TODO: call make mainnet with all params e.g.:
-
 MAINNET = make_mainnet(
     rest_indexer="https://indexer.dydx.trade/",
     websocket_indexer="wss://indexer.dydx.trade/v4/ws",
@@ -39,17 +37,18 @@ async def dydx_v4_live_candle() -> AsyncGenerator[DydxV4LiveCandle, None]:
 
 @pytest_asyncio.fixture  # type: ignore
 async def mock_dydx_v4_candle_fetcher() -> AsyncGenerator[DydxCandleFetcher, None]:
-    client_mock = V4IndexerClientMock()
-    yield DydxCandleFetcher(dydx_v4_fetcher=DydxV4Fetcher(client_mock))
+    mock_client = V4IndexerClientMock()
+    yield DydxCandleFetcher(api_fetchers=[DydxV4Fetcher(mock_client)])
 
 
 @pytest_asyncio.fixture  # type: ignore
 async def dydx_v4_candle_fetcher_testnet() -> AsyncGenerator[DydxCandleFetcher, None]:
-    yield DydxCandleFetcher()
+    testnet_client = IndexerClient(TESTNET.rest_indexer)
+    yield DydxCandleFetcher(api_fetchers=[DydxV4Fetcher(testnet_client)])
 
 
 @pytest_asyncio.fixture  # type: ignore
 async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxCandleFetcher, None]:
-    yield DydxCandleFetcher(
-        dydx_v4_fetcher=DydxV4Fetcher(IndexerClient(MAINNET.rest_indexer))
-    )
+    mainnet_client=IndexerClient(MAINNET.rest_indexer)
+    yield DydxCandleFetcher(api_fetchers=[DydxV4Fetcher(mainnet_client)])
+    
