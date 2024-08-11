@@ -5,7 +5,7 @@
 # - Querying position data such as pnl...
 # - Querying account balance
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import Dict, List
 
 
@@ -14,7 +14,6 @@ from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import Seconds
 from locast.candle_fetcher.dydx.api_fetcher.api_fetcher import APIFetcher
 
 
@@ -98,10 +97,10 @@ class DydxCandleFetcher:
 
         # This is what we request (and update each iteration): start_date as received and the NOW rounded to resolution
         temp_start_date = start_date
-        temp_norm_now = self._normalized_now(res_sec)
+        temp_norm_now = cu.normalized_now(res_sec)
 
         # This is what we wait for: the newest candle (at index 0) to have started_at one resolution below NOW
-        temp_now_minus_res = self.subtract_one_resolution(temp_norm_now, res_sec)
+        temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, res_sec)
         while (not candles) or candles[0].started_at < temp_now_minus_res:
             new_candles = await self.fetch_candles(
                 exchange,
@@ -115,26 +114,13 @@ class DydxCandleFetcher:
                 candles = new_candles + candles
 
             # Update input for next iteration
-            next_started_at = self.add_one_resolution(candles[0].started_at, res_sec)
+            next_started_at = cu.add_one_resolution(candles[0].started_at, res_sec)
 
             temp_start_date = next_started_at
-            temp_norm_now = self._normalized_now(res_sec)
-            temp_now_minus_res = self.subtract_one_resolution(temp_norm_now, res_sec)
+            temp_norm_now = cu.normalized_now(res_sec)
+            temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, res_sec)
 
         return candles
-
-    # TODO: Move to CandleUtility
-    def _normalized_now(self, resolution: Seconds) -> datetime:
-        # Generate the startedAt date for the newest finished candle (now - 1 res)
-        return cu.norm_date(datetime.now(timezone.utc), resolution)
-
-    # TODO: Move to CandleUtility
-    def subtract_one_resolution(self, date: datetime, resolution: Seconds) -> datetime:
-        return date - timedelta(seconds=resolution)
-
-    # TODO: Move to CandleUtility
-    def add_one_resolution(self, date: datetime, resolution: Seconds) -> datetime:
-        return date + timedelta(seconds=resolution)
 
     async def update_cluster(self, cluster_head: Candle) -> List[Candle]:
         """

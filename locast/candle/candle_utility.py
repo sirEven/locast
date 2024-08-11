@@ -38,7 +38,7 @@ class CandleUtility:
     def last_tick(cls, resolution_seconds: int) -> datetime:
         # calculate the last tick date of that resolution
         utc_now = datetime.now(timezone.utc)
-        unix_epoch = datetime.utcfromtimestamp(0).replace(tzinfo=ZoneInfo("UTC"))
+        unix_epoch = datetime.fromtimestamp(0, timezone.utc)
         now_seconds = (utc_now - unix_epoch).total_seconds()
 
         remainder_sec = now_seconds % resolution_seconds
@@ -49,7 +49,11 @@ class CandleUtility:
     def norm_date(cls, date: datetime, res: Seconds) -> datetime:
         """
         Normalize a given datetime to the nearest lower multiple of a given resolution.
-        In other words: Round down a date to a given resolution.
+        In other words: Round down a date by a given resolution.
+        Examples:
+        12:37:12 rounded down by 1min resolution becomes 12:37
+        12:37:12 rounded down by 5min resolution becomes 12:35
+        12:37:12 rounded down by 15min resolution becomes 12:30
 
         Args:
             date (datetime): The datetime to be normalized.
@@ -72,6 +76,19 @@ class CandleUtility:
         return datetime(1970, 1, 1, tzinfo=date.tzinfo) + timedelta(
             seconds=normalized_seconds
         )
+    
+    @classmethod
+    def normalized_now(cls, resolution: Seconds) -> datetime:
+        # Generate the startedAt date for the newest finished candle (now - 1 res)
+        return cls.norm_date(datetime.now(timezone.utc), resolution)
+
+    @classmethod
+    def subtract_one_resolution(cls, date: datetime, resolution: Seconds) -> datetime:
+        return date - timedelta(seconds=resolution)
+
+    @classmethod
+    def add_one_resolution(cls, date: datetime, resolution: Seconds) -> datetime:
+        return date + timedelta(seconds=resolution)
 
     @classmethod
     def assert_candle_unity(cls, candles: List[Candle]) -> None:
