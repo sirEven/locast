@@ -10,14 +10,12 @@ from typing import Dict, List
 
 
 from locast.candle.candle import Candle
-from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import Seconds
 from locast.candle_fetcher.dydx.api_fetcher.api_fetcher import APIFetcher
-from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 
 
 def candles_left_to_fetch(
@@ -40,22 +38,17 @@ class DydxCandleFetcher:
         for fetcher in api_fetchers:
             self._fetchers[fetcher.exchange] = fetcher
 
-    # TODO: Move this function out of this component?
-    # TODO: Make the dydx-format-application inside this component. 
-    def datetime_to_dydx_iso_str(self, date: datetime) -> str:
-        return date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     async def fetch_candles(
         self,
         exchange: Exchange,
         market: str,
         resolution: str,
-        start_date: str,
-        end_date: str,
+        start_date: datetime,
+        end_date: datetime,
     ) -> List[Candle]:
         candles: List[Candle] = []
 
-        start_date_dt = string_to_datetime(start_date)
         temp_end_date = end_date
         count = 0
 
@@ -65,7 +58,7 @@ class DydxCandleFetcher:
             )
 
         try:
-            while (not candles) or candles[-1].started_at > start_date_dt:
+            while (not candles) or candles[-1].started_at > start_date:
                 candle_batch: List[Candle] = await fetcher.fetch(
                     market,
                     resolution,
@@ -77,22 +70,21 @@ class DydxCandleFetcher:
                 # DEBUG prints
                 print(f"Batch #{count} size: {len(candle_batch)}")
                 print(
-                    f"Candles left: {candles_left_to_fetch(start_date_dt, candles[-1])}"
+                    f"Candles left: {candles_left_to_fetch(start_date, candles[-1])}"
                 )
-                temp_end_date = self.datetime_to_dydx_iso_str(candles[-1].started_at)
+                temp_end_date = candles[-1].started_at
                 count += 1
         except Exception as e:
             print(e)
 
         return candles
 
-    # WIP: Implement and test against new mocked component
     async def fetch_cluster(
         self,
         exchange: Exchange,
         market: str,
         resolution: str,
-        start_date: str,
+        start_date: datetime,
     ) -> List[Candle]:
         """
         Fetches a cluster of candles, which is a group of chronologically sorted, uninterrupted candles ranging
@@ -116,7 +108,7 @@ class DydxCandleFetcher:
                 market,
                 resolution,
                 temp_start_date,
-                self.datetime_to_dydx_iso_str(temp_norm_now),
+                temp_norm_now,
             )
 
             if new_candles:
@@ -125,7 +117,7 @@ class DydxCandleFetcher:
             # Update input for next iteration
             next_started_at = self.add_one_resolution(candles[0].started_at, res_sec)
 
-            temp_start_date = self.datetime_to_dydx_iso_str(next_started_at)
+            temp_start_date = next_started_at
             temp_norm_now = self._normalized_now(res_sec)
             temp_now_minus_res = self.subtract_one_resolution(temp_norm_now, res_sec)
 
@@ -136,6 +128,7 @@ class DydxCandleFetcher:
         # Generate the startedAt date for the newest finished candle (now - 1 res)
         return cu.norm_date(datetime.now(timezone.utc), resolution)
 
+    # TODO: Move to CandleUtility
     def subtract_one_resolution(self, date: datetime, resolution: Seconds) -> datetime:
         return date - timedelta(seconds=resolution)
 
@@ -148,10 +141,12 @@ class DydxCandleFetcher:
         Updates the cluster by adding new candles based on the provided cluster_head.
 
         Parameters:
-            cluster_head (Candle): The head of the cluster to be updated.
+            cluster_head (Candle): The head of the cluster to be updated. This is the
+            candle with the most recent started_at date in the cluster.
 
         Returns:
-            List[Candle]: The updated list of candles in the cluster.
+            List[Candle]: The candles needed to update the cluster to include the most 
+            recent price data.
         """
 
-        pass
+        raise NotImplementedError

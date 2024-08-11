@@ -27,8 +27,6 @@ from locast.live_candle.live_candle import LiveCandle
 logging.basicConfig(level=logging.DEBUG)
 
 
-# TODO: Next: write tests for this
-# TODO: Pull in event_systems and publish finished candles
 class DydxV4LiveCandle(LiveCandle):
     def __init__(
         self,
