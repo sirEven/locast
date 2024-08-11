@@ -10,7 +10,7 @@ from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle_fetcher.api_fetcher import APIFetcher
-from locast.candle_fetcher.dydx.dydx_fetcher.datetime_format import datetime_to_dydx_iso_str
+from locast.candle_fetcher.dydx.fetcher.datetime_format import datetime_to_dydx_iso_str
 
 
 class DydxV4Fetcher(APIFetcher):

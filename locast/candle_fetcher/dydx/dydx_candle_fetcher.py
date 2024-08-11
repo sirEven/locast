@@ -21,13 +21,9 @@ def candles_left_to_fetch(
     start_date: datetime,
     oldest_fetched_candle: Candle,
 ) -> int:
+    assert start_date <= oldest_fetched_candle.started_at, "Oldest fetched candle needs to be younger than start_date."
     range_seconds = (oldest_fetched_candle.started_at - start_date).total_seconds()
     return int(range_seconds / oldest_fetched_candle.resolution)
-
-
-# WIP: Implement a check to verify that the newest candle (at 0) has started_at == (utc_now rounded to resolution - 1 resolution)
-# If it doesn't, fill the gap. NOTE: This can't be implemented as there is still a bug or restriction in the testnet backend, preventing historic
-# candle fetches up to present candle. - BUT we can do it now with mocked candles.
 
 
 class DydxCandleFetcher:
@@ -92,14 +88,11 @@ class DydxCandleFetcher:
         candles: List[Candle] = []
         res_sec = DydxResolution.notation_to_seconds(resolution)
 
-        # NOTE: The newest finished candles needs to have a started_at one resolution below now
-        # (For this condition to work, we need the normalized date)
-
-        # This is what we request (and update each iteration): start_date as received and the NOW rounded to resolution
         temp_start_date = start_date
         temp_norm_now = cu.normalized_now(res_sec)
 
-        # This is what we wait for: the newest candle (at index 0) to have started_at one resolution below NOW
+        # This is what we wait for: The newest candle (at index 0) to have started_at one resolution below NOW,
+        # which only happens, if during fetch_candles a new candle started.
         temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, res_sec)
         while (not candles) or candles[0].started_at < temp_now_minus_res:
             new_candles = await self.fetch_candles(
@@ -110,6 +103,7 @@ class DydxCandleFetcher:
                 temp_norm_now,
             )
 
+            # Sort repeated fetches to the front of gathered candles
             if new_candles:
                 candles = new_candles + candles
 
