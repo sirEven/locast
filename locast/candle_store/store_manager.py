@@ -6,8 +6,5 @@ class StoreManager:
     async def create_cluster(self) -> None:
         raise NotImplementedError
 
-    async def store_cluster(self) -> None:
-        raise NotImplementedError
-
     async def update_cluster(self) -> None:
         raise NotImplementedError

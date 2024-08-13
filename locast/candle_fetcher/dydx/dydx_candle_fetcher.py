@@ -22,7 +22,9 @@ def candles_left_to_fetch(
     start_date: datetime,
     oldest_fetched_candle: Candle,
 ) -> int:
-    assert start_date <= oldest_fetched_candle.started_at, "Oldest fetched candle needs to be younger than start_date."
+    assert (
+        start_date <= oldest_fetched_candle.started_at
+    ), "Oldest fetched candle needs to be younger than start_date."
     range_seconds = (oldest_fetched_candle.started_at - start_date).total_seconds()
     return int(range_seconds / oldest_fetched_candle.resolution)
 
@@ -30,10 +32,9 @@ def candles_left_to_fetch(
 class DydxCandleFetcher(CandleFetcher):
     def __init__(self, api_fetchers: List[APIFetcher]) -> None:
         self._fetchers: Dict[Exchange, APIFetcher] = {}
-        
+
         for fetcher in api_fetchers:
             self._fetchers[fetcher.exchange] = fetcher
-
 
     async def fetch_candles(
         self,
@@ -82,9 +83,7 @@ class DydxCandleFetcher(CandleFetcher):
                 candles.extend(candle_batch)
                 # DEBUG prints
                 print(f"Batch #{count} size: {len(candle_batch)}")
-                print(
-                    f"Candles left: {candles_left_to_fetch(start_date, candles[-1])}"
-                )
+                print(f"Candles left: {candles_left_to_fetch(start_date, candles[-1])}")
                 temp_end_date = candles[-1].started_at
                 count += 1
         except Exception as e:
@@ -153,7 +152,7 @@ class DydxCandleFetcher(CandleFetcher):
             candle with the most recent started_at date in the cluster.
 
         Returns:
-            List[Candle]: The candles needed to update the cluster to include the most 
+            List[Candle]: The candles needed to update the cluster to include the most
             recent price data.
         """
 
