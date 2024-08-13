@@ -15,6 +15,7 @@ from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
 from locast.candle_fetcher.api_fetcher import APIFetcher
+from locast.candle_fetcher.candle_fetcher import CandleFetcher
 
 
 def candles_left_to_fetch(
@@ -26,7 +27,7 @@ def candles_left_to_fetch(
     return int(range_seconds / oldest_fetched_candle.resolution)
 
 
-class DydxCandleFetcher:
+class DydxCandleFetcher(CandleFetcher):
     def __init__(self, api_fetchers: List[APIFetcher]) -> None:
         self._fetchers: Dict[Exchange, APIFetcher] = {}
         
@@ -74,7 +75,7 @@ class DydxCandleFetcher:
 
         return candles
 
-    async def fetch_cluster(
+    async def fetch_candles_up_to_now(
         self,
         exchange: Exchange,
         market: str,

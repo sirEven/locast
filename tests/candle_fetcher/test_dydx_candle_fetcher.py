@@ -45,7 +45,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
     # when
-    candles = await fetcher.fetch_cluster(
+    candles = await fetcher.fetch_candles_up_to_now(
         Exchange.DYDX_V4,
         "ETH-USD",
         res.notation,
