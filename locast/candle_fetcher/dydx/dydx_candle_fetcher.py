@@ -43,6 +43,23 @@ class DydxCandleFetcher(CandleFetcher):
         start_date: datetime,
         end_date: datetime,
     ) -> List[Candle]:
+        """
+        Fetches candles from the specified exchange and market within a given time range.
+
+        Args:
+            exchange (Exchange): The exchange to fetch candles from.
+            market (str): The market to fetch candles for.
+            resolution (str): The resolution of the candles to fetch.
+            start_date (datetime): The start date of the time range (the started_at value of the oldest candle in the range).
+            end_date (datetime): The end date of the time range (the theoretical end date of the newest candle in the range).
+
+        Returns:
+            List[Candle]: A list of candles fetched from the specified exchange and market.
+
+        Note: This function does not guarantee its returned candles to be reaching to the most recent existing candle on the exchange.
+        It simply fetches candles making up the range between the provided start_date and end_date. If this takes longer than newer
+        candles to be created on the exchange, those candles will not be fetched.
+        """
         candles: List[Candle] = []
 
         temp_end_date = end_date
@@ -85,6 +102,15 @@ class DydxCandleFetcher(CandleFetcher):
         """
         Fetches a cluster of candles, which is a group of chronologically sorted, uninterrupted candles ranging
         from a given start date up to the most recently finished candle.
+
+        Args:
+            exchange (Exchange): The exchange to fetch candles from.
+            market (str): The market to fetch candles for.
+            resolution (str): The resolution of the candles to fetch.
+            start_date (datetime): The start date of the time range (the started_at value of the oldest candle in the range).
+
+        Returns:
+            List[Candle]: A list of candles from the start date up to the most recently finished candle.
         """
         candles: List[Candle] = []
         res_sec = DydxResolution.notation_to_seconds(resolution)
