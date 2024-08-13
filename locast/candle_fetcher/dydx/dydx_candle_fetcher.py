@@ -18,6 +18,7 @@ from locast.candle_fetcher.api_fetcher import APIFetcher
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 
 
+# TODO: Move this func somwhere else at some point.
 def candles_left_to_fetch(
     start_date: datetime,
     oldest_fetched_candle: Candle,
