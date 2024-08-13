@@ -85,7 +85,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
     assert len(candles) >= amount_back
 
 # NOTE: This test exists only to see, wether the backend is being maintained to sometime include this candle again or not (which I'm sure will not happen).
-# OBSERVATION: Order violated from Candles None (2024-07-25 06:52:00+00:00) to None (2024-07-25 06:54:00+00:00)
+# Order violated from Candles None (2024-07-25 06:52:00+00:00) to None (2024-07-25 06:54:00+00:00)
 # Meaning: The (mainnet!) backend is actually missing one candle (which startedAt 2024-07-25 06:53:00+00:00)
 @pytest.mark.asyncio
 async def test_candle_error_at_2024_07_25_06_52(

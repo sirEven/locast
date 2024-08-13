@@ -19,7 +19,6 @@ async def test_all_market_candles_are_live_after_start(
     assert live_candle.all_are_live()
 
 
-# FIXME: This test is (was? Can't reproduce) flaky...
 @pytest.mark.asyncio
 async def test_some_market_candles_are_live_after_unsubscribe(
     dydx_v4_live_candle: DydxV4LiveCandle,
