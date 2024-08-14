@@ -1,10 +1,38 @@
 import asyncio
+from typing import List
 
-from locast.candle_storage.sql.candle_model import create_db_and_tables
+from sqlmodel import create_engine
+
+from locast.candle.candle import Candle
+from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
+from locast.candle_storage.sql.store_candles import store_candles
+from locast.candle_storage.sql.setup_database import create_db_and_tables
 
 
 async def main():
-    create_db_and_tables()
+    candle_dict = {
+        "startedAt": "2024-04-01T09:59:00.000Z",
+        "ticker": "ETH-USD",
+        "resolution": "1MIN",
+        "low": "3537.3",
+        "high": "3540.9",
+        "open": "3540.9",
+        "close": "3537.3",
+        "baseTokenVolume": "0.042",
+        "usdVolume": "148.6422",
+        "trades": 2,
+        "startingOpenInterest": "934.027",
+    }
+
+    sqlite_file_name = "candles.db"
+    sqlite_url = f"sqlite:///{sqlite_file_name}"
+    engine = create_engine(sqlite_url, echo=True)
+
+    mapping = DydxV4CandleMapping()
+    candles: List[Candle] = [mapping.dict_to_candle(candle_dict) for _ in range(5)]
+
+    create_db_and_tables(engine)
+    store_candles(candles, engine)
 
 
 asyncio.run(main())

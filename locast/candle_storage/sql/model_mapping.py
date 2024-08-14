@@ -1,35 +1,12 @@
-from datetime import datetime
 from decimal import Decimal
-from sqlmodel import Field, SQLModel, create_engine  # type: ignore
 
 from locast.candle.candle import Candle
-from locast.candle.exchange import Exchange
-from locast.candle.resolution import Seconds
-
-
-# NOTE: For id to be NULL in db (which mackes no sense) you could set nullable=True.
-class CandleEntry(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    exchange: Exchange
-    market: str
-    resolution: Seconds
-
-    started_at: datetime
-
-    open: str
-    high: str
-    low: str
-    close: str
-
-    base_token_volume: str
-    trades: int
-    usd_volume: str
-    starting_open_interest: str
+from locast.candle_storage.sql.sqlite_candle import SqliteCandle
 
 
 class ModelMapping:
     @staticmethod
-    def to_candle(candle_entry: CandleEntry) -> Candle:
+    def to_candle(candle_entry: SqliteCandle) -> Candle:
         return Candle(
             id=candle_entry.id,
             exchange=candle_entry.exchange,
@@ -47,8 +24,8 @@ class ModelMapping:
         )
 
     @staticmethod
-    def to_candle_entry(candle: Candle) -> CandleEntry:
-        return CandleEntry(
+    def to_sqlite_candle(candle: Candle) -> SqliteCandle:
+        return SqliteCandle(
             id=candle.id,
             exchange=candle.exchange,
             market=candle.market,
@@ -63,12 +40,3 @@ class ModelMapping:
             usd_volume=str(candle.usd_volume),
             starting_open_interest=str(candle.starting_open_interest),
         )
-
-
-sqlite_file_name = "candles.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-engine = create_engine(sqlite_url, echo=True)
-
-
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
