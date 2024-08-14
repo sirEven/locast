@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -16,7 +15,7 @@ class PricePoint(Enum):
 
 @dataclass
 class Candle:
-    id: Optional[int]
+    id: int | None
     exchange: Exchange
     market: str
     resolution: Seconds
