@@ -13,18 +13,19 @@ class DatabaseCandleMapper:
 
     @staticmethod
     def to_candle(database: DatabaseType, database_candle: Any) -> Candle:
-        if not (mapping := DatabaseCandleMapper.mappings.get(database)):
-            raise ValueError(
-                f"Candle can't be mapped for unknown database: {database}."
-            )
-
+        mapping = DatabaseCandleMapper._select_db_type(database)
         return mapping.to_candle(database_candle)
 
     @staticmethod
     def to_database_candle(database: DatabaseType, candle: Candle) -> Any:
+        mapping = DatabaseCandleMapper._select_db_type(database)
+        return mapping.to_sqlite_candle(candle)
+
+    @staticmethod
+    def _select_db_type(database: DatabaseType):
         if not (mapping := DatabaseCandleMapper.mappings.get(database)):
             raise ValueError(
-                f"Candle can't be mapped for unknown database: {database}."
+                f"Candle can't be mapped for unknown database type: {database}."
             )
 
-        return mapping.to_sqlite_candle(candle)
+        return mapping
