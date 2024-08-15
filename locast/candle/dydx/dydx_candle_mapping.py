@@ -11,19 +11,23 @@ from locast.candle.exchange import Exchange
 
 
 class DydxV4CandleMapping(ExchangeCandleMapping):
-    def to_candle(self, candle_dict: Dict[str, Any]) -> Candle:
+    def to_candle(self, exchange_representation: Dict[str, Any]) -> Candle:
         try:
-            started_at = string_to_datetime(candle_dict["startedAt"])
-            market = candle_dict["ticker"]
-            resolution = DydxResolution.notation_to_seconds(candle_dict["resolution"])
-            p_low = Decimal(candle_dict["low"])
-            p_high = Decimal(candle_dict["high"])
-            p_open = Decimal(candle_dict["open"])
-            p_close = Decimal(candle_dict["close"])
-            base_token_volume = Decimal(candle_dict["baseTokenVolume"])
-            usd_volume = Decimal(candle_dict["usdVolume"])
-            trades = int(candle_dict["trades"])
-            starting_open_interest = Decimal(candle_dict["startingOpenInterest"])
+            started_at = string_to_datetime(exchange_representation["startedAt"])
+            market = exchange_representation["ticker"]
+            resolution = DydxResolution.notation_to_seconds(
+                exchange_representation["resolution"]
+            )
+            p_low = Decimal(exchange_representation["low"])
+            p_high = Decimal(exchange_representation["high"])
+            p_open = Decimal(exchange_representation["open"])
+            p_close = Decimal(exchange_representation["close"])
+            base_token_volume = Decimal(exchange_representation["baseTokenVolume"])
+            usd_volume = Decimal(exchange_representation["usdVolume"])
+            trades = int(exchange_representation["trades"])
+            starting_open_interest = Decimal(
+                exchange_representation["startingOpenInterest"]
+            )
 
             return Candle(
                 id=None,
@@ -45,19 +49,23 @@ class DydxV4CandleMapping(ExchangeCandleMapping):
 
 
 class DydxV3CandleMapping(ExchangeCandleMapping):
-    def to_candle(self, candle_dict: Dict[str, Any]) -> Candle:
+    def to_candle(self, exchange_representation: Dict[str, Any]) -> Candle:
         try:
-            started_at = string_to_datetime(candle_dict["startedAt"])
-            market = candle_dict["market"]
-            resolution = DydxResolution.notation_to_seconds(candle_dict["resolution"])
-            p_low = Decimal(candle_dict["low"])
-            p_high = Decimal(candle_dict["high"])
-            p_open = Decimal(candle_dict["open"])
-            p_close = Decimal(candle_dict["close"])
-            base_token_volume = Decimal(candle_dict["baseTokenVolume"])
-            trades = int(candle_dict["trades"])
-            usd_volume = Decimal(candle_dict["usdVolume"])
-            starting_open_interest = Decimal(candle_dict["startingOpenInterest"])
+            started_at = string_to_datetime(exchange_representation["startedAt"])
+            market = exchange_representation["market"]
+            resolution = DydxResolution.notation_to_seconds(
+                exchange_representation["resolution"]
+            )
+            p_low = Decimal(exchange_representation["low"])
+            p_high = Decimal(exchange_representation["high"])
+            p_open = Decimal(exchange_representation["open"])
+            p_close = Decimal(exchange_representation["close"])
+            base_token_volume = Decimal(exchange_representation["baseTokenVolume"])
+            trades = int(exchange_representation["trades"])
+            usd_volume = Decimal(exchange_representation["usdVolume"])
+            starting_open_interest = Decimal(
+                exchange_representation["startingOpenInterest"]
+            )
 
             return Candle(
                 id=None,
