@@ -109,7 +109,7 @@ class DydxV4LiveCandle(LiveCandle):
 
         if message["type"] == "channel_batch_data":
             if candle_dict := message["contents"][0]:
-                new_candle = ExchangeCandleMapper.dict_to_candle(
+                new_candle = ExchangeCandleMapper.to_candle(
                     self._exchange,
                     candle_dict,
                 )

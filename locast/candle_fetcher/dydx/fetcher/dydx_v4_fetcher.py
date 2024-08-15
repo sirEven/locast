@@ -19,7 +19,7 @@ class DydxV4Fetcher(APIFetcher):
     ) -> None:
         self._client = client
         self._exchange = Exchange.DYDX_V4
-    
+
     @property
     def exchange(self) -> Exchange:
         return self._exchange
@@ -40,7 +40,7 @@ class DydxV4Fetcher(APIFetcher):
             to_iso=datetime_to_dydx_iso_str(end_date),
         )
         assert response["candles"]
-        return ExchangeCandleMapper.dicts_to_candles(
+        return ExchangeCandleMapper.to_candles(
             Exchange.DYDX_V4,
             response["candles"],
         )
