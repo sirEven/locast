@@ -5,6 +5,7 @@ from sqlmodel import create_engine
 
 from locast.candle.candle import Candle
 from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
+from locast.candle_storage.database_type import DatabaseType
 from locast.candle_storage.sql.store_candles import store_candles
 from locast.candle_storage.sql.setup_database import create_db_and_tables
 
@@ -32,7 +33,7 @@ async def main():
     candles: List[Candle] = [mapping.to_candle(candle_dict) for _ in range(5)]
 
     create_db_and_tables(engine)
-    store_candles(candles, engine)
+    store_candles(DatabaseType.SQLITE, candles, engine)
 
 
 asyncio.run(main())
