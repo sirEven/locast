@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Any, Dict
 from locast.candle.candle import Candle
-from locast.candle.candle_mapping import CandleMapping
+from locast.candle.exchange_candle_mapping import ExchangeCandleMapping
 from locast.candle.dydx.dydx_resolution import DydxResolution
 
 
@@ -10,8 +10,8 @@ from sir_utilities.date_time import string_to_datetime
 from locast.candle.exchange import Exchange
 
 
-class DydxV4CandleMapping(CandleMapping):
-    def dict_to_candle(self, candle_dict: Dict[str, Any]) -> Candle:
+class DydxV4CandleMapping(ExchangeCandleMapping):
+    def to_candle(self, candle_dict: Dict[str, Any]) -> Candle:
         try:
             started_at = string_to_datetime(candle_dict["startedAt"])
             market = candle_dict["ticker"]
@@ -44,8 +44,8 @@ class DydxV4CandleMapping(CandleMapping):
             raise ValueError(f"Error converting dict to Candle: {str(e)}") from e
 
 
-class DydxV3CandleMapping(CandleMapping):
-    def dict_to_candle(self, candle_dict: Dict[str, Any]) -> Candle:
+class DydxV3CandleMapping(ExchangeCandleMapping):
+    def to_candle(self, candle_dict: Dict[str, Any]) -> Candle:
         try:
             started_at = string_to_datetime(candle_dict["startedAt"])
             market = candle_dict["market"]

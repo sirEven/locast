@@ -34,4 +34,4 @@ class ExchangeCandleMapper:
                 f"Candle can't be mapped for unknown exchange: {exchange}."
             )
 
-        return mapping.dict_to_candle(candle_dict)
+        return mapping.to_candle(candle_dict)

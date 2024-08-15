@@ -25,7 +25,7 @@ async def test_dydx_v4_candle_mapping() -> None:
     }
 
     # when
-    candle = mapping.dict_to_candle(candle_dict)
+    candle = mapping.to_candle(candle_dict)
 
     # then
     assert candle.started_at == string_to_datetime("2024-04-01T09:59:00.000Z")
@@ -54,4 +54,4 @@ async def test_dydx_v4_candle_mapping_raises_error() -> None:
 
     # when & then
     with pytest.raises(ValueError):
-        _ = mapping.dict_to_candle(faulty_candle_dict)
+        _ = mapping.to_candle(faulty_candle_dict)

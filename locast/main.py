@@ -29,7 +29,7 @@ async def main():
     engine = create_engine(sqlite_url, echo=True)
 
     mapping = DydxV4CandleMapping()
-    candles: List[Candle] = [mapping.dict_to_candle(candle_dict) for _ in range(5)]
+    candles: List[Candle] = [mapping.to_candle(candle_dict) for _ in range(5)]
 
     create_db_and_tables(engine)
     store_candles(candles, engine)
