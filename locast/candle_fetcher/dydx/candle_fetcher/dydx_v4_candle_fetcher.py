@@ -121,7 +121,7 @@ class DydxV4CandleFetcher(CandleFetcher):
 
         return candles
 
-    # TODO: This is actually a higher level (Controller) method, together with create_cluster().
+    # TODO: This is actually a higher level (Manager) method, together with create_cluster().
     async def update_cluster(self, cluster_head: Candle) -> List[Candle]:
         """
         Updates the cluster by adding new candles based on the provided cluster_head.
