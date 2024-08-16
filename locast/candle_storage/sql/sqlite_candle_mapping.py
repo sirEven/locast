@@ -23,7 +23,7 @@ class SqliteCandleMapping(DatabaseCandleMapping):
             starting_open_interest=Decimal(database_candle.starting_open_interest),
         )
 
-    def to_sqlite_candle(self, candle: Candle) -> SqliteCandle:
+    def to_database_candle(self, candle: Candle) -> SqliteCandle:
         return SqliteCandle(
             id=candle.id,
             exchange=candle.exchange,
