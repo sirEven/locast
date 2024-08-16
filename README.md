@@ -1,5 +1,7 @@
-LoCaSt - Local Candle Store
-LiveCandle: 
+LoCaSt: Local Candle Store - A module to download and store price candles from exchanges in a database. 
+LiveCandle: Experimental feature that will probably be extracted from here at some point.
+
+Glue Project Thoughts & Ideas:
 The idea is to have the live candle turn on at the begining of execution, either by itself within init, or by the glue project that calls its start function (and stop function at shut down). 
 What can be considered unnecessary is dynamic subscribing and unsubscribing to certain markets - instead we could pause
 publishing those candles if desired. But even that might be unnecessary. We should think about what exactly we would want to pause, once a position has beend opened. Naturally we would keep candles being created and published but would simply stop forming fresh predictions. Important: LiveCandle will NOT be used to feed into Candle Store. 
