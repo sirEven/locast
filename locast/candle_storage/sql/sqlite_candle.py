@@ -5,7 +5,7 @@ from locast.candle.exchange import Exchange
 from locast.candle.resolution import Seconds
 
 
-# NOTE: For id to be NULL in db (which mackes no sense) you could set nullable=True.
+# NOTE: For id to be NULL in db (which makes no sense) you could set nullable=True.
 class SqliteCandle(SQLModel, table=True):
     __tablename__ = "candle"  # type: ignore
     id: int | None = Field(default=None, primary_key=True)

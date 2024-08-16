@@ -10,7 +10,6 @@ from locast.candle.resolution import Seconds
 EnumType = TypeVar("EnumType", bound=Enum)
 
 
-# TODO: Write tests for this tool
 class CandleUtility:
     @classmethod
     def is_newest_valid_candle(
@@ -153,7 +152,7 @@ class CandleUtility:
     def assert_chronologic_order(cls, candles: List[Candle]) -> None:
         # All date diffs == 1 res (no gaps, no duplicates, right order)
         assert candles
-        cls.assert_candle_unity(candles)
+        cls.assert_candle_unity(candles)  # TODO: Remove (separtion of concerns)
         res = candles[0].resolution
         for i, candle in enumerate(candles):
             if i > 0:
