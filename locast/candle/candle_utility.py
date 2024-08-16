@@ -76,7 +76,7 @@ class CandleUtility:
         return datetime(1970, 1, 1, tzinfo=date.tzinfo) + timedelta(
             seconds=normalized_seconds
         )
-    
+
     @classmethod
     def normalized_now(cls, resolution: Seconds) -> datetime:
         # Generate the startedAt date for the newest finished candle (now - 1 res)
@@ -163,6 +163,18 @@ class CandleUtility:
                 assert candles[i - 1].started_at - candle.started_at == timedelta(
                     seconds=res
                 ), f"{msg} {candle.id} ({old}) to {candles[i - 1].id} ({new})."
+
+    @classmethod
+    def amount_of_candles_in_range(
+        cls,
+        start_date: datetime,
+        end_date: datetime,
+        resolution: Seconds,
+    ) -> int:
+        assert start_date <= end_date, "start_date must be before end_date."
+
+        range_seconds = (end_date - start_date).total_seconds()
+        return int(range_seconds / resolution)
 
     @classmethod
     def remove_duplicates(

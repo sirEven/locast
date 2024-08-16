@@ -6,40 +6,24 @@
 # - Querying account balance
 
 from datetime import datetime
-from typing import Dict, List
+from typing import List
 
 
 from locast.candle.candle import Candle
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
-from locast.candle.exchange import Exchange
 from locast.candle_fetcher.api_fetcher import APIFetcher
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 
 
-# TODO: Move this func somwhere else at some point.
-def candles_left_to_fetch(
-    start_date: datetime,
-    oldest_fetched_candle: Candle,
-) -> int:
-    assert (
-        start_date <= oldest_fetched_candle.started_at
-    ), "Oldest fetched candle needs to be younger than start_date."
-    range_seconds = (oldest_fetched_candle.started_at - start_date).total_seconds()
-    return int(range_seconds / oldest_fetched_candle.resolution)
-
-
-class DydxCandleFetcher(CandleFetcher):
-    def __init__(self, api_fetchers: List[APIFetcher]) -> None:
-        self._fetchers: Dict[Exchange, APIFetcher] = {}
-
-        for fetcher in api_fetchers:
-            self._fetchers[fetcher.exchange] = fetcher
+# TODO: Refactor such that we have two distinct Dydx fetchers (V3 and V4)
+class DydxV4CandleFetcher(CandleFetcher):
+    def __init__(self, api_fetcher: APIFetcher) -> None:
+        self._fetcher = api_fetcher
 
     async def fetch_candles(
         self,
-        exchange: Exchange,
         market: str,
         resolution: str,
         start_date: datetime,
@@ -67,14 +51,9 @@ class DydxCandleFetcher(CandleFetcher):
         temp_end_date = end_date
         count = 0
 
-        if not (fetcher := self._fetchers.get(exchange)):
-            raise ValueError(
-                f"Candlefetcher can't be selected for unknown exchange: {exchange}."
-            )
-
         try:
             while (not candles) or candles[-1].started_at > start_date:
-                candle_batch: List[Candle] = await fetcher.fetch(
+                candle_batch: List[Candle] = await self._fetcher.fetch(
                     market,
                     resolution,
                     start_date,
@@ -84,7 +63,9 @@ class DydxCandleFetcher(CandleFetcher):
                 candles.extend(candle_batch)
                 # DEBUG prints
                 print(f"Batch #{count} size: {len(candle_batch)}")
-                print(f"Candles left: {candles_left_to_fetch(start_date, candles[-1])}")
+                print(
+                    f"Candles left: {cu.amount_of_candles_in_range(start_date, candles[-1].started_at, candles[-1].resolution)}"
+                )
                 temp_end_date = candles[-1].started_at
                 count += 1
         except Exception as e:
@@ -94,7 +75,6 @@ class DydxCandleFetcher(CandleFetcher):
 
     async def fetch_candles_up_to_now(
         self,
-        exchange: Exchange,
         market: str,
         resolution: str,
         start_date: datetime,
@@ -123,7 +103,6 @@ class DydxCandleFetcher(CandleFetcher):
         temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, res_sec)
         while (not candles) or candles[0].started_at < temp_now_minus_res:
             new_candles = await self.fetch_candles(
-                exchange,
                 market,
                 resolution,
                 temp_start_date,

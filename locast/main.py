@@ -24,16 +24,17 @@ async def main():
         "startingOpenInterest": "934.027",
     }
 
+    mapping = DydxV4CandleMapping()
+    candles: List[Candle] = [mapping.to_candle(candle_dict) for _ in range(5)]
+
     sqlite_file_name = "candles.db"
     sqlite_url = f"sqlite:///{sqlite_file_name}"
     engine = create_engine(sqlite_url, echo=True)
 
-    mapping = DydxV4CandleMapping()
-    candles: List[Candle] = [mapping.to_candle(candle_dict) for _ in range(5)]
+    candle_storage = SqliteCandleStorage(engine)
 
     create_db_and_tables(engine)
 
-    candle_storage = SqliteCandleStorage(engine)
     await candle_storage.store_candles(candles)
 
 

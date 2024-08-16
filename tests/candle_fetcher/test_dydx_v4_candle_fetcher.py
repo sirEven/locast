@@ -4,13 +4,12 @@ import pytest
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
-from locast.candle.exchange import Exchange
-from locast.candle_fetcher.dydx.dydx_candle_fetcher import DydxCandleFetcher
+from locast.candle_fetcher.dydx.dydx_v4_candle_fetcher import DydxV4CandleFetcher
 
 
 @pytest.mark.asyncio
 async def test_v4_fetch_600_historic_candles(
-    mock_dydx_v4_candle_fetcher: DydxCandleFetcher,
+    mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
 ) -> None:
     # given
     fetcher = mock_dydx_v4_candle_fetcher
@@ -20,7 +19,6 @@ async def test_v4_fetch_600_historic_candles(
 
     # when
     candles = await fetcher.fetch_candles(
-        Exchange.DYDX_V4,
         "ETH-USD",
         res.notation,
         start,
@@ -35,7 +33,7 @@ async def test_v4_fetch_600_historic_candles(
 
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
-    mock_dydx_v4_candle_fetcher: DydxCandleFetcher,
+    mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
 ) -> None:
     # given
     fetcher = mock_dydx_v4_candle_fetcher
@@ -46,7 +44,6 @@ async def test_v4_fetch_cluster_is_up_to_date(
 
     # when
     candles = await fetcher.fetch_candles_up_to_now(
-        Exchange.DYDX_V4,
         "ETH-USD",
         res.notation,
         start_date,

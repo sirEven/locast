@@ -6,14 +6,13 @@ from sir_utilities.date_time import now_utc_iso
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
-from locast.candle.exchange import Exchange
-from locast.candle_fetcher.dydx.dydx_candle_fetcher import DydxCandleFetcher
+from locast.candle_fetcher.dydx.dydx_v4_candle_fetcher import DydxV4CandleFetcher
 from sir_utilities.date_time import string_to_datetime
 
 
 @pytest.mark.asyncio
 async def test_v4_fetch_600_historic_candles_testnet(
-    dydx_v4_candle_fetcher_testnet: DydxCandleFetcher,
+    dydx_v4_candle_fetcher_testnet: DydxV4CandleFetcher,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_testnet
@@ -23,7 +22,6 @@ async def test_v4_fetch_600_historic_candles_testnet(
 
     # when
     candles = await fetcher.fetch_candles(
-        Exchange.DYDX_V4,
         "ETH-USD",
         res.notation,
         start,
@@ -38,7 +36,7 @@ async def test_v4_fetch_600_historic_candles_testnet(
 
 @pytest.mark.asyncio
 async def test_v4_fetch_600_historic_candles_mainnet(
-    dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher,
+    dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_mainnet
@@ -48,7 +46,6 @@ async def test_v4_fetch_600_historic_candles_mainnet(
 
     # when
     candles = await fetcher.fetch_candles(
-        Exchange.DYDX_V4,
         "ETH-USD",
         res.notation,
         start,
@@ -60,9 +57,10 @@ async def test_v4_fetch_600_historic_candles_mainnet(
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
+
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
-    dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher,
+    dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_mainnet
@@ -72,7 +70,6 @@ async def test_v4_fetch_cluster_is_up_to_date(
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
     candles = await fetcher.fetch_candles_up_to_now(
-        Exchange.DYDX_V4,
         "ETH-USD",
         res.notation,
         start_date,
@@ -84,12 +81,13 @@ async def test_v4_fetch_cluster_is_up_to_date(
     assert cu.is_newest_valid_candle(candles[0])
     assert len(candles) >= amount_back
 
+
 # NOTE: This test exists only to see, wether the backend is being maintained to sometime include this candle again or not (which I'm sure will not happen).
 # Order violated from Candles None (2024-07-25 06:52:00+00:00) to None (2024-07-25 06:54:00+00:00)
 # Meaning: The (mainnet!) backend is actually missing one candle (which startedAt 2024-07-25 06:53:00+00:00)
 @pytest.mark.asyncio
 async def test_candle_error_at_2024_07_25_06_52(
-    dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher,
+    dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
 ) -> None:
     # given
     res = DydxResolution.ONE_MINUTE
@@ -99,12 +97,11 @@ async def test_candle_error_at_2024_07_25_06_52(
 
     # when
     candles = await fetcher.fetch_candles(
-        Exchange.DYDX_V4,
         "ETH-USD",
         res.notation,
         start,
         end,
     )
 
-    # then - since backen is missing this specific candle
+    # then - since backend is missing this specific candle
     assert candles == []

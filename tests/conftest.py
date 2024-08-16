@@ -3,7 +3,7 @@ import pytest_asyncio
 
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle_fetcher.dydx.fetcher.dydx_v4_fetcher import DydxV4Fetcher
-from locast.candle_fetcher.dydx.dydx_candle_fetcher import DydxCandleFetcher
+from locast.candle_fetcher.dydx.dydx_v4_candle_fetcher import DydxV4CandleFetcher
 from locast.live_candle.dydx.dydx_live_candle import DydxV4LiveCandle
 
 from dydx_v4_client.indexer.rest.indexer_client import IndexerClient  # type: ignore
@@ -36,19 +36,18 @@ async def dydx_v4_live_candle() -> AsyncGenerator[DydxV4LiveCandle, None]:
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def mock_dydx_v4_candle_fetcher() -> AsyncGenerator[DydxCandleFetcher, None]:
+async def mock_dydx_v4_candle_fetcher() -> AsyncGenerator[DydxV4CandleFetcher, None]:
     mock_client = V4IndexerClientMock()
-    yield DydxCandleFetcher(api_fetchers=[DydxV4Fetcher(mock_client)])
+    yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(mock_client))
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_candle_fetcher_testnet() -> AsyncGenerator[DydxCandleFetcher, None]:
+async def dydx_v4_candle_fetcher_testnet() -> AsyncGenerator[DydxV4CandleFetcher, None]:
     testnet_client = IndexerClient(TESTNET.rest_indexer)
-    yield DydxCandleFetcher(api_fetchers=[DydxV4Fetcher(testnet_client)])
+    yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(testnet_client))
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxCandleFetcher, None]:
-    mainnet_client=IndexerClient(MAINNET.rest_indexer)
-    yield DydxCandleFetcher(api_fetchers=[DydxV4Fetcher(mainnet_client)])
-    
+async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxV4CandleFetcher, None]:
+    mainnet_client = IndexerClient(MAINNET.rest_indexer)
+    yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(mainnet_client))
