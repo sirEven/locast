@@ -152,7 +152,6 @@ class CandleUtility:
     def assert_chronologic_order(cls, candles: List[Candle]) -> None:
         # All date diffs == 1 res (no gaps, no duplicates, right order)
         assert candles
-        cls.assert_candle_unity(candles)  # TODO: Remove (separtion of concerns)
         res = candles[0].resolution
         for i, candle in enumerate(candles):
             if i > 0:
