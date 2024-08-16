@@ -17,7 +17,6 @@ from locast.candle_fetcher.api_fetcher import APIFetcher
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 
 
-# TODO: Refactor such that we have two distinct Dydx fetchers (V3 and V4)
 class DydxV4CandleFetcher(CandleFetcher):
     def __init__(self, api_fetcher: APIFetcher) -> None:
         self._fetcher = api_fetcher

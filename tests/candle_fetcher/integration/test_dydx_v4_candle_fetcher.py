@@ -6,7 +6,9 @@ from sir_utilities.date_time import now_utc_iso
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
-from locast.candle_fetcher.dydx.dydx_v4_candle_fetcher import DydxV4CandleFetcher
+from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
+    DydxV4CandleFetcher,
+)
 from sir_utilities.date_time import string_to_datetime
 
 
