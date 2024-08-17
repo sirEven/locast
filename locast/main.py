@@ -5,6 +5,8 @@ from sqlmodel import create_engine
 
 from locast.candle.candle import Candle
 from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
+from locast.candle.dydx.dydx_resolution import DydxResolution
+from locast.candle.exchange import Exchange
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.candle_storage.sql.setup_database import create_db_and_tables
 
@@ -36,6 +38,13 @@ async def main():
     create_db_and_tables(engine)
 
     await candle_storage.store_candles(candles)
+    await asyncio.sleep(5)
+    print("\n")
+    await candle_storage.retrieve_candles(
+        Exchange.DYDX_V4,
+        "ETH-USD",
+        DydxResolution.ONE_MINUTE.seconds,
+    )
 
 
 asyncio.run(main())
