@@ -28,6 +28,7 @@ class V4MarketsClientMock(MarketsClient):
 
         self._temp_candle = self._mock_candle_base
 
+    # TODO: Extract candle creation logic out into a helper (including docstring)
     async def get_perpetual_market_candles(
         self,
         market: str,
