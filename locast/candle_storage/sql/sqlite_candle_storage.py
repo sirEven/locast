@@ -9,6 +9,10 @@ from locast.candle_storage.candle_storage import CandleStorage
 from locast.candle_storage.database_candle_mapper import DatabaseCandleMapper
 from locast.candle_storage.database_type import DatabaseType
 
+# NOTE: Maybe utilize session refresh magic from sqlmodel in glue code when creating / updating a cluster freshly and wanting to pass the data on to next
+# glued component such as model training, in order to save additional db calls by hand. But ideally, i think we will just separate the glued components in
+# in a way, that each has its own database communication set up. So model training (or who ever) will load required data out of db by itself.
+
 
 class SqliteCandleStorage(CandleStorage):
     def __init__(self, engine: Engine) -> None:
