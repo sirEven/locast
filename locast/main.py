@@ -40,11 +40,13 @@ async def main():
     await candle_storage.store_candles(candles)
     await asyncio.sleep(5)
     print("\n")
-    await candle_storage.retrieve_candles(
+    candles = await candle_storage.retrieve_candles(
         Exchange.DYDX_V4,
         "ETH-USD",
         DydxResolution.ONE_MINUTE.seconds,
     )
+
+    print(candles)
 
 
 asyncio.run(main())
