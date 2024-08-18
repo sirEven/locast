@@ -11,6 +11,8 @@ from locast.candle.exchange_candle_mapping import ExchangeCandleMapping
 class ExchangeCandleMapper:
     """
     A class that maps candle dictionaries from different exchanges to Candle objects.
+    Note: _to_candle() exists, to extract the _select_mapping() call outside of the for loop
+    in to_candles(), in order to only have it run every batch instead of every candle.
     """
 
     mappings = {
@@ -35,7 +37,7 @@ class ExchangeCandleMapper:
         candle_dict: Dict[str, Any],
     ) -> Candle:
         mapping = ExchangeCandleMapper._select_mapping(exchange)
-        return mapping.to_candle(candle_dict)
+        return ExchangeCandleMapper._to_candle(mapping, candle_dict)
 
     @staticmethod
     def _to_candle(
