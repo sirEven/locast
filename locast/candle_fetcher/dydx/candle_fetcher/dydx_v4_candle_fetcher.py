@@ -13,12 +13,12 @@ from locast.candle.candle import Candle
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
-from locast.candle_fetcher.api_fetcher import APIFetcher
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
+from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 
 
 class DydxV4CandleFetcher(CandleFetcher):
-    def __init__(self, api_fetcher: APIFetcher) -> None:
+    def __init__(self, api_fetcher: DydxV4Fetcher) -> None:
         self._fetcher = api_fetcher
 
     async def fetch_candles(
