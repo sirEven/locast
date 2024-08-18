@@ -37,11 +37,29 @@ class V4MarketsClientMock(MarketsClient):
         to_iso: Optional[str] = None,
         limit: Optional[int] = None,
     ) -> Dict[str, Any]:
+        assert to_iso, "to_iso must be provided when mocking candles."
+        assert from_iso, "from_iso must be provided when mocking candles."
+
+        candle_dicts_batch = self.mock_candle_dicts(
+            resolution,
+            market,
+            from_iso,
+            to_iso,
+        )
+        return {"candles": candle_dicts_batch}
+
+    def mock_candle_dicts(
+        self,
+        resolution: str,
+        market: str,
+        from_iso: str,
+        to_iso: str,
+    ):
         """
         Generates mocked price candles for a given market, resolution, and time range.
 
         Args:
-            market (str): The market for which to retrieve candles.
+            market (str): The market for which to mock candles.
             resolution (str): The resolution of the candles.
             from_iso (Optional[str], optional): The start date of the candle range in ISO format. Defaults to None.
             to_iso (Optional[str], optional): The end date of the candle range in ISO format. Defaults to None.
@@ -64,10 +82,7 @@ class V4MarketsClientMock(MarketsClient):
             3) Because of this strategy (adding the first candle by hand) we need to subtract 1 from the range input in our
             for loop, since we want every batch to be either 1000 candles (batch size by which mainnet backend responds) wide
             or less, if the provided range entails less.
-
         """
-        assert to_iso, "to_iso must be provided when mocking candles."
-        assert from_iso, "from_iso must be provided when mocking candles."
 
         batch_size = 1000
 
@@ -77,6 +92,7 @@ class V4MarketsClientMock(MarketsClient):
         )
 
         self._temp_candle["resolution"] = resolution
+        self._temp_candle["ticker"] = market
         candle_dicts_batch: List[Dict[str, Any]] = [self._temp_candle]
 
         amount = min(
@@ -87,6 +103,7 @@ class V4MarketsClientMock(MarketsClient):
             ),
             batch_size,
         )
+
         for i in range(amount - 1):
             new_date = self._subtract_resolution(
                 candle_dicts_batch[i]["startedAt"],
@@ -94,8 +111,7 @@ class V4MarketsClientMock(MarketsClient):
             )
             candle_dict = self._replace_date(candle_dicts_batch[i].copy(), new_date)
             candle_dicts_batch.append(candle_dict)
-
-        return {"candles": candle_dicts_batch}
+        return candle_dicts_batch
 
     def _replace_date(
         self,

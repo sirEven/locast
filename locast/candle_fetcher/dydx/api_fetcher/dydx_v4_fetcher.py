@@ -34,7 +34,8 @@ class DydxV4Fetcher(APIFetcher):
         end_date: datetime,
     ) -> List[Candle]:
         response: Dict[
-            str, Any
+            str,
+            Any,
         ] = await self._client.markets.get_perpetual_market_candles(  # type: ignore
             market=market,
             resolution=resolution,
