@@ -21,6 +21,7 @@ class SqliteCandleStorage(CandleStorage):
         self._database_type = DatabaseType.SQLITE
 
     # TODO: Implement UNIQUE constraint on combo (exchange, market, resolution, startedAt)
+    # TODO: Normalize DB tables -> Exchange, Resolution, Market shall make up their own tables...
     async def store_candles(self, candles: List[Candle]) -> None:
         with Session(self._engine) as session:
             for candle in candles:
@@ -32,8 +33,6 @@ class SqliteCandleStorage(CandleStorage):
                 )
             session.commit()
 
-    # TODO: Implement exchange, market and resolution filter
-    # TODO: Implement results being mapped to Candle objects
     async def retrieve_candles(
         self,
         exchange: Exchange,
@@ -41,6 +40,16 @@ class SqliteCandleStorage(CandleStorage):
         resolution: Seconds,
     ) -> List[Candle]:
         with Session(self._engine) as session:
-            statement = select(SqliteCandle)
+            statement = select(SqliteCandle).where(
+                SqliteCandle.exchange == exchange,
+                SqliteCandle.market == market,
+                SqliteCandle.resolution == resolution,
+            )
             results = session.exec(statement)
-            return results.all()
+            return self._to_candles(list(results.all()))
+
+    def _to_candles(self, database_candles: List[SqliteCandle]) -> List[Candle]:
+        return [
+            DatabaseCandleMapper.to_candle(self._database_type, sqlite_candle)
+            for sqlite_candle in database_candles
+        ]
