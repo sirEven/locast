@@ -26,4 +26,5 @@ class StoreManager:
         exchange: Exchange,
         market: str,
         resolution: Seconds,
-    ) -> List[Candle]: ...
+    ) -> List[Candle]:
+        raise NotImplementedError
