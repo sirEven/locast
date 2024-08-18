@@ -3,35 +3,45 @@ from typing import List
 
 from sqlmodel import create_engine
 
+from sir_utilities.date_time import string_to_datetime
+
 from locast.candle.candle import Candle
-from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
+from locast.candle.candle_utility import CandleUtility as cu
+from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.candle_storage.sql.setup_database import create_db_and_tables
+from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
+    mock_dydx_v4_candle_dict_batch,
+)
 
 
-async def main():
-    candle_dict = {
-        "startedAt": "2024-04-01T09:59:00.000Z",
-        "ticker": "ETH-USD",
-        "resolution": "1MIN",
-        "low": "3537.3",
-        "high": "3540.9",
-        "open": "3540.9",
-        "close": "3537.3",
-        "baseTokenVolume": "0.042",
-        "usdVolume": "148.6422",
-        "trades": 2,
-        "startingOpenInterest": "934.027",
-    }
+async def main() -> None:
+    exchange = Exchange.DYDX_V4
+    resolution = DydxResolution.ONE_MINUTE.seconds
+    market = "ETH-USD"
+    start_str = "2024-01-01T00:00:00+00:00"
+    end_str = "2024-01-02T00:00:00+00:00"
 
-    mapping = DydxV4CandleMapping()
-    candles: List[Candle] = [mapping.to_candle(candle_dict) for _ in range(5)]
+    start = string_to_datetime(start_str)
+    end = string_to_datetime(end_str)
+    amount = cu.amount_of_candles_in_range(start, end, resolution)
+    eth_dicts = mock_dydx_v4_candle_dict_batch(
+        DydxResolution.ONE_MINUTE.notation,
+        market,
+        start_str,
+        end_str,
+        batch_size=amount,
+    )
+
+    print(f"Expected Amount: {amount}.")
+    candles: List[Candle] = ExchangeCandleMapper.to_candles(exchange, eth_dicts)
+    print(f"Mocked Amount: {len(candles)}.")
 
     sqlite_file_name = "candles.db"
     sqlite_url = f"sqlite:///{sqlite_file_name}"
-    engine = create_engine(sqlite_url, echo=True)
+    engine = create_engine(sqlite_url, echo=False)
 
     candle_storage = SqliteCandleStorage(engine)
 
@@ -39,14 +49,15 @@ async def main():
 
     await candle_storage.store_candles(candles)
     await asyncio.sleep(5)
-    print("\n")
     candles = await candle_storage.retrieve_candles(
-        Exchange.DYDX_V4,
-        "ETH-USD",
-        DydxResolution.ONE_MINUTE.seconds,
+        exchange,
+        market,
+        resolution,
     )
 
-    print(candles)
+    print(
+        f"Candles store from {candles[-1].started_at}, to: {candles[0].started_at}, Amount: {len(candles)}."
+    )
 
 
 asyncio.run(main())

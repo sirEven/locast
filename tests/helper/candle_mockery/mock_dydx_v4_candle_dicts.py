@@ -37,7 +37,7 @@ def subtract_resolution(date_str: str, resolution: str) -> datetime:
     return date - timedelta(seconds=res_sec)
 
 
-def mock_dydx_v4_candle_dicts(
+def mock_dydx_v4_candle_dict_batch(
     resolution: str,
     market: str,
     from_iso: str,

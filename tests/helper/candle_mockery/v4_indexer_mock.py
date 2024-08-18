@@ -5,7 +5,7 @@ from dydx_v4_client.indexer.rest.indexer_client import IndexerClient, MarketsCli
 from dydx_v4_client.network import TESTNET  # type: ignore
 
 from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
-    mock_dydx_v4_candle_dicts,
+    mock_dydx_v4_candle_dict_batch,
 )
 
 
@@ -24,7 +24,7 @@ class V4MarketsClientMock(MarketsClient):
         assert to_iso, "to_iso must be provided when mocking candles."
         assert from_iso, "from_iso must be provided when mocking candles."
 
-        candle_dicts_batch = mock_dydx_v4_candle_dicts(
+        candle_dicts_batch = mock_dydx_v4_candle_dict_batch(
             resolution,
             market,
             from_iso,
