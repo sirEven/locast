@@ -39,7 +39,7 @@ async def main() -> None:
     candles: List[Candle] = ExchangeCandleMapper.to_candles(exchange, eth_dicts)
     print(f"Mocked Amount: {len(candles)}.")
 
-    sqlite_file_name = "candles.db"
+    sqlite_file_name = "locast.db"
     sqlite_url = f"sqlite:///{sqlite_file_name}"
     engine = create_engine(sqlite_url, echo=False)
 
@@ -56,7 +56,7 @@ async def main() -> None:
     )
 
     print(
-        f"Candles store from {candles[-1].started_at}, to: {candles[0].started_at}, Amount: {len(candles)}."
+        f"Candles stored from {candles[-1].started_at}, to: {candles[0].started_at}, Amount: {len(candles)}."
     )
 
 

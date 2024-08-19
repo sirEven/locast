@@ -1,4 +1,6 @@
 from typing import Any
+
+from sqlalchemy import Engine
 from locast.candle.candle import Candle
 from locast.candle_storage.database_candle_mapping import DatabaseCandleMapping
 from locast.candle_storage.database_type import DatabaseType
@@ -10,21 +12,21 @@ class DatabaseCandleMapper:
     A class that maps candle representations from different database technologies to Candle objects and vice versa.
     """
 
-    mappings = {DatabaseType.SQLITE: SqliteCandleMapping()}
+    def __init__(self, sqlite_engine: Engine | None) -> None:
+        self._mappings: dict[DatabaseType, DatabaseCandleMapping] = {}
+        if sqlite_engine:
+            self._mappings[DatabaseType.SQLITE] = SqliteCandleMapping(sqlite_engine)
 
-    @staticmethod
-    def to_candle(database: DatabaseType, database_candle: Any) -> Candle:
-        mapping = DatabaseCandleMapper._select_mapping(database)
+    def to_candle(self, database: DatabaseType, database_candle: Any) -> Candle:
+        mapping = self._select_mapping(database)
         return mapping.to_candle(database_candle)
 
-    @staticmethod
-    def to_database_candle(database: DatabaseType, candle: Candle) -> Any:
-        mapping = DatabaseCandleMapper._select_mapping(database)
+    def to_database_candle(self, database: DatabaseType, candle: Candle) -> Any:
+        mapping = self._select_mapping(database)
         return mapping.to_database_candle(candle)
 
-    @staticmethod
-    def _select_mapping(database: DatabaseType) -> DatabaseCandleMapping:
-        if not (mapping := DatabaseCandleMapper.mappings.get(database)):
+    def _select_mapping(self, database: DatabaseType) -> DatabaseCandleMapping:
+        if not (mapping := self._mappings.get(database)):
             raise ValueError(
                 f"Candle can't be mapped for unknown database type: {database}."
             )
