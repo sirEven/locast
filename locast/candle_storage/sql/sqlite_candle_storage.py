@@ -1,6 +1,5 @@
 from typing import List
-from sqlalchemy import Engine
-from sqlmodel import Session, select
+from sqlmodel import SQLModel, Session, select, create_engine
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
@@ -21,10 +20,13 @@ from locast.candle_storage.sql.table_utility import TableAccess as ta
 
 
 class SqliteCandleStorage(CandleStorage):
-    def __init__(self, engine: Engine) -> None:
-        self._engine = engine
-        self._mapper = DatabaseCandleMapper(engine)
+    def __init__(self, sqlite_url: str = "sqlite:///locast.db") -> None:
         self._database_type = DatabaseType.SQLITE
+
+        self._engine = create_engine(sqlite_url, echo=False)
+        self._mapper = DatabaseCandleMapper(self._engine)
+
+        SQLModel.metadata.create_all(self._engine)
 
     # TODO: Implement UNIQUE constraint on combo (exchange, market, resolution, startedAt)
     async def store_candles(self, candles: List[Candle]) -> None:

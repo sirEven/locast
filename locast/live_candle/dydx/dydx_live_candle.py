@@ -1,8 +1,8 @@
 # Stuff that will be needed down the line:
 # - Getting candles via websocket (live) ✅
 # - as well as via api requests (historic) ✅
-# - sqlite database to store & retrieve candles
-# -- build basic infrastructure to fetch historic candles cleanly --
+# - sqlite database to store & retrieve candles ✅
+# -- build basic infrastructure to fetch historic candles cleanly -- ✅
 
 # - For another project:
 #   - Opening & closing a position
@@ -10,7 +10,6 @@
 #   - Querying account balance
 
 import asyncio
-import logging
 import threading
 from typing import Any, Dict, List
 
@@ -24,7 +23,7 @@ from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.live_candle.live_candle import LiveCandle
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 
 class DydxV4LiveCandle(LiveCandle):
