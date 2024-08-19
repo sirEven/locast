@@ -13,9 +13,6 @@ from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
     mock_dydx_v4_candle_dict_batch,
 )
 
-# TODO: Try implementing mapping such that it is part of the sql logic, and does not need to bee considered in store_manager
-# for this we are already on a new branch!
-
 
 async def main() -> None:
     exchange = Exchange.DYDX_V4
