@@ -14,11 +14,9 @@ from locast.candle_storage.sql.tables import (
 class TableAccess:
     @classmethod
     def get_exchange_id(cls, exchange: Exchange, session: Session) -> int:
-        # Check if ExchangeTable already exists in the db - if not, add it
-        exchange_stmnt = select(SqliteExchange).where(
-            SqliteExchange.exchange == exchange
-        )
-        exchange_obj = session.exec(exchange_stmnt).first()
+        # Check if "exchange" table already exists in the db - if not, add it
+        stmnt = select(SqliteExchange).where(SqliteExchange.exchange == exchange)
+        exchange_obj = session.exec(stmnt).first()
 
         if not exchange_obj:
             exchange_obj = SqliteExchange(exchange=exchange)
@@ -38,9 +36,9 @@ class TableAccess:
 
     @classmethod
     def get_market_id(cls, market: str, session: Session) -> int:
-        # Check if MarketTable already exists in the db - if not, add it
-        market_stmnt = select(SqliteMarket).where(SqliteMarket.market == market)
-        market_obj = session.exec(market_stmnt).first()
+        # Check if "market" table already exists in the db - if not, add it
+        stmnt = select(SqliteMarket).where(SqliteMarket.market == market)
+        market_obj = session.exec(stmnt).first()
 
         if not market_obj:
             market_obj = SqliteMarket(market=market)
@@ -60,12 +58,11 @@ class TableAccess:
 
     @classmethod
     def get_resolution_id(cls, resolution: Seconds, session: Session) -> int:
-        # Check if the ResolutionTable already exists in the table - if not, add it
-
-        resolution_stmnt = select(SqliteResolution).where(
+        # Check if the "resolution" table already exists in the table - if not, add it
+        stmnt = select(SqliteResolution).where(
             SqliteResolution.resolution == resolution
         )
-        resolution_obj = session.exec(resolution_stmnt).first()
+        resolution_obj = session.exec(stmnt).first()
         if not resolution_obj:
             resolution_obj = SqliteResolution(resolution=resolution)
             session.add(resolution_obj)
