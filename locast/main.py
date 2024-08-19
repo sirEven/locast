@@ -48,16 +48,18 @@ async def main() -> None:
     create_db_and_tables(engine)
 
     await candle_storage.store_candles(candles)
-    await asyncio.sleep(5)
     candles = await candle_storage.retrieve_candles(
         exchange,
         market,
         resolution,
     )
 
-    print(
-        f"Candles stored from {candles[-1].started_at}, to: {candles[0].started_at}, Amount: {len(candles)}."
-    )
+    if len(candles) > 0:
+        print(
+            f"Candles stored from {candles[-1].started_at}, to: {candles[0].started_at}, Amount: {len(candles)}."
+        )
+    else:
+        print(f"Candles: {candles}")
 
 
 asyncio.run(main())

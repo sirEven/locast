@@ -13,8 +13,11 @@ from locast.candle_storage.sql.tables import SqliteCandle
 from locast.candle_storage.sql.table_utility import TableAccess as ta
 
 # NOTE: Maybe utilize session refresh magic from sqlmodel in glue code when creating / updating a cluster freshly and wanting to pass the data on to next
-# glued component such as model training, in order to save additional db calls by hand. But ideally, i think we will just separate the glued components in
+# glued component such as model training, in order to save additional db calls by hand. But ideally, i think we will just separate the glued components
 # in a way, that each has its own database communication set up. So model training (or who ever) will load required data out of db by itself.
+# Or a scenario where 2 weeks have passed and glue project needs to update candle cluster - it would simply do that by interacting with locast, retrain models
+# and keep going. We should VOW to never ever introduce logic that tries to cache the candles downloaded one by one over the course of those two weeks to
+# then store them into the db from that cache. This would too finicky and not necessary. Adapting to the new market data should be simple.
 
 
 class SqliteCandleStorage(CandleStorage):
@@ -24,7 +27,6 @@ class SqliteCandleStorage(CandleStorage):
         self._database_type = DatabaseType.SQLITE
 
     # TODO: Implement UNIQUE constraint on combo (exchange, market, resolution, startedAt)
-    # TODO: Normalize DB tables -> Exchange, Resolution, Market shall make up their own tables...
     async def store_candles(self, candles: List[Candle]) -> None:
         with Session(self._engine) as session:
             for candle in candles:
