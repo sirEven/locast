@@ -36,25 +36,27 @@ async def main() -> None:
         batch_size=amount,
     )
 
-    print(f"Expected Amount: {amount}.")
     candles: List[Candle] = ExchangeCandleMapper.to_candles(exchange, eth_dicts)
+
+    print(f"Expected Amount: {amount}.")
     print(f"Mocked Amount: {len(candles)}.")
 
     candle_storage = SqliteCandleStorage()
 
     await candle_storage.store_candles(candles)
-    candles = await candle_storage.retrieve_candles(
+
+    retrieved_candles = await candle_storage.retrieve_candles(
         exchange,
         market,
         resolution,
     )
 
-    if len(candles) > 0:
+    if len(retrieved_candles) > 0:
         print(
-            f"Candles stored from {candles[-1].started_at}, to: {candles[0].started_at}, Amount: {len(candles)}."
+            f"Candles stored from {retrieved_candles[-1].started_at}, to: {retrieved_candles[0].started_at}, Amount: {len(retrieved_candles)}."
         )
     else:
-        print(f"Candles: {candles}")
+        print(f"Candles: {retrieved_candles}")
 
 
 asyncio.run(main())
