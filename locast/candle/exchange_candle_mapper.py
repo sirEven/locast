@@ -14,13 +14,11 @@ class ExchangeCandleMapper:
         self._mapping = mapping
 
     def to_candles(self, candle_dicts: List[Dict[str, Any]]) -> List[Candle]:
-        # mapping = ExchangeCandleMapper._select_mapping(exchange)
         return [
             self._to_candle(self._mapping, candle_dict) for candle_dict in candle_dicts
         ]
 
     def to_candle(self, candle_dict: Dict[str, Any]) -> Candle:
-        # mapping = self._select_mapping(exchange)
         return self._to_candle(self._mapping, candle_dict)
 
     def _to_candle(
@@ -29,11 +27,3 @@ class ExchangeCandleMapper:
         candle_dict: Dict[str, Any],
     ) -> Candle:
         return mapping.to_candle(candle_dict)
-
-    # @staticmethod
-    # def _select_mapping(exchange: Exchange) -> ExchangeCandleMapping:
-    #     if not (mapping := self.mappings.get(exchange)):
-    #         raise ValueError(
-    #             f"Candle can't be mapped for unknown exchange: {exchange}."
-    #         )
-    #     return mapping
