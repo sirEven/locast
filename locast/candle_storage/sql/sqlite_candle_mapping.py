@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-from sqlalchemy import Engine
 from sqlmodel import Session
 
 
@@ -8,29 +7,27 @@ from locast.candle.candle import Candle
 from locast.candle_storage.database_candle_mapping import DatabaseCandleMapping
 from locast.candle_storage.sql.tables import (
     SqliteCandle,
+    SqliteExchange,
+    SqliteMarket,
+    SqliteResolution,
 )
+
 from locast.candle_storage.sql.table_utility import TableAccess as ta
 
 
 class SqliteCandleMapping(DatabaseCandleMapping):
-    def __init__(self, engine: Engine) -> None:
-        self._engine = engine
+    def __init__(self, session: Session | None = None) -> None:
+        self._session = session
+        self._sql_exchange_cache: SqliteExchange | None = None
+        self._sql_market_cache: SqliteMarket | None = None
+        self._sql_resolution_cache: SqliteResolution | None = None
 
     def to_candle(self, database_candle: SqliteCandle) -> Candle:
-        with Session(self._engine) as session:
-            exchange = ta.get_exchange(database_candle.exchange_id, session)
-            market = ta.get_market(database_candle.market_id, session)
-            resolution = ta.get_resolution(database_candle.resolution_id, session)
-
-        assert exchange, "Exchange must be set in the database."
-        assert market, "Market must be set in the database."
-        assert resolution, "Resolution must be set in the database."
-
         return Candle(
             id=database_candle.id,
-            exchange=exchange,
-            market=market,
-            resolution=resolution,
+            exchange=database_candle.exchange.exchange,
+            market=database_candle.market.market,
+            resolution=database_candle.resolution.resolution,
             started_at=database_candle.started_at,
             open=Decimal(database_candle.open),
             high=Decimal(database_candle.high),
@@ -43,16 +40,31 @@ class SqliteCandleMapping(DatabaseCandleMapping):
         )
 
     def to_database_candle(self, candle: Candle) -> SqliteCandle:
-        with Session(self._engine) as session:
-            exchange_id = ta.get_exchange_id(candle.exchange, session)
-            sql_market = ta.get_market_id(candle.market, session)
-            sql_resolution = ta.get_resolution_id(candle.resolution, session)
+        if not (
+            self._sql_exchange_cache
+            and self._sql_market_cache
+            and self._sql_resolution_cache
+        ):
+            assert self._session, "Session must be provided to map to SqliteCandle"
+            with self._session as session:
+                self._sql_exchange_cache = ta.lookup_or_create_sql_exchange(
+                    candle.exchange,
+                    session,
+                )
+                self._sql_market_cache = ta.lookup_or_create_sql_market(
+                    candle.market,
+                    session,
+                )
+                self._sql_resolution_cache = ta.lookup_or_create_sql_resolution(
+                    candle.resolution,
+                    session,
+                )
 
         return SqliteCandle(
             id=candle.id,
-            exchange_id=exchange_id,
-            market_id=sql_market,
-            resolution_id=sql_resolution,
+            exchange=self._sql_exchange_cache,
+            market=self._sql_market_cache,
+            resolution=self._sql_resolution_cache,
             started_at=candle.started_at,
             open=str(candle.open),
             high=str(candle.high),

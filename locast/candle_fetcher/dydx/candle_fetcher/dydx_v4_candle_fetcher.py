@@ -120,19 +120,3 @@ class DydxV4CandleFetcher(CandleFetcher):
             temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, res_sec)
 
         return candles
-
-    # TODO: This is actually a higher level (Manager) method, together with create_cluster().
-    async def update_cluster(self, cluster_head: Candle) -> List[Candle]:
-        """
-        Updates the cluster by adding new candles based on the provided cluster_head.
-
-        Parameters:
-            cluster_head (Candle): The head of the cluster to be updated. This is the
-            candle with the most recent started_at date in the cluster.
-
-        Returns:
-            List[Candle]: The candles needed to update the cluster to include the most
-            recent price data.
-        """
-
-        raise NotImplementedError

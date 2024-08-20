@@ -1,6 +1,6 @@
 from sqlmodel import (
     Session,
-    select,
+    select,  # type: ignore
 )
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import Seconds
@@ -12,72 +12,65 @@ from locast.candle_storage.sql.tables import (
 
 
 class TableAccess:
-    @classmethod
-    def get_exchange_id(cls, exchange: Exchange, session: Session) -> int:
-        # Check if ExchangeTable already exists in the db - if not, add it
-        exchange_stmnt = select(SqliteExchange).where(
-            SqliteExchange.exchange == exchange
+    @staticmethod
+    def lookup_sql_exchange(
+        exchange: Exchange,
+        session: Session,
+    ) -> SqliteExchange | None:
+        return session.exec(select(SqliteExchange).filter_by(exchange=exchange)).first()
+
+    @staticmethod
+    def lookup_sql_market(market: str, session: Session) -> SqliteMarket | None:
+        return session.exec(select(SqliteMarket).filter_by(market=market)).first()
+
+    @staticmethod
+    def lookup_sql_resolution(
+        resolution: Seconds, session: Session
+    ) -> SqliteResolution | None:
+        return session.exec(
+            select(SqliteResolution).filter_by(resolution=resolution)
+        ).first()
+
+    @staticmethod
+    def lookup_or_create_sql_resolution(
+        resolution: Seconds, session: Session
+    ) -> SqliteResolution:
+        sql_resolution = TableAccess.lookup_sql_resolution(
+            resolution=resolution,
+            session=session,
         )
-        exchange_obj = session.exec(exchange_stmnt).first()
 
-        if not exchange_obj:
-            exchange_obj = SqliteExchange(exchange=exchange)
-            session.add(exchange_obj)
+        if not sql_resolution:
+            sql_resolution = SqliteResolution(resolution=resolution)
+            session.add(sql_resolution)
             session.commit()
-        assert exchange_obj.id
-        return exchange_obj.id
+        return sql_resolution
 
-    @classmethod
-    def get_exchange(cls, exchange_id: int, session: Session) -> Exchange | None:
-        with session:
-            stmnt = select(SqliteExchange).where(SqliteExchange.id == exchange_id)
-            if exchange_table := session.exec(stmnt).first():
-                return exchange_table.exchange
-            else:
-                return None
+    @staticmethod
+    def lookup_or_create_sql_market(
+        market: str,
+        session: Session,
+    ) -> SqliteMarket:
+        sql_market = TableAccess.lookup_sql_market(market=market, session=session)
 
-    @classmethod
-    def get_market_id(cls, market: str, session: Session) -> int:
-        # Check if MarketTable already exists in the db - if not, add it
-        market_stmnt = select(SqliteMarket).where(SqliteMarket.market == market)
-        market_obj = session.exec(market_stmnt).first()
-
-        if not market_obj:
-            market_obj = SqliteMarket(market=market)
-            session.add(market_obj)
+        if not sql_market:
+            sql_market = SqliteMarket(market=market)
+            session.add(sql_market)
             session.commit()
-        assert market_obj.id
-        return market_obj.id
+        return sql_market
 
-    @classmethod
-    def get_market(cls, market_id: int, session: Session) -> str | None:
-        with session:
-            stmnt = select(SqliteMarket).where(SqliteMarket.id == market_id)
-            if sql_market := session.exec(stmnt).first():
-                return sql_market.market
-            else:
-                return None
-
-    @classmethod
-    def get_resolution_id(cls, resolution: Seconds, session: Session) -> int:
-        # Check if the ResolutionTable already exists in the table - if not, add it
-
-        resolution_stmnt = select(SqliteResolution).where(
-            SqliteResolution.resolution == resolution
+    @staticmethod
+    def lookup_or_create_sql_exchange(
+        exchange: Exchange,
+        session: Session,
+    ) -> SqliteExchange:
+        sql_exchange = TableAccess.lookup_sql_exchange(
+            exchange=exchange,
+            session=session,
         )
-        resolution_obj = session.exec(resolution_stmnt).first()
-        if not resolution_obj:
-            resolution_obj = SqliteResolution(resolution=resolution)
-            session.add(resolution_obj)
-            session.commit()
-        assert resolution_obj.id
-        return resolution_obj.id
 
-    @classmethod
-    def get_resolution(cls, resolution_id: int, session: Session) -> Seconds | None:
-        with session:
-            stmnt = select(SqliteResolution).where(SqliteResolution.id == resolution_id)
-            if sql_resolution := session.exec(stmnt).first():
-                return sql_resolution.resolution
-            else:
-                return None
+        if not sql_exchange:
+            sql_exchange = SqliteExchange(exchange=exchange)
+            session.add(sql_exchange)
+            session.commit()
+        return sql_exchange

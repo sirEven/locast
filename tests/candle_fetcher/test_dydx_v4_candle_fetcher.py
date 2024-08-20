@@ -33,6 +33,7 @@ async def test_v4_fetch_600_historic_candles(
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
+# TODO: Paramaterize with edge case amounts (0, 1, 2, 10, 100, 1000, 10000) as well as resolutions (all of them)
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
     mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,

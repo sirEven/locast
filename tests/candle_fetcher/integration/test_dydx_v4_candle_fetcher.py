@@ -12,6 +12,7 @@ from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
 from sir_utilities.date_time import string_to_datetime
 
 
+# TODO: Paramaterize with edge case amounts (0, 1, 2, 10, 100, 1000, 10000) as well as resolutions (all of them)
 @pytest.mark.asyncio
 async def test_v4_fetch_600_historic_candles_testnet(
     dydx_v4_candle_fetcher_testnet: DydxV4CandleFetcher,
@@ -60,6 +61,7 @@ async def test_v4_fetch_600_historic_candles_mainnet(
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
+# TODO: Paramaterize with edge case amounts (0, 1, 2, 10, 100, 1000, 10000) as well as resolutions (all of them)
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
     dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
