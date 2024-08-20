@@ -9,7 +9,6 @@ from locast.candle.candle_utility import CandleUtility as uc
 from tests.conftest import dummy_candle
 
 
-# TODO: test all functions of CandleUtility
 def test_is_newest_valid_candles_returns_true(dummy_candle: Candle) -> None:
     # given
     candle = dummy_candle
