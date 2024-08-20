@@ -6,6 +6,7 @@ from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as cu
+from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
@@ -33,8 +34,8 @@ async def main() -> None:
         end_str,
         batch_size=amount,
     )
-
-    candles: List[Candle] = ExchangeCandleMapper.to_candles(exchange, eth_dicts)
+    v4_mapper = ExchangeCandleMapper(DydxV4CandleMapping())
+    candles: List[Candle] = v4_mapper.to_candles(eth_dicts)
 
     # print(f"Expected Amount: {amount}.")
     print(f"Mocked Amount: {len(candles)}.")

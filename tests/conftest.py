@@ -6,6 +6,7 @@ import pytest_asyncio
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
 
 from locast.candle.candle import Candle
+from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
@@ -77,7 +78,6 @@ def dummy_candle() -> Generator[Candle, None, None]:
 def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
     start_str = "2024-01-01T00:00:00+00:00"
     end_str = "2024-01-05T00:00:00+00:00"
-    exchange = Exchange.DYDX_V4
     market = "ETH-USD"
     resolution = DydxResolution.ONE_MINUTE.seconds
 
@@ -93,8 +93,8 @@ def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
         end_str,
         batch_size=amount,
     )
-
-    yield ExchangeCandleMapper.to_candles(exchange, eth_dicts)
+    mapper = ExchangeCandleMapper(DydxV4CandleMapping())
+    yield mapper.to_candles(eth_dicts)
 
 
 @pytest_asyncio.fixture  # type: ignore
