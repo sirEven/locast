@@ -20,7 +20,7 @@ async def main() -> None:
     resolution = DydxResolution.ONE_MINUTE.seconds
     market = "ETH-USD"
     start_str = "2024-01-01T00:00:00+00:00"
-    end_str = "2024-01-08T00:00:00+00:00"
+    end_str = "2024-01-31T00:00:00+00:00"
 
     start = string_to_datetime(start_str)
     end = string_to_datetime(end_str)

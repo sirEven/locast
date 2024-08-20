@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 
 from locast.candle.candle import Candle
@@ -11,6 +11,8 @@ from locast.candle_storage.sql.tables import (
     SqliteMarket,
     SqliteResolution,
 )
+
+from locast.candle_storage.sql.table_utility import TableAccess as ta
 
 
 class SqliteCandleMapping(DatabaseCandleMapping):
@@ -45,16 +47,16 @@ class SqliteCandleMapping(DatabaseCandleMapping):
         ):
             assert self._session, "Session must be provided to map to SqliteCandle"
             with self._session as session:
-                self._sql_exchange_cache = self._lookup_or_create_sql_exchange(
-                    candle,
+                self._sql_exchange_cache = ta.lookup_or_create_sql_exchange(
+                    candle.exchange,
                     session,
                 )
-                self._sql_market_cache = self._lookup_or_create_sql_market(
-                    candle,
+                self._sql_market_cache = ta.lookup_or_create_sql_market(
+                    candle.market,
                     session,
                 )
-                self._sql_resolution_cache = self._lookup_or_create_sql_resolution(
-                    candle,
+                self._sql_resolution_cache = ta.lookup_or_create_sql_resolution(
+                    candle.resolution,
                     session,
                 )
 
@@ -73,48 +75,3 @@ class SqliteCandleMapping(DatabaseCandleMapping):
             usd_volume=str(candle.usd_volume),
             starting_open_interest=str(candle.starting_open_interest),
         )
-
-    def _lookup_or_create_sql_resolution(
-        self,
-        candle: Candle,
-        session: Session,
-    ) -> SqliteResolution:
-        sql_resolution = session.exec(
-            select(SqliteResolution).filter_by(resolution=candle.resolution)
-        ).first()
-
-        if not sql_resolution:
-            sql_resolution = SqliteResolution(resolution=candle.resolution)
-            session.add(sql_resolution)
-            session.commit()
-        return sql_resolution
-
-    def _lookup_or_create_sql_market(
-        self,
-        candle: Candle,
-        session: Session,
-    ) -> SqliteMarket:
-        sql_market = session.exec(
-            select(SqliteMarket).filter_by(market=candle.market)
-        ).first()
-
-        if not sql_market:
-            sql_market = SqliteMarket(market=candle.market)
-            session.add(sql_market)
-            session.commit()
-        return sql_market
-
-    def _lookup_or_create_sql_exchange(
-        self,
-        candle: Candle,
-        session: Session,
-    ) -> SqliteExchange:
-        sql_exchange = session.exec(
-            select(SqliteExchange).filter_by(exchange=candle.exchange)
-        ).first()
-
-        if not sql_exchange:
-            sql_exchange = SqliteExchange(exchange=candle.exchange)
-            session.add(sql_exchange)
-            session.commit()
-        return sql_exchange

@@ -1,5 +1,5 @@
 from typing import List
-from sqlmodel import SQLModel, Session, select, create_engine
+from sqlmodel import SQLModel, Session, create_engine, select
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
@@ -37,11 +37,20 @@ class SqliteCandleStorage(CandleStorage):
         resolution: Seconds,
     ) -> List[Candle]:
         with Session(self._engine) as session:
+            sql_exchange = ta.lookup_sql_exchange(exchange, session)
+            sql_market = ta.lookup_or_create_sql_market(market, session)
+            sql_resolution = ta.lookup_or_create_sql_resolution(resolution, session)
+
+            assert sql_exchange, f"Exchange {exchange} not found in database."
+            assert sql_market, f"Market {market} not found in database."
+            assert sql_resolution, f"Resolution {resolution} not found in database."
+
             statement = select(SqliteCandle).where(
-                SqliteCandle.exchange_id == ta.get_exchange_id(exchange, session),
-                SqliteCandle.market_id == ta.get_market_id(market, session),
-                SqliteCandle.resolution_id == ta.get_resolution_id(resolution, session),
+                (SqliteCandle.exchange_id == sql_exchange.id)
+                & (SqliteCandle.market_id == sql_market.id)
+                & (SqliteCandle.resolution_id == sql_resolution.id)
             )
+
             results = session.exec(statement)
             return self._to_candles(list(results.all()))
 
