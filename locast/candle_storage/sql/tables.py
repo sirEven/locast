@@ -1,53 +1,9 @@
 from datetime import datetime
 from sqlalchemy import Index
-from sqlmodel import Field, SQLModel  # type: ignore
-
+from sqlmodel import Field, Relationship, SQLModel  # type: ignore
 
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import Seconds
-
-
-# NOTE: For id to be NULL in db (which makes no sense) you could set nullable=True.
-class SqliteCandle(SQLModel, table=True):
-    __tablename__ = "candle"  # type: ignore
-    id: int | None = Field(default=None, primary_key=True)
-
-    exchange_id: int = Field(
-        foreign_key=("exchange.id"),
-        nullable=False,
-        index=True,
-    )
-    market_id: int = Field(
-        foreign_key=("market.id"),
-        nullable=False,
-        index=True,
-    )
-    resolution_id: int = Field(
-        foreign_key=("resolution.id"),
-        nullable=False,
-        index=True,
-    )
-
-    started_at: datetime
-
-    open: str
-    high: str
-    low: str
-    close: str
-
-    base_token_volume: str
-    trades: int
-    usd_volume: str
-    starting_open_interest: str
-
-    __table_args__ = (
-        Index(
-            "compound_index_exchange_market_resolution",
-            "exchange_id",
-            "market_id",
-            "resolution_id",
-        ),
-    )
 
 
 class SqliteExchange(SQLModel, table=True):
@@ -66,3 +22,54 @@ class SqliteMarket(SQLModel, table=True):
     __tablename__ = "market"  # type: ignore
     id: int | None = Field(default=None, primary_key=True)
     market: str = Field(nullable=False, unique=True)
+
+
+# NOTE: For id to be NULL in db (which makes no sense) you could set nullable=True.
+class SqliteCandle(SQLModel, table=True):
+    __tablename__ = "candle"  # type: ignore
+    id: int | None = Field(default=None, primary_key=True)
+
+    exchange_id: int | None = Field(
+        default=None,
+        foreign_key=("exchange.id"),
+        nullable=False,
+        index=True,
+    )
+    market_id: int | None = Field(
+        default=None,
+        foreign_key=("market.id"),
+        nullable=False,
+        index=True,
+    )
+    resolution_id: int | None = Field(
+        default=None,
+        foreign_key=("resolution.id"),
+        nullable=False,
+        index=True,
+    )
+
+    started_at: datetime
+
+    open: str
+    high: str
+    low: str
+    close: str
+
+    base_token_volume: str
+    trades: int
+    usd_volume: str
+    starting_open_interest: str
+
+    # Relationships
+    exchange: SqliteExchange = Relationship()
+    market: SqliteMarket = Relationship()
+    resolution: SqliteResolution = Relationship()
+
+    __table_args__ = (
+        Index(
+            "compound_index_exchange_market_resolution",
+            "exchange_id",
+            "market_id",
+            "resolution_id",
+        ),
+    )

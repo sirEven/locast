@@ -24,7 +24,7 @@ class SqliteCandleStorage(CandleStorage):
         with Session(self._engine) as session:
             for candle in candles:
                 session.add(self._db_candle_mapper.to_database_candle(candle))
-            session.commit()
+                session.commit()
 
     async def retrieve_candles(
         self,
