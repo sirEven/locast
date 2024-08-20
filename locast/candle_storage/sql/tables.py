@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Index
+from sqlalchemy import Index, UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel  # type: ignore
 
 from locast.candle.exchange import Exchange
@@ -71,5 +71,12 @@ class SqliteCandle(SQLModel, table=True):
             "exchange_id",
             "market_id",
             "resolution_id",
+        ),
+        UniqueConstraint(
+            "exchange_id",
+            "market_id",
+            "resolution_id",
+            "started_at",
+            name="unique_candle_constraint",
         ),
     )

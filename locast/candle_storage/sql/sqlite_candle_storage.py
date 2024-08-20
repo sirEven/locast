@@ -17,7 +17,6 @@ class SqliteCandleStorage(CandleStorage):
         self._engine = create_engine(sqlite_url, echo=False)
         SQLModel.metadata.create_all(self._engine)
 
-    # TODO: Implement UNIQUE constraint on combo (exchange, market, resolution, startedAt)
     async def store_candles(self, candles: List[Candle]) -> None:
         with Session(self._engine) as session:
             mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
