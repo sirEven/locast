@@ -15,8 +15,6 @@ from locast.candle_storage.sql.table_utility import TableAccess as ta
 class SqliteCandleStorage(CandleStorage):
     def __init__(self, sqlite_url: str = "sqlite:///locast.db") -> None:
         self._engine = create_engine(sqlite_url, echo=False)
-        self._db_candle_mapper = DatabaseCandleMapper(SqliteCandleMapping(self._engine))
-
         SQLModel.metadata.create_all(self._engine)
 
     # TODO: Implement UNIQUE constraint on combo (exchange, market, resolution, startedAt)
@@ -26,11 +24,12 @@ class SqliteCandleStorage(CandleStorage):
     # arhitecture of mappings and mapping funcs, but we'll find another elegant and clean way!!
     async def store_candles(self, candles: List[Candle]) -> None:
         with Session(self._engine) as session:
+            mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
             for candle in candles:
-                session.add(self._db_candle_mapper.to_database_candle(candle))
-                session.commit()
+                session.add(mapper.to_database_candle(candle))
+            session.commit()
 
-    # TODO: See if we can get rid of id lookups as well here. WIP
+    # WIP: See if we can get rid of id lookups as well here. WIP
     async def retrieve_candles(
         self,
         exchange: Exchange,
@@ -47,7 +46,5 @@ class SqliteCandleStorage(CandleStorage):
             return self._to_candles(list(results.all()))
 
     def _to_candles(self, database_candles: List[SqliteCandle]) -> List[Candle]:
-        return [
-            self._db_candle_mapper.to_candle(sqlite_candle)
-            for sqlite_candle in database_candles
-        ]
+        mapper = DatabaseCandleMapper(SqliteCandleMapping())
+        return [mapper.to_candle(sqlite_candle) for sqlite_candle in database_candles]

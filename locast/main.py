@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import List
 
 from sir_utilities.date_time import string_to_datetime
@@ -19,7 +20,7 @@ async def main() -> None:
     resolution = DydxResolution.ONE_MINUTE.seconds
     market = "ETH-USD"
     start_str = "2024-01-01T00:00:00+00:00"
-    end_str = "2024-01-02T00:00:00+00:00"
+    end_str = "2024-01-08T00:00:00+00:00"
 
     start = string_to_datetime(start_str)
     end = string_to_datetime(end_str)
@@ -40,14 +41,17 @@ async def main() -> None:
 
     candle_storage = SqliteCandleStorage()
 
+    start_time = time.time()
     await candle_storage.store_candles(candles)
+    print(f"STORING DONE ({round(time.time()-start_time,2)} seconds).")
 
+    start_time = time.time()
     retrieved_candles = await candle_storage.retrieve_candles(
         exchange,
         market,
         resolution,
     )
-
+    print(f"RETRIEVING DONE ({round(time.time()-start_time,2)} seconds).")
     if len(retrieved_candles) > 0:
         print(
             f"Candles stored from {retrieved_candles[-1].started_at}, to: {retrieved_candles[0].started_at}, Amount: {len(retrieved_candles)}."
