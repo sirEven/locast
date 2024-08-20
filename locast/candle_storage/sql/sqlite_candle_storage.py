@@ -20,12 +20,17 @@ class SqliteCandleStorage(CandleStorage):
         SQLModel.metadata.create_all(self._engine)
 
     # TODO: Implement UNIQUE constraint on combo (exchange, market, resolution, startedAt)
+    # WIP: a) session.commit() happens for every single candle, which is crazy (Not sure how to solve)
+    #      b) inside the mapping, we query the db for 1) sql exchange, 2) sql market, and 3) sql resolution for EVERY SINGLE candle,
+    # which is also crazy - we should have some sort of cache per storing session where we only query them once. -> This will overthrow the current
+    # arhitecture of mappings and mapping funcs, but we'll find another elegant and clean way!!
     async def store_candles(self, candles: List[Candle]) -> None:
         with Session(self._engine) as session:
             for candle in candles:
                 session.add(self._db_candle_mapper.to_database_candle(candle))
                 session.commit()
 
+    # TODO: See if we can get rid of id lookups as well here. WIP
     async def retrieve_candles(
         self,
         exchange: Exchange,

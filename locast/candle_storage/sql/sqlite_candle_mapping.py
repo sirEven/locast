@@ -19,15 +19,6 @@ class SqliteCandleMapping(DatabaseCandleMapping):
         self._engine = engine
 
     def to_candle(self, database_candle: SqliteCandle) -> Candle:
-        # with Session(self._engine) as session:
-        #     exchange = ta.get_exchange(database_candle.exchange_id, session)
-        #     market = ta.get_market(database_candle.market_id, session)
-        #     resolution = ta.get_resolution(database_candle.resolution_id, session)
-
-        # assert exchange, "Exchange must be set in the database."
-        # assert market, "Market must be set in the database."
-        # assert resolution, "Resolution must be set in the database."
-
         return Candle(
             id=database_candle.id,
             exchange=database_candle.exchange.exchange,
