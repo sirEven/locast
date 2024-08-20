@@ -1,10 +1,8 @@
 from enum import Enum
-from logging import Logger
-from typing import List, Set, Tuple, Type, TypeVar, Union
+from typing import List, TypeVar
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from locast.candle.candle import Candle
-from locast.candle.exchange import Exchange
 from locast.candle.resolution import Seconds
 
 EnumType = TypeVar("EnumType", bound=Enum)
@@ -114,41 +112,6 @@ class CandleUtility:
         raise AssertionError(f"{msg} {mismatch}")
 
     @classmethod
-    def cluster_id_from_candle(cls, candle: Candle) -> str:
-        exchange = candle.exchange
-        market = candle.market
-        resolution = candle.resolution
-
-        return cls._concat_id(exchange, market, resolution)
-
-    @classmethod
-    def cluster_id_from_details(
-        cls,
-        exchange: Exchange,
-        market: str,
-        resolution: Seconds,
-    ) -> str:
-        return cls._concat_id(exchange, market, resolution)
-
-    @classmethod
-    def details_from_cluster_id(cls, cluster_id: str) -> Tuple[Exchange, str, Seconds]:
-        details_str = cluster_id.split("_", maxsplit=2)
-        exchange_str = details_str[0]
-        market_str = details_str[1]
-        res_str = details_str[2]
-
-        exchange: Exchange | None = cls._find_enum_entry_by_value(
-            exchange_str, Exchange
-        )
-        resolution: Seconds | None = cls._find_enum_entry_by_name(res_str, Seconds)
-        assert exchange and resolution, f"Exchagne or resolution unkown ({__name__})."
-        return (exchange, market_str, resolution)
-
-    @classmethod
-    def _concat_id(cls, exchange: Exchange, market: str, resolution: Seconds) -> str:
-        return f"{exchange.value}_{market}_{resolution.name}"
-
-    @classmethod
     def assert_chronologic_order(cls, candles: List[Candle]) -> None:
         # All date diffs == 1 res (no gaps, no duplicates, right order)
         assert candles
@@ -173,51 +136,3 @@ class CandleUtility:
 
         range_seconds = (end_date - start_date).total_seconds()
         return int(range_seconds / resolution)
-
-    @classmethod
-    def remove_duplicates(
-        cls,
-        candles: List[Candle],
-        logger: Logger,
-    ) -> List[Candle]:
-        # start = time.time()
-        # logger.debug("Start removing duplicates")
-        seen: Set[datetime] = set()
-        unique_candles: List[Candle] = []
-        double_count = 0
-
-        for candle in candles:
-            if candle.started_at not in seen:
-                unique_candles.append(candle)
-                seen.add(candle.started_at)
-            else:
-                double_count += 1
-
-        # elapsed = round(time.time() - start, 2)
-        # logger.debug(f"Finished removing {double_count} duplicates ({elapsed} sec)")
-        return unique_candles
-
-    @classmethod
-    def _find_enum_entry_by_value(
-        cls, value: str, enum: Type[EnumType]
-    ) -> Union[EnumType, None]:
-        enum_entry: Union[EnumType, None] = next(
-            (enum_member for enum_member in enum if enum_member.value == value),
-            None,
-        )
-        return enum_entry
-
-    @classmethod
-    def _find_enum_entry_by_name(
-        cls, name: str, enum: Type[EnumType]
-    ) -> Union[EnumType, None]:
-        enum_entry: Union[EnumType, None] = next(
-            (enum_member for enum_member in enum if enum_member.name == name), None
-        )
-        return enum_entry
-
-
-# @classmethod
-# def date_is_in(cls, candles: List[Candle], date: datetime) -> bool:
-#     candle_started_at_set = {candle.started_at for candle in candles}
-#     return date in candle_started_at_set

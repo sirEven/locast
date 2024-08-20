@@ -4,6 +4,8 @@ from sir_utilities.date_time import now_utc_iso
 
 from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as uc
+
+# sourcery skip: dont-import-test-modules
 from tests.conftest import dummy_candle
 
 
