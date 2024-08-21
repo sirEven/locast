@@ -6,20 +6,9 @@ from sir_utilities.date_time import datetime_to_string, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 
+from tests.helper.candle_mockery.mock_dydx_candle_dicts import dydx_v4_candle_dict
 
-base_dict: Dict[str, Any] = {
-    "startedAt": "2024-05-06T17:24:00.000Z",
-    "ticker": "LINK-USD",
-    "resolution": "1MIN",
-    "low": "14.688",
-    "high": "14.688",
-    "open": "14.688",
-    "close": "14.688",
-    "baseTokenVolume": "0",
-    "usdVolume": "0",
-    "trades": 0,
-    "startingOpenInterest": "11132",
-}
+base_dict = dydx_v4_candle_dict
 
 
 def replace_date(
