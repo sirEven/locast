@@ -6,9 +6,7 @@ from sir_utilities.date_time import datetime_to_string, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 
-from tests.helper.candle_mockery.mock_dydx_candle_dicts import dydx_v4_candle_dict
-
-base_dict = dydx_v4_candle_dict
+from tests.helper.candle_mockery.dydx_candle_dicts import copy_dydx_v4_base_candle_dict
 
 
 def replace_date(
@@ -39,15 +37,12 @@ def mock_dydx_v4_candle_dict_batch(
     Args:
         market (str): The market for which to mock candles.
         resolution (str): The resolution of the candles.
-        from_iso (Optional[str], optional): The start date of the candle range in ISO format. Defaults to None.
-        to_iso (Optional[str], optional): The end date of the candle range in ISO format. Defaults to None.
-        limit (Optional[int], optional): The maximum number of candles to retrieve. Defaults to None.
+        from_iso (str): The start date of the candle range in ISO format. Defaults to None.
+        to_iso (str): The end date of the candle range in ISO format. Defaults to None.
+        limit (int): The maximum number of candles to retrieve. Defaults to None.
 
     Returns:
         Dict[str, Any]: A dictionary containing a list of candle dictionaries.
-
-    Raises:
-        AssertionError: If to_iso or from_iso is not provided when mocking candles.
 
     Note:
         1) Before the first iteration we always add the first candle to the (then empty) batch in order to
@@ -64,14 +59,14 @@ def mock_dydx_v4_candle_dict_batch(
         5) V4 TESTNET backend responds in batch sizes of 100 candle dicts.
     """
 
-    temp_candle = base_dict
+    temp_candle = copy_dydx_v4_base_candle_dict()
     temp_candle = replace_date(
         temp_candle,
         subtract_resolution(to_iso, resolution),
     )
-
     temp_candle["resolution"] = resolution
     temp_candle["ticker"] = market
+
     candle_dicts_batch: List[Dict[str, Any]] = [temp_candle]
 
     amount = min(

@@ -4,14 +4,14 @@ from sir_utilities.date_time import now_utc_iso
 
 from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as uc
+from locast.candle.exchange import Exchange
+from tests.helper.candle_mockery.mock_candle import mock_candle
 
-# sourcery skip: dont-import-test-modules
-from tests.conftest import dummy_candle
 
-
-def test_is_newest_valid_candles_returns_true(dummy_candle: Candle) -> None:
+def test_is_newest_valid_candles_returns_true() -> None:
     # given
-    candle = dummy_candle
+    candle = mock_candle(Exchange.DYDX_V4)
+    candle.started_at = now_utc_iso()
     newest_valid_date = uc.subtract_one_resolution(
         uc.norm_date(now_utc_iso(), candle.resolution),
         candle.resolution,
@@ -24,9 +24,9 @@ def test_is_newest_valid_candles_returns_true(dummy_candle: Candle) -> None:
     assert uc.is_newest_valid_candle(candle)
 
 
-def test_is_newest_valid_candles_returns_false(dummy_candle: Candle) -> None:
+def test_is_newest_valid_candles_returns_false() -> None:
     # given
-    candle = dummy_candle
+    candle = mock_candle(Exchange.DYDX_V4)
     newest_valid_date = uc.subtract_one_resolution(
         uc.norm_date(now_utc_iso(), candle.resolution),
         candle.resolution,
@@ -83,7 +83,8 @@ def test_assert_candle_unity_returns_false(
         uc.assert_candle_unity(candles)
 
 
-@pytest.mark.parametrize("candles", [[], [dummy_candle]])
+# Here we test behavior (returnin None) when 0 or 1 candles are passed
+@pytest.mark.parametrize("candles", [[], [mock_candle(Exchange.DYDX_V4)]])
 def test_assert_candle_unity_does_not_raise(candles: List[Candle]) -> None:
     # given
     too_few_candles = candles

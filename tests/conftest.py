@@ -1,16 +1,13 @@
-from decimal import Decimal
 from typing import AsyncGenerator, Generator
 import pytest
 import pytest_asyncio
 
-from sir_utilities.date_time import now_utc_iso, string_to_datetime
+from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.candle import Candle
 from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.dydx.dydx_resolution import DydxResolution
-from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
-from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
     DydxV4CandleFetcher,
@@ -36,58 +33,16 @@ MAINNET = make_mainnet(
 
 
 @pytest.fixture
-def eth_usd() -> str:
-    return "ETH-USD"
-
-
-@pytest.fixture
-def btc_usd() -> str:
-    return "BTC-USD"
-
-
-@pytest.fixture
-def link_usd() -> str:
-    return "LINK-USD"
-
-
-@pytest.fixture
-def one_min() -> ResolutionDetail:
-    return DydxResolution.ONE_MINUTE
-
-
-@pytest.fixture
-def dummy_candle() -> Generator[Candle, None, None]:
-    yield Candle(
-        None,
-        Exchange.DYDX_V4,
-        "ETH-USD",
-        DydxResolution.ONE_MINUTE.seconds,
-        now_utc_iso(),
-        Decimal("100"),
-        Decimal("100"),
-        Decimal("100"),
-        Decimal("100"),
-        Decimal("100"),
-        10,
-        Decimal("100"),
-        Decimal("100"),
-    )
-
-
-@pytest.fixture
 def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
     start_str = "2024-01-01T00:00:00+00:00"
-    end_str = "2024-01-05T00:00:00+00:00"
+    end_str = "2024-01-02T00:00:00+00:00"
     market = "ETH-USD"
-    resolution = DydxResolution.ONE_MINUTE.seconds
-
-    start_str = "2024-01-01T00:00:00+00:00"
-    end_str = "2024-01-05T00:00:00+00:00"
+    resolution = DydxResolution.ONE_MINUTE
     start = string_to_datetime(start_str)
     end = string_to_datetime(end_str)
-    amount = cu.amount_of_candles_in_range(start, end, resolution)
+    amount = cu.amount_of_candles_in_range(start, end, resolution.seconds)
     eth_dicts = mock_dydx_v4_candle_dict_batch(
-        DydxResolution.ONE_MINUTE.notation,
+        resolution.notation,
         market,
         start_str,
         end_str,
@@ -98,12 +53,11 @@ def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_live_candle(
-    eth_usd: str,
-    btc_usd: str,
-    one_min: ResolutionDetail,
-) -> AsyncGenerator[DydxV4LiveCandle, None]:
-    markets_per_resolution = {one_min.notation: [eth_usd, btc_usd]}
+async def dydx_v4_live_candle() -> AsyncGenerator[DydxV4LiveCandle, None]:
+    eth_usd = "ETH-USD"
+    btc_usd = "BTC-USD"
+    one_min = DydxResolution.ONE_MINUTE.notation
+    markets_per_resolution = {one_min: [eth_usd, btc_usd]}
     live_candle = DydxV4LiveCandle(
         host_url=TESTNET.websocket_indexer,
         markets_per_resolution=markets_per_resolution,
