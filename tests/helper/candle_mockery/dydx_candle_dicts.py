@@ -1,43 +1,38 @@
 from copy import copy
 from typing import Any, Dict
 
+from tests.helper.candle_mockery.base_values import copy_base_values
 
-STARTED_AT = "2024-05-06T17:24:00.000Z"
-TICKER = "LINK-USD"
-RESOLUTION = "1MIN"
-PRICE = "14.688"
-BASE_TOKEN_VOLUME = "0"
-USD_VOLUME = "0"
-TRADES = 0
-STARTING_OPEN_INTEREST = "11132"
+
+bv = copy_base_values()
 
 dydx_v4_candle_dict: Dict[str, Any] = {
-    "startedAt": STARTED_AT,
-    "ticker": TICKER,
-    "resolution": RESOLUTION,
-    "low": PRICE,
-    "high": PRICE,
-    "open": PRICE,
-    "close": PRICE,
-    "baseTokenVolume": BASE_TOKEN_VOLUME,
-    "usdVolume": USD_VOLUME,
-    "trades": TRADES,
-    "startingOpenInterest": STARTING_OPEN_INTEREST,
+    "startedAt": bv["STARTED_AT"],
+    "ticker": bv["TICKER"],
+    "resolution": bv["RESOLUTION"],
+    "low": bv["PRICE"],
+    "high": bv["PRICE"],
+    "open": bv["PRICE"],
+    "close": bv["PRICE"],
+    "baseTokenVolume": bv["BASE_TOKEN_VOLUME"],
+    "usdVolume": bv["USD_VOLUME"],
+    "trades": bv["TRADES"],
+    "startingOpenInterest": bv["STARTING_OPEN_INTEREST"],
 }
 
 
 dydx_v3_candle_dict: Dict[str, Any] = {
-    "startedAt": STARTED_AT,
-    "market": TICKER,
-    "resolution": RESOLUTION,
-    "low": PRICE,
-    "high": PRICE,
-    "open": PRICE,
-    "close": PRICE,
-    "baseTokenVolume": BASE_TOKEN_VOLUME,
-    "usdVolume": USD_VOLUME,
-    "trades": TRADES,
-    "startingOpenInterest": STARTING_OPEN_INTEREST,
+    "startedAt": bv["STARTED_AT"],
+    "market": bv["TICKER"],
+    "resolution": bv["RESOLUTION"],
+    "low": bv["PRICE"],
+    "high": bv["PRICE"],
+    "open": bv["PRICE"],
+    "close": bv["PRICE"],
+    "baseTokenVolume": bv["BASE_TOKEN_VOLUME"],
+    "usdVolume": bv["USD_VOLUME"],
+    "trades": bv["TRADES"],
+    "startingOpenInterest": bv["STARTING_OPEN_INTEREST"],
 }
 
 

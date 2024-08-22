@@ -6,31 +6,23 @@ from locast.candle.candle import Candle
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
 
-from tests.helper.candle_mockery.dydx_candle_dicts import (
-    STARTED_AT,
-    TICKER,
-    RESOLUTION,
-    PRICE,
-    BASE_TOKEN_VOLUME,
-    USD_VOLUME,
-    TRADES,
-    STARTING_OPEN_INTEREST,
-)
+from tests.helper.candle_mockery.base_values import copy_base_values
 
 
 def mock_candle(exchange: Exchange) -> Candle:
+    bv = copy_base_values()
     return Candle(
         None,
         exchange,
-        TICKER,
-        DydxResolution.notation_to_seconds(RESOLUTION),
-        string_to_datetime(STARTED_AT),
-        Decimal(PRICE),
-        Decimal(PRICE),
-        Decimal(PRICE),
-        Decimal(PRICE),
-        Decimal(BASE_TOKEN_VOLUME),
-        TRADES,
-        Decimal(USD_VOLUME),
-        Decimal(STARTING_OPEN_INTEREST),
+        bv["TICKER"],
+        DydxResolution.notation_to_seconds(bv["RESOLUTION"]),
+        string_to_datetime(bv["STARTED_AT"]),
+        Decimal(bv["PRICE"]),
+        Decimal(bv["PRICE"]),
+        Decimal(bv["PRICE"]),
+        Decimal(bv["PRICE"]),
+        Decimal(bv["BASE_TOKEN_VOLUME"]),
+        bv["TRADES"],
+        Decimal(bv["USD_VOLUME"]),
+        Decimal(bv["STARTING_OPEN_INTEREST"]),
     )
