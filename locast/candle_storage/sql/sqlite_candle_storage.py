@@ -1,5 +1,6 @@
 from typing import List
-from sqlmodel import SQLModel, Session, create_engine, select
+from sqlalchemy import Engine
+from sqlmodel import SQLModel, Session, select
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
@@ -9,12 +10,12 @@ from locast.candle_storage.database_candle_mapper import DatabaseCandleMapper
 from locast.candle_storage.sql.sqlite_candle_mapping import SqliteCandleMapping
 from locast.candle_storage.sql.tables import SqliteCandle
 
-from locast.candle_storage.sql.table_utility import TableAccess as ta
+from locast.candle_storage.sql.table_utility import TableUtility as tu
 
 
 class SqliteCandleStorage(CandleStorage):
-    def __init__(self, sqlite_url: str = "sqlite:///locast.db") -> None:
-        self._engine = create_engine(sqlite_url, echo=False)
+    def __init__(self, engine: Engine) -> None:
+        self._engine = engine
         SQLModel.metadata.create_all(self._engine)
 
     async def store_candles(self, candles: List[Candle]) -> None:
@@ -31,9 +32,9 @@ class SqliteCandleStorage(CandleStorage):
         resolution: Seconds,
     ) -> List[Candle]:
         with Session(self._engine) as session:
-            sql_exchange = ta.lookup_sql_exchange(exchange, session)
-            sql_market = ta.lookup_or_create_sql_market(market, session)
-            sql_resolution = ta.lookup_or_create_sql_resolution(resolution, session)
+            sql_exchange = tu.lookup_sql_exchange(exchange, session)
+            sql_market = tu.lookup_or_create_sql_market(market, session)
+            sql_resolution = tu.lookup_or_create_sql_resolution(resolution, session)
 
             assert sql_exchange, f"Exchange {exchange} not found in database."
             assert sql_market, f"Market {market} not found in database."

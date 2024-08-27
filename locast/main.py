@@ -3,6 +3,7 @@ import time
 from typing import List
 
 from sir_utilities.date_time import string_to_datetime
+from sqlalchemy import create_engine
 
 from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as cu
@@ -40,7 +41,8 @@ async def main() -> None:
     # print(f"Expected Amount: {amount}.")
     print(f"Mocked Amount: {len(candles)}.")
 
-    candle_storage = SqliteCandleStorage()
+    engine = create_engine("sqlite:///locast.db", echo=False)
+    candle_storage = SqliteCandleStorage(engine)
 
     start_time = time.time()
     await candle_storage.store_candles(candles)

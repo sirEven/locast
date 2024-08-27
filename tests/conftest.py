@@ -2,6 +2,13 @@ from typing import AsyncGenerator, Generator
 import pytest
 import pytest_asyncio
 
+from dydx_v4_client.indexer.rest.indexer_client import IndexerClient  # type: ignore
+from dydx_v4_client.network import TESTNET, make_mainnet  # type: ignore
+
+from sqlmodel import Session
+from sqlmodel.pool import StaticPool
+from sqlalchemy import Engine, create_engine
+
 from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.candle import Candle
@@ -12,12 +19,10 @@ from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
     DydxV4CandleFetcher,
 )
+from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.live_candle.dydx.dydx_live_candle import DydxV4LiveCandle
 
 from locast.candle.candle_utility import CandleUtility as cu
-
-from dydx_v4_client.indexer.rest.indexer_client import IndexerClient  # type: ignore
-from dydx_v4_client.network import TESTNET, make_mainnet  # type: ignore
 
 from tests.helper.candle_mockery.v4_indexer_mock import V4IndexerClientMock
 from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
@@ -83,3 +88,25 @@ async def dydx_v4_candle_fetcher_testnet() -> AsyncGenerator[DydxV4CandleFetcher
 async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxV4CandleFetcher, None]:
     mainnet_client = IndexerClient(MAINNET.rest_indexer)
     yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(mainnet_client))
+
+
+@pytest.fixture
+def sqlite_engine() -> Generator[Engine, None, None]:
+    yield create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
+
+@pytest.fixture
+def sqlite_session(sqlite_engine: Engine) -> Generator[Session, None, None]:
+    with Session(sqlite_engine) as session:
+        yield session
+
+
+@pytest.fixture
+def sqlite_candle_storage_memory(
+    sqlite_engine: Engine,
+) -> Generator[SqliteCandleStorage, None, None]:
+    yield SqliteCandleStorage(sqlite_engine)

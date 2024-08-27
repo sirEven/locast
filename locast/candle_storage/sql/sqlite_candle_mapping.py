@@ -12,7 +12,7 @@ from locast.candle_storage.sql.tables import (
     SqliteResolution,
 )
 
-from locast.candle_storage.sql.table_utility import TableAccess as ta
+from locast.candle_storage.sql.table_utility import TableUtility as tu
 
 
 class SqliteCandleMapping(DatabaseCandleMapping):
@@ -45,17 +45,17 @@ class SqliteCandleMapping(DatabaseCandleMapping):
             and self._sql_market_cache
             and self._sql_resolution_cache
         ):
-            assert self._session, "Session must be provided to map to SqliteCandle"
+            assert self._session, "Session must be provided to map to SqliteCandle."
             with self._session as session:
-                self._sql_exchange_cache = ta.lookup_or_create_sql_exchange(
+                self._sql_exchange_cache = tu.lookup_or_create_sql_exchange(
                     candle.exchange,
                     session,
                 )
-                self._sql_market_cache = ta.lookup_or_create_sql_market(
+                self._sql_market_cache = tu.lookup_or_create_sql_market(
                     candle.market,
                     session,
                 )
-                self._sql_resolution_cache = ta.lookup_or_create_sql_resolution(
+                self._sql_resolution_cache = tu.lookup_or_create_sql_resolution(
                     candle.resolution,
                     session,
                 )
