@@ -1,9 +1,7 @@
-from typing import List
 from datetime import timedelta
 import pytest
 
-from sir_utilities.date_time import now_utc_iso
-
+from sir_utilities.date_time import now_utc_iso, string_to_datetime
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
@@ -11,18 +9,9 @@ from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
     DydxV4CandleFetcher,
 )
-from sir_utilities.date_time import string_to_datetime
 
-amounts: List[int] = [1, 2, 10, 100, 623, 1000, 2500]
-resolutions: List[ResolutionDetail] = [
-    DydxResolution.ONE_MINUTE,
-    DydxResolution.FIVE_MINUTES,
-    DydxResolution.FIFTEEN_MINUTES,
-    DydxResolution.THIRTY_MINUTES,
-    DydxResolution.ONE_HOUR,
-    # DydxResolution.FOUR_HOURS, NOTE: These will be too big for a while...
-    # DydxResolution.ONE_DAY,
-]
+from tests.helper.parametrization.list_of_amounts import amounts
+from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 
 @pytest.mark.parametrize("resolution", resolutions)

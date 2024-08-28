@@ -3,20 +3,24 @@ import pytest
 
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
-from locast.candle.dydx.dydx_resolution import DydxResolution
+from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
     DydxV4CandleFetcher,
 )
 
+from tests.helper.parametrization.list_of_amounts import amounts
+from tests.helper.parametrization.list_of_resolution_details import resolutions
 
-# TODO: Paramaterize same as in integration (extract amounts and resolutions to conftest)
+
+@pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
 async def test_v4_fetch_600_historic_candles(
     mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
+    resolution: ResolutionDetail,
 ) -> None:
     # given
     fetcher = mock_dydx_v4_candle_fetcher
-    res = DydxResolution.ONE_MINUTE
+    res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T10:00:00.000Z")
 
@@ -29,20 +33,24 @@ async def test_v4_fetch_600_historic_candles(
     )
 
     # then
-    assert len(candles) == 600
+    amount = cu.amount_of_candles_in_range(start, end, res.seconds)
+    assert len(candles) == amount
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
-# TODO: Paramaterize same as in integration
+@pytest.mark.parametrize("amount", amounts)
+@pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
     mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
+    amount: int,
+    resolution: ResolutionDetail,
 ) -> None:
     # given
     fetcher = mock_dydx_v4_candle_fetcher
-    res = DydxResolution.ONE_MINUTE
-    amount_back = 5000
+    res = resolution
+    amount_back = amount
     now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
