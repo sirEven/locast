@@ -1,3 +1,4 @@
+from typing import List
 from datetime import timedelta
 import pytest
 
@@ -6,20 +7,33 @@ from sir_utilities.date_time import now_utc_iso
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
+from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
     DydxV4CandleFetcher,
 )
 from sir_utilities.date_time import string_to_datetime
 
+amounts: List[int] = [1, 2, 10, 100, 623, 1000, 2500]
+resolutions: List[ResolutionDetail] = [
+    DydxResolution.ONE_MINUTE,
+    DydxResolution.FIVE_MINUTES,
+    DydxResolution.FIFTEEN_MINUTES,
+    DydxResolution.THIRTY_MINUTES,
+    DydxResolution.ONE_HOUR,
+    # DydxResolution.FOUR_HOURS, NOTE: These will be too big for a while...
+    # DydxResolution.ONE_DAY,
+]
 
-# TODO: Paramaterize with edge case amounts (0, 1, 2, 10, 100, 1000, 10000) as well as resolutions (all of them)
+
+@pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
-async def test_v4_fetch_600_historic_candles_testnet(
+async def test_v4_fetch_range_of_historic_candles_testnet(
     dydx_v4_candle_fetcher_testnet: DydxV4CandleFetcher,
+    resolution: ResolutionDetail,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_testnet
-    res = DydxResolution.ONE_MINUTE
+    res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T10:00:00.000Z")
 
@@ -32,18 +46,21 @@ async def test_v4_fetch_600_historic_candles_testnet(
     )
 
     # then
-    assert len(candles) == 600
+    amount = cu.amount_of_candles_in_range(start, end, res.seconds)
+    assert len(candles) == amount
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
+@pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
-async def test_v4_fetch_600_historic_candles_mainnet(
+async def test_v4_fetch_range_of_historic_candles_mainnet(
     dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
+    resolution: ResolutionDetail,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_mainnet
-    res = DydxResolution.ONE_MINUTE
+    res = resolution
     start = string_to_datetime("2024-06-01T00:00:00.000Z")
     end = string_to_datetime("2024-06-01T10:00:00.000Z")
 
@@ -56,20 +73,24 @@ async def test_v4_fetch_600_historic_candles_mainnet(
     )
 
     # then
-    assert len(candles) == 600
+    amount = cu.amount_of_candles_in_range(start, end, res.seconds)
+    assert len(candles) == amount
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
-# TODO: Paramaterize with edge case amounts (0, 1, 2, 10, 100, 1000, 10000) as well as resolutions (all of them)
+@pytest.mark.parametrize("amount", amounts)
+@pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
     dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
+    amount: int,
+    resolution: ResolutionDetail,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_mainnet
-    res = DydxResolution.ONE_MINUTE
-    amount_back = 24000
+    res = resolution
+    amount_back = amount
     now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
