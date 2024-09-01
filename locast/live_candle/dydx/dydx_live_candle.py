@@ -19,7 +19,7 @@ from dydx_v4_client.indexer.socket.websocket import (  # type: ignore
 )
 
 from locast.candle.candle import Candle
-from locast.candle.exchange import Exchange
+from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.live_candle.live_candle import LiveCandle
 
@@ -34,7 +34,7 @@ class DydxV4LiveCandle(LiveCandle):
     ) -> None:
         self._connection_id: str | None = None
         self._ws = IndexerSocket(host_url, on_message=self.handle_message)  # type: ignore
-        self._exchange = Exchange.DYDX_V4
+        self._mapper = ExchangeCandleMapper(DydxV4CandleMapping())
         self._markets_per_resolution = markets_per_resolution
         self._market_candles: Dict[str, List[Candle]] = {}
         self.subscriptions: Dict[str, bool] = {}
@@ -108,8 +108,7 @@ class DydxV4LiveCandle(LiveCandle):
 
         if message["type"] == "channel_batch_data":
             if candle_dict := message["contents"][0]:
-                new_candle = ExchangeCandleMapper.to_candle(
-                    self._exchange,
+                new_candle = self._mapper.to_candle(
                     candle_dict,
                 )
                 market = new_candle.market
