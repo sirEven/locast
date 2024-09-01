@@ -6,7 +6,7 @@ from locast.candle_storage.sql.table_utility import TableUtility
 
 
 def test_look_up_sql_exchange_returns_none(
-    sqlite_session: Session,
+    sqlite_session_in_memory: Session,
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> None:
     # given a database with empty exchange table
@@ -15,24 +15,24 @@ def test_look_up_sql_exchange_returns_none(
     exchange = Exchange.DYDX_V4
 
     # when
-    sql_exchange = table_utility.lookup_sql_exchange(exchange, sqlite_session)
+    sql_exchange = table_utility.lookup_sql_exchange(exchange, sqlite_session_in_memory)
 
     # then
     assert sql_exchange is None
 
 
 def test_look_up_sql_exchange_returns_correctly(
-    sqlite_session: Session,
+    sqlite_session_in_memory: Session,
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> None:
     # given a database with non-empty exchange table
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
     exchange = Exchange.DYDX_V4
-    table_utility.lookup_or_create_sql_exchange(exchange, sqlite_session)
+    table_utility.lookup_or_create_sql_exchange(exchange, sqlite_session_in_memory)
 
     # when
-    sql_exchange = table_utility.lookup_sql_exchange(exchange, sqlite_session)
+    sql_exchange = table_utility.lookup_sql_exchange(exchange, sqlite_session_in_memory)
 
     # then
     assert sql_exchange is not None
@@ -41,7 +41,7 @@ def test_look_up_sql_exchange_returns_correctly(
 
 
 def test_look_up_sql_market_returns_none(
-    sqlite_session: Session,
+    sqlite_session_in_memory: Session,
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> None:
     # given a database with empty market table
@@ -50,24 +50,24 @@ def test_look_up_sql_market_returns_none(
     market = "ETH-USD"
 
     # when
-    sql_market = table_utility.lookup_sql_market(market, sqlite_session)
+    sql_market = table_utility.lookup_sql_market(market, sqlite_session_in_memory)
 
     # then
     assert sql_market is None
 
 
 def test_look_up_sql_market_returns_correctly(
-    sqlite_session: Session,
+    sqlite_session_in_memory: Session,
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> None:
     # given a database with non-empty market table
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
     market = "ETH-USD"
-    table_utility.lookup_or_create_sql_market(market, sqlite_session)
+    table_utility.lookup_or_create_sql_market(market, sqlite_session_in_memory)
 
     # when
-    sql_market = table_utility.lookup_sql_market(market, sqlite_session)
+    sql_market = table_utility.lookup_sql_market(market, sqlite_session_in_memory)
 
     # then
     assert sql_market is not None
@@ -76,7 +76,7 @@ def test_look_up_sql_market_returns_correctly(
 
 
 def test_look_up_sql_resolution_returns_none(
-    sqlite_session: Session,
+    sqlite_session_in_memory: Session,
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> None:
     # given a database with empty resolution table
@@ -85,24 +85,28 @@ def test_look_up_sql_resolution_returns_none(
     resolution = DydxResolution.ONE_MINUTE.seconds
 
     # when
-    sql_resolution = table_utility.lookup_sql_resolution(resolution, sqlite_session)
+    sql_resolution = table_utility.lookup_sql_resolution(
+        resolution, sqlite_session_in_memory
+    )
 
     # then
     assert sql_resolution is None
 
 
 def test_look_up_sql_resolution_returns_correctly(
-    sqlite_session: Session,
+    sqlite_session_in_memory: Session,
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> None:
     # given a database with non-empty resolution table
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
     resolution = DydxResolution.ONE_MINUTE.seconds
-    table_utility.lookup_or_create_sql_resolution(resolution, sqlite_session)
+    table_utility.lookup_or_create_sql_resolution(resolution, sqlite_session_in_memory)
 
     # when
-    sql_resolution = table_utility.lookup_sql_resolution(resolution, sqlite_session)
+    sql_resolution = table_utility.lookup_sql_resolution(
+        resolution, sqlite_session_in_memory
+    )
 
     # then
     assert sql_resolution is not None

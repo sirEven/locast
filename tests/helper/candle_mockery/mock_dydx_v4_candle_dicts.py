@@ -39,7 +39,7 @@ def mock_dydx_v4_candle_dict_batch(
         resolution (str): The resolution of the candles.
         from_iso (str): The start date of the candle range in ISO format. Defaults to None.
         to_iso (str): The end date of the candle range in ISO format. Defaults to None.
-        limit (int): The maximum number of candles to retrieve. Defaults to None.
+        batch_size (int): The amount of candles to return in this mocked batch.
 
     Returns:
         Dict[str, Any]: A dictionary containing a list of candle dictionaries.

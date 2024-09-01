@@ -91,7 +91,7 @@ async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxV4CandleFetcher
 
 
 @pytest.fixture
-def sqlite_engine() -> Generator[Engine, None, None]:
+def sqlite_engine_in_memory() -> Generator[Engine, None, None]:
     yield create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -100,13 +100,15 @@ def sqlite_engine() -> Generator[Engine, None, None]:
 
 
 @pytest.fixture
-def sqlite_session(sqlite_engine: Engine) -> Generator[Session, None, None]:
-    with Session(sqlite_engine) as session:
+def sqlite_session_in_memory(
+    sqlite_engine_in_memory: Engine,
+) -> Generator[Session, None, None]:
+    with Session(sqlite_engine_in_memory) as session:
         yield session
 
 
 @pytest.fixture
 def sqlite_candle_storage_memory(
-    sqlite_engine: Engine,
+    sqlite_engine_in_memory: Engine,
 ) -> Generator[SqliteCandleStorage, None, None]:
-    yield SqliteCandleStorage(sqlite_engine)
+    yield SqliteCandleStorage(sqlite_engine_in_memory)
