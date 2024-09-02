@@ -7,6 +7,7 @@ from sqlmodel import SQLModel, Session, select
 
 from sir_utilities.date_time import string_to_datetime
 
+from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail, Seconds
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.candle_storage.sql.tables import (
@@ -56,7 +57,6 @@ async def test_store_candles_results_in_correct_storage_state(
     market = "ETH-USD"
 
     candles = mock_dydx_v4_candles(market, res, amount, start_date)
-    print(candles)
 
     # when
     await storage.store_candles(candles)
@@ -66,6 +66,34 @@ async def test_store_candles_results_in_correct_storage_state(
     assert _table_has_amount_of_rows(engine, SqliteExchange, 1)
     assert _table_has_amount_of_rows(engine, SqliteMarket, 1)
     assert _table_has_amount_of_rows(engine, SqliteResolution, 1)
+
+
+@pytest.mark.parametrize("amount", amounts)
+@pytest.mark.asyncio
+async def test_retrieve_candles_results_in_correct_cluster(
+    sqlite_engine_in_memory: Engine,
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+    amount: int,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+    start_date = string_to_datetime("2022-01-01T00:00:00.000Z")
+    market = "ETH-USD"
+
+    candles = mock_dydx_v4_candles(market, res, amount, start_date)
+    await storage.store_candles(candles)
+
+    # when
+    retrieved_candles = await storage.retrieve_candles(exchange, market, res.seconds)
+
+    # then
+    assert len(retrieved_candles) == amount
+    assert retrieved_candles[0].exchange == exchange
+    assert retrieved_candles[0].market == market
+    assert retrieved_candles[0].resolution == res.seconds
 
 
 def _table_exists(engine: Engine, table: Type[SQLModel]) -> bool:
