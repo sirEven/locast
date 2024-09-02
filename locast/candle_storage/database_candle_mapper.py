@@ -1,11 +1,10 @@
-from abc import ABC
 from typing import Any
 
 from locast.candle.candle import Candle
 from locast.candle_storage.database_candle_mapping import DatabaseCandleMapping
 
 
-class DatabaseCandleMapper(ABC):
+class DatabaseCandleMapper:
     """
     Maps candle representations from different database technologies to Candle objects and vice versa.
     """
