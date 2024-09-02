@@ -40,14 +40,17 @@ def test_initialization_creates_all_tables_empty(
     assert _table_is_empty(Session(sqlite_engine_in_memory), table)
 
 
-# store this batch in storage and verify that tables have right amount of rows and correct values (all tables)
 @pytest.mark.parametrize("amount", amounts)
-def test_store_candles_results_in_correct_storage_state(
+@pytest.mark.asyncio
+async def test_store_candles_results_in_correct_storage_state(
+    sqlite_engine_in_memory: Engine,
     sqlite_candle_storage_memory: SqliteCandleStorage,
     amount: int,
 ) -> None:
     # given
+    engine = sqlite_engine_in_memory
     storage = sqlite_candle_storage_memory
+
     res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
     start_date = string_to_datetime("2022-01-01T00:00:00.000Z")
     market = "ETH-USD"
@@ -56,7 +59,13 @@ def test_store_candles_results_in_correct_storage_state(
     print(candles)
 
     # when
-    # WIP: Continue!
+    await storage.store_candles(candles)
+
+    # then
+    assert _table_has_amount_of_rows(engine, SqliteCandle, amount)
+    assert _table_has_amount_of_rows(engine, SqliteExchange, 1)
+    assert _table_has_amount_of_rows(engine, SqliteMarket, 1)
+    assert _table_has_amount_of_rows(engine, SqliteResolution, 1)
 
 
 def _table_exists(engine: Engine, table: Type[SQLModel]) -> bool:
@@ -69,3 +78,14 @@ def _table_is_empty(sqlite_session_in_memory: Session, table: Type[SQLModel]) ->
     statement = select(table)
     result = sqlite_session_in_memory.exec(statement)
     return result.first() is None
+
+
+def _table_has_amount_of_rows(
+    sqlite_engine: Engine,
+    table: Type[SQLModel],
+    amount: int,
+) -> bool:
+    with Session(sqlite_engine) as session:
+        statement = select(table)
+        result = session.exec(statement).all()
+        return amount == len(result)

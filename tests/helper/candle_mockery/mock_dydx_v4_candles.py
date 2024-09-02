@@ -25,6 +25,7 @@ def mock_dydx_v4_candles(
         market,
         datetime_to_string(start_date),
         datetime_to_string(end_date),
+        batch_size=amount,
     )
 
     mapper = ExchangeCandleMapper(DydxV4CandleMapping())
