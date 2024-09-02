@@ -24,6 +24,8 @@ class V4MarketsClientMock(MarketsClient):
         assert to_iso, "to_iso must be provided when mocking candles."
         assert from_iso, "from_iso must be provided when mocking candles."
 
+        assert market.find("-") > 0, f"Invalid market: {market}."
+
         candle_dicts_batch = mock_dydx_v4_candle_dict_batch(
             resolution,
             market,

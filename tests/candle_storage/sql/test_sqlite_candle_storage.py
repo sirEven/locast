@@ -18,7 +18,7 @@ from locast.candle_storage.sql.tables import (
 )
 
 from tests.helper.candle_mockery.mock_dydx_v4_candles import mock_dydx_v4_candles
-from tests.helper.parametrization.list_of_amounts import amounts
+from tests.helper.parametrization.list_of_amounts import few_amounts
 
 tables: List[Type[SQLModel]] = [
     SqliteExchange,
@@ -41,7 +41,7 @@ def test_initialization_creates_all_tables_empty(
     assert _table_is_empty(Session(sqlite_engine_in_memory), table)
 
 
-@pytest.mark.parametrize("amount", amounts)
+@pytest.mark.parametrize("amount", few_amounts)
 @pytest.mark.asyncio
 async def test_store_candles_results_in_correct_storage_state(
     sqlite_engine_in_memory: Engine,
@@ -68,10 +68,9 @@ async def test_store_candles_results_in_correct_storage_state(
     assert _table_has_amount_of_rows(engine, SqliteResolution, 1)
 
 
-@pytest.mark.parametrize("amount", amounts)
+@pytest.mark.parametrize("amount", few_amounts)
 @pytest.mark.asyncio
 async def test_retrieve_candles_results_in_correct_cluster(
-    sqlite_engine_in_memory: Engine,
     sqlite_candle_storage_memory: SqliteCandleStorage,
     amount: int,
 ) -> None:

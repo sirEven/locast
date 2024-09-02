@@ -83,7 +83,7 @@ def test_assert_candle_unity_returns_false(
         uc.assert_candle_unity(candles)
 
 
-# Here we test behavior (returnin None) when 0 or 1 candles are passed
+# Here we test behavior (returning None) when 0 or 1 candles are passed
 @pytest.mark.parametrize("candles", [[], [mock_candle(Exchange.DYDX_V4)]])
 def test_assert_candle_unity_does_not_raise(candles: List[Candle]) -> None:
     # given

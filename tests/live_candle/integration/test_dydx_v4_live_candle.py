@@ -35,3 +35,14 @@ async def test_some_market_candles_are_live_after_unsubscribe(
     # then
     assert live_candle.some_are_live()
     assert not live_candle.all_are_live()
+
+
+# @pytest.mark.asyncio
+# async def test_handle_message_results_in_correct_state(
+#     dydx_v4_live_candle: DydxV4LiveCandle,
+# ) -> None:
+#     # given
+#     live_candle = dydx_v4_live_candle
+
+#     # when
+#     live_candle._

@@ -26,5 +26,6 @@ ipykernel = "^6.29.5"
 
 [tool.coverage.run]
 omit = [
-    "main.py"
+    "main.py",
+    "tests/*",
 ]

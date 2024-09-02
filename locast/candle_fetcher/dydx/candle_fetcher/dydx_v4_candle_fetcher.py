@@ -68,7 +68,7 @@ class DydxV4CandleFetcher(CandleFetcher):
                 temp_end_date = candles[-1].started_at
                 count += 1
         except Exception as e:
-            print(e)
+            raise APIException(market, resolution) from e
 
         return candles
 
@@ -120,3 +120,15 @@ class DydxV4CandleFetcher(CandleFetcher):
             temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, res_sec)
 
         return candles
+
+
+class APIException(Exception):
+    def __init__(
+        self,
+        market: str,
+        resolution: str,
+        message: str | None = None,
+    ) -> None:
+        if message is None:
+            message = f"Error fetching market data for market '{market}' and resolution '{resolution}'."
+        super().__init__(message)

@@ -16,7 +16,7 @@ from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 @pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
-async def test_v4_fetch_range_of_historic_candles_testnet(
+async def test_v4_fetch_range_of_candles_testnet(
     dydx_v4_candle_fetcher_testnet: DydxV4CandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
@@ -43,7 +43,7 @@ async def test_v4_fetch_range_of_historic_candles_testnet(
 
 @pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
-async def test_v4_fetch_range_of_historic_candles_mainnet(
+async def test_v4_fetch_range_of_candles_mainnet(
     dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
@@ -99,6 +99,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
 # NOTE: This test exists only to see, wether the backend is being maintained to sometime include this candle again or not (which I'm sure will not happen).
 # Order violated from Candles None (2024-07-25 06:52:00+00:00) to None (2024-07-25 06:54:00+00:00)
 # Meaning: The (mainnet!) backend is actually missing one candle (which startedAt 2024-07-25 06:53:00+00:00)
+@pytest.mark.skip(reason="This is only to check if dYdX fixed their missing candle.")
 @pytest.mark.asyncio
 async def test_candle_error_at_2024_07_25_06_52(
     dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,

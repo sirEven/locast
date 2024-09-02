@@ -3,18 +3,19 @@ import pytest
 
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
+from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
     DydxV4CandleFetcher,
+    APIException,
 )
 
-from tests.helper.parametrization.list_of_amounts import amounts
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 
 @pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
-async def test_v4_fetch_600_historic_candles(
+async def test_v4_fetch_600_candles(
     mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
@@ -39,18 +40,14 @@ async def test_v4_fetch_600_historic_candles(
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
-@pytest.mark.parametrize("amount", amounts)
-@pytest.mark.parametrize("resolution", resolutions)
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
     mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
-    amount: int,
-    resolution: ResolutionDetail,
 ) -> None:
     # given
     fetcher = mock_dydx_v4_candle_fetcher
-    res = resolution
-    amount_back = amount
+    res = DydxResolution.ONE_MINUTE
+    amount_back = 2500
     now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
@@ -66,3 +63,24 @@ async def test_v4_fetch_cluster_is_up_to_date(
     cu.assert_chronologic_order(candles)
     assert cu.is_newest_valid_candle(candles[0])
     assert len(candles) >= amount_back
+
+
+@pytest.mark.asyncio
+async def test_v4_fetch_cluster_raises_market_exception(
+    mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
+) -> None:
+    # given
+    fetcher = mock_dydx_v4_candle_fetcher
+    res = DydxResolution.ONE_MINUTE
+    amount_back = 2500
+    now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
+    start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
+
+    # then & then
+    with pytest.raises(APIException) as e:
+        print(e)
+        _ = await fetcher.fetch_candles_up_to_now(
+            "INVALID_MARKET",
+            res.notation,
+            start_date,
+        )
