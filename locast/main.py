@@ -66,9 +66,13 @@ async def main() -> None:
     else:
         print(f"Candles: {retrieved_candles}")
 
+    start_time = time.time()
     cluster_info = await candle_storage.get_cluster_info(exchange, market, resolution)
+    print(f"Time to get cluster info: ({round(time.time()-start_time,2)} seconds).")
+
     if cluster_info:
-        print(cluster_info)
+        print(f"Tail started at: {cluster_info.tail.started_at}.")
+        print(f"Head started at: {cluster_info.head.started_at}.")
 
 
 asyncio.run(main())
