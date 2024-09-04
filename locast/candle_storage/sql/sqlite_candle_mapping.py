@@ -1,7 +1,6 @@
 from decimal import Decimal
-
 from sqlmodel import Session
-
+from datetime import timezone
 
 from locast.candle.candle import Candle
 from locast.candle_storage.database_candle_mapping import DatabaseCandleMapping
@@ -28,7 +27,7 @@ class SqliteCandleMapping(DatabaseCandleMapping):
             exchange=database_candle.exchange.exchange,
             market=database_candle.market.market,
             resolution=database_candle.resolution.resolution,
-            started_at=database_candle.started_at,
+            started_at=database_candle.started_at.replace(tzinfo=timezone.utc),
             open=Decimal(database_candle.open),
             high=Decimal(database_candle.high),
             low=Decimal(database_candle.low),
@@ -39,6 +38,7 @@ class SqliteCandleMapping(DatabaseCandleMapping):
             starting_open_interest=Decimal(database_candle.starting_open_interest),
         )
 
+    # NOTE: lookup_or_insert funcs are only ever used here, before WRITING to database
     def to_database_candle(self, candle: Candle) -> SqliteCandle:
         if not (
             self._sql_exchange_cache
@@ -47,15 +47,15 @@ class SqliteCandleMapping(DatabaseCandleMapping):
         ):
             assert self._session, "Session must be provided to map to SqliteCandle."
             with self._session as session:
-                self._sql_exchange_cache = tu.lookup_or_create_sql_exchange(
+                self._sql_exchange_cache = tu.lookup_or_insert_sqlite_exchange(
                     candle.exchange,
                     session,
                 )
-                self._sql_market_cache = tu.lookup_or_create_sql_market(
+                self._sql_market_cache = tu.lookup_or_insert_sqlite_market(
                     candle.market,
                     session,
                 )
-                self._sql_resolution_cache = tu.lookup_or_create_sql_resolution(
+                self._sql_resolution_cache = tu.lookup_or_insert_sqlite_resolution(
                     candle.resolution,
                     session,
                 )

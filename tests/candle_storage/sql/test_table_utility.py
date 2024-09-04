@@ -15,7 +15,9 @@ def test_look_up_sql_exchange_returns_none(
     exchange = Exchange.DYDX_V4
 
     # when
-    sql_exchange = table_utility.lookup_sql_exchange(exchange, sqlite_session_in_memory)
+    sql_exchange = table_utility.lookup_sqlite_exchange(
+        exchange, sqlite_session_in_memory
+    )
 
     # then
     assert sql_exchange is None
@@ -29,10 +31,12 @@ def test_look_up_sql_exchange_returns_correctly(
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
     exchange = Exchange.DYDX_V4
-    table_utility.lookup_or_create_sql_exchange(exchange, sqlite_session_in_memory)
+    table_utility.lookup_or_insert_sqlite_exchange(exchange, sqlite_session_in_memory)
 
     # when
-    sql_exchange = table_utility.lookup_sql_exchange(exchange, sqlite_session_in_memory)
+    sql_exchange = table_utility.lookup_sqlite_exchange(
+        exchange, sqlite_session_in_memory
+    )
 
     # then
     assert sql_exchange is not None
@@ -50,7 +54,7 @@ def test_look_up_sql_market_returns_none(
     market = "ETH-USD"
 
     # when
-    sql_market = table_utility.lookup_sql_market(market, sqlite_session_in_memory)
+    sql_market = table_utility.lookup_sqlite_market(market, sqlite_session_in_memory)
 
     # then
     assert sql_market is None
@@ -64,10 +68,10 @@ def test_look_up_sql_market_returns_correctly(
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
     market = "ETH-USD"
-    table_utility.lookup_or_create_sql_market(market, sqlite_session_in_memory)
+    table_utility.lookup_or_insert_sqlite_market(market, sqlite_session_in_memory)
 
     # when
-    sql_market = table_utility.lookup_sql_market(market, sqlite_session_in_memory)
+    sql_market = table_utility.lookup_sqlite_market(market, sqlite_session_in_memory)
 
     # then
     assert sql_market is not None
@@ -85,7 +89,7 @@ def test_look_up_sql_resolution_returns_none(
     resolution = DydxResolution.ONE_MINUTE.seconds
 
     # when
-    sql_resolution = table_utility.lookup_sql_resolution(
+    sql_resolution = table_utility.lookup_sqlite_resolution(
         resolution, sqlite_session_in_memory
     )
 
@@ -101,10 +105,12 @@ def test_look_up_sql_resolution_returns_correctly(
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
     resolution = DydxResolution.ONE_MINUTE.seconds
-    table_utility.lookup_or_create_sql_resolution(resolution, sqlite_session_in_memory)
+    table_utility.lookup_or_insert_sqlite_resolution(
+        resolution, sqlite_session_in_memory
+    )
 
     # when
-    sql_resolution = table_utility.lookup_sql_resolution(
+    sql_resolution = table_utility.lookup_sqlite_resolution(
         resolution, sqlite_session_in_memory
     )
 

@@ -66,5 +66,9 @@ async def main() -> None:
     else:
         print(f"Candles: {retrieved_candles}")
 
+    cluster_info = await candle_storage.get_cluster_info(exchange, market, resolution)
+    if cluster_info:
+        print(cluster_info)
+
 
 asyncio.run(main())

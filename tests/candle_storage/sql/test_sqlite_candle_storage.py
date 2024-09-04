@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import List, Type
 import pytest
 from sqlalchemy import Engine, MetaData
@@ -7,6 +8,7 @@ from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail, Seconds
+from locast.candle_storage.sql.table_utility import TableUtility as tu
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.candle_storage.sql.tables import (
     SqliteCandle,
@@ -15,7 +17,14 @@ from locast.candle_storage.sql.tables import (
     SqliteResolution,
 )
 
-from tests.helper.candle_mockery.mock_dydx_v4_candles import mock_dydx_v4_candles
+from locast.candle.candle_utility import CandleUtility as cu
+
+
+from tests.helper.candle_mockery.mock_dydx_v4_candles import (
+    mock_dydx_v4_candle_range,
+    mock_dydx_v4_candles,
+)
+
 from tests.helper.parametrization.list_of_amounts import few_amounts
 
 tables: List[Type[SQLModel]] = [
@@ -91,6 +100,125 @@ async def test_retrieve_candles_results_in_correct_cluster(
     assert retrieved_candles[0].exchange == exchange
     assert retrieved_candles[0].market == market
     assert retrieved_candles[0].resolution == res.seconds
+
+
+@pytest.mark.asyncio
+async def test_get_cluster_head_results_in_newest_candle(
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+
+    start_date = string_to_datetime("2024-01-01T00:00:00.000Z")
+    end_date = string_to_datetime("2024-01-01T00:05:00.000Z")
+
+    candles = mock_dydx_v4_candle_range(market, res, start_date, end_date)
+    await storage.store_candles(candles)
+
+    # when
+    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+
+    # then
+    expected_started_at = end_date - timedelta(seconds=res.seconds)
+    assert cluster_info is not None
+    assert cluster_info.head.started_at == expected_started_at
+
+
+@pytest.mark.asyncio
+async def test_get_cluster_head_results_in_None(
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+
+    # when
+    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+
+    # then
+    assert cluster_info is None
+
+
+@pytest.mark.asyncio
+async def test_get_cluster_head_when_foreign_tables_exist_results_in_None(
+    sqlite_session_in_memory: Session,
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+
+    tu.lookup_or_insert_sqlite_exchange(exchange, sqlite_session_in_memory)
+    tu.lookup_or_insert_sqlite_market(market, sqlite_session_in_memory)
+    tu.lookup_or_insert_sqlite_resolution(res.seconds, sqlite_session_in_memory)
+
+    # when
+    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+
+    # then
+    assert cluster_info is None
+
+
+@pytest.mark.asyncio
+async def test_get_cluster_info_results_in_correct_info(
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+
+    start_date = string_to_datetime("2024-01-01T00:00:00.000Z")
+    end_date = string_to_datetime("2024-01-01T00:05:00.000Z")
+
+    candles = mock_dydx_v4_candle_range(market, res, start_date, end_date)
+    candles[0].started_at = cu.normalized_now(res.seconds) - timedelta(
+        seconds=res.seconds
+    )
+    await storage.store_candles(candles)
+
+    # when
+    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+
+    # then
+    expected_head = candles[0]
+    expected_tail = candles[-1]
+    assert cluster_info is not None
+    assert cluster_info.head.started_at == expected_head.started_at
+    assert cluster_info.tail.started_at == expected_tail.started_at
+    assert cluster_info.amount == len(candles)
+    assert cluster_info.is_uptodate
+
+
+@pytest.mark.asyncio
+async def test_get_cluster_info_results_in_none(
+    sqlite_session_in_memory: Session,
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+
+    # when
+    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+
+    # then
+    assert cluster_info is None
 
 
 def _table_exists(engine: Engine, table: Type[SQLModel]) -> bool:

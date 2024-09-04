@@ -13,30 +13,31 @@ from locast.candle_storage.sql.tables import (
 
 class TableUtility:
     @staticmethod
-    def lookup_sql_exchange(
+    def lookup_sqlite_exchange(
         exchange: Exchange,
         session: Session,
     ) -> SqliteExchange | None:
         return session.exec(select(SqliteExchange).filter_by(exchange=exchange)).first()
 
     @staticmethod
-    def lookup_sql_market(market: str, session: Session) -> SqliteMarket | None:
+    def lookup_sqlite_market(market: str, session: Session) -> SqliteMarket | None:
         return session.exec(select(SqliteMarket).filter_by(market=market)).first()
 
     @staticmethod
-    def lookup_sql_resolution(
-        resolution: Seconds, session: Session
+    def lookup_sqlite_resolution(
+        resolution: Seconds,
+        session: Session,
     ) -> SqliteResolution | None:
         return session.exec(
             select(SqliteResolution).filter_by(resolution=resolution)
         ).first()
 
     @staticmethod
-    def lookup_or_create_sql_exchange(
+    def lookup_or_insert_sqlite_exchange(
         exchange: Exchange,
         session: Session,
     ) -> SqliteExchange:
-        sql_exchange = TableUtility.lookup_sql_exchange(
+        sql_exchange = TableUtility.lookup_sqlite_exchange(
             exchange=exchange,
             session=session,
         )
@@ -48,11 +49,11 @@ class TableUtility:
         return sql_exchange
 
     @staticmethod
-    def lookup_or_create_sql_market(
+    def lookup_or_insert_sqlite_market(
         market: str,
         session: Session,
     ) -> SqliteMarket:
-        sql_market = TableUtility.lookup_sql_market(market=market, session=session)
+        sql_market = TableUtility.lookup_sqlite_market(market=market, session=session)
 
         if not sql_market:
             sql_market = SqliteMarket(market=market)
@@ -61,10 +62,11 @@ class TableUtility:
         return sql_market
 
     @staticmethod
-    def lookup_or_create_sql_resolution(
-        resolution: Seconds, session: Session
+    def lookup_or_insert_sqlite_resolution(
+        resolution: Seconds,
+        session: Session,
     ) -> SqliteResolution:
-        sql_resolution = TableUtility.lookup_sql_resolution(
+        sql_resolution = TableUtility.lookup_sqlite_resolution(
             resolution=resolution,
             session=session,
         )
