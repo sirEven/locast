@@ -9,6 +9,7 @@ from locast.candle.candle import Candle
 
 from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
+from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.api_fetcher import APIFetcher
 from locast.candle_fetcher.dydx.api_fetcher.datetime_format import (
     datetime_to_dydx_iso_str,
@@ -26,7 +27,7 @@ class DydxV4Fetcher(APIFetcher):
     async def fetch(
         self,
         market: str,
-        resolution: str,
+        resolution: ResolutionDetail,
         start_date: datetime,
         end_date: datetime,
     ) -> List[Candle]:
@@ -35,7 +36,7 @@ class DydxV4Fetcher(APIFetcher):
             Any,
         ] = await self._client.markets.get_perpetual_market_candles(  # type: ignore
             market=market,
-            resolution=resolution,
+            resolution=resolution.notation,
             from_iso=datetime_to_dydx_iso_str(start_date),
             to_iso=datetime_to_dydx_iso_str(end_date),
         )

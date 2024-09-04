@@ -29,7 +29,7 @@ async def test_v4_fetch_range_of_candles_testnet(
     # when
     candles = await fetcher.fetch_candles(
         "ETH-USD",
-        res.notation,
+        res,
         start,
         end,
     )
@@ -56,7 +56,7 @@ async def test_v4_fetch_range_of_candles_mainnet(
     # when
     candles = await fetcher.fetch_candles(
         "ETH-USD",
-        res.notation,
+        res,
         start,
         end,
     )
@@ -85,7 +85,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
 
     candles = await fetcher.fetch_candles_up_to_now(
         "ETH-USD",
-        res.notation,
+        res,
         start_date,
     )
 
@@ -113,7 +113,7 @@ async def test_candle_error_at_2024_07_25_06_52(
     # when
     candles = await fetcher.fetch_candles(
         "ETH-USD",
-        res.notation,
+        res,
         start,
         end,
     )

@@ -12,7 +12,7 @@ from typing import List
 from locast.candle.candle import Candle
 
 from locast.candle.candle_utility import CandleUtility as cu
-from locast.candle.dydx.dydx_resolution import DydxResolution
+from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 
@@ -24,7 +24,7 @@ class DydxV4CandleFetcher(CandleFetcher):
     async def fetch_candles(
         self,
         market: str,
-        resolution: str,
+        resolution: ResolutionDetail,
         start_date: datetime,
         end_date: datetime,
     ) -> List[Candle]:
@@ -75,7 +75,7 @@ class DydxV4CandleFetcher(CandleFetcher):
     async def fetch_candles_up_to_now(
         self,
         market: str,
-        resolution: str,
+        resolution: ResolutionDetail,
         start_date: datetime,
     ) -> List[Candle]:
         """
@@ -92,7 +92,7 @@ class DydxV4CandleFetcher(CandleFetcher):
             List[Candle]: A list of candles from the start date up to the most recently finished candle.
         """
         candles: List[Candle] = []
-        res_sec = DydxResolution.notation_to_seconds(resolution)
+        res_sec = resolution.seconds
 
         temp_start_date = start_date
         temp_norm_now = cu.normalized_now(res_sec)
@@ -126,9 +126,9 @@ class APIException(Exception):
     def __init__(
         self,
         market: str,
-        resolution: str,
+        resolution: ResolutionDetail,
         message: str | None = None,
     ) -> None:
         if message is None:
-            message = f"Error fetching market data for market '{market}' and resolution '{resolution}'."
+            message = f"Error fetching market data for market '{market}' and resolution '{resolution.notation}'."
         super().__init__(message)

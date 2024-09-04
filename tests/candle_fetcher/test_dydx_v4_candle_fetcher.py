@@ -28,7 +28,7 @@ async def test_v4_fetch_600_candles(
     # when
     candles = await fetcher.fetch_candles(
         "ETH-USD",
-        res.notation,
+        res,
         start,
         end,
     )
@@ -54,7 +54,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
     # when
     candles = await fetcher.fetch_candles_up_to_now(
         "ETH-USD",
-        res.notation,
+        res,
         start_date,
     )
 
@@ -81,6 +81,6 @@ async def test_v4_fetch_cluster_raises_market_exception(
         print(e)
         _ = await fetcher.fetch_candles_up_to_now(
             "INVALID_MARKET",
-            res.notation,
+            res,
             start_date,
         )
