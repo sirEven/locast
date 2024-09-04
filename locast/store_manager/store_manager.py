@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import Seconds
+from locast.candle.resolution import ResolutionDetail, Seconds
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_storage.candle_storage import CandleStorage
 
@@ -18,14 +18,37 @@ class StoreManager:
 
     async def create_cluster(
         self,
-        exchange: Exchange,
         market: str,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
         start_date: datetime,
+        replace_existing_cluster: bool = False,
     ) -> None:
-        # TODO: If cluster already exists, throw exception
-        raise NotImplementedError
+        # 1) Check if cluster exists in candle store
+        cluster_info = await self._candle_storage.get_cluster_info(
+            self._candle_fetcher.exchange,
+            market,
+            resolution.seconds,
+        )
 
+        if cluster_info:
+            if not replace_existing_cluster:
+                raise ExistingClusterException(
+                    f"Cluster already exists for market {market} and resolution {resolution}."
+                )
+            await self.delete_cluster(
+                self._candle_fetcher.exchange,
+                market,
+                resolution.seconds,
+            )
+
+            cluster = await self._candle_fetcher.fetch_candles_up_to_now(
+                market,
+                resolution,
+                start_date,
+            )
+            await self._candle_storage.store_candles(cluster)
+
+    # WIP: CONTINUE - write tests create_cluster()
     async def retrieve_cluster(
         self,
         exchange: Exchange,
