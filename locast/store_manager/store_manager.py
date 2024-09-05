@@ -35,6 +35,7 @@ class StoreManager:
                 raise ExistingClusterException(
                     f"Cluster already exists for market {market} and resolution {resolution}."
                 )
+
             await self.delete_cluster(
                 self._candle_fetcher.exchange,
                 market,
@@ -46,6 +47,7 @@ class StoreManager:
                 resolution,
                 start_date,
             )
+
             await self._candle_storage.store_candles(cluster)
 
     # WIP: CONTINUE - write tests create_cluster()
