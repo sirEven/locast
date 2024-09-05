@@ -12,6 +12,7 @@ from typing import List
 from locast.candle.candle import Candle
 
 from locast.candle.candle_utility import CandleUtility as cu
+from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
@@ -19,7 +20,12 @@ from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 
 class DydxV4CandleFetcher(CandleFetcher):
     def __init__(self, api_fetcher: DydxV4Fetcher) -> None:
+        self._exchange = Exchange.DYDX_V4
         self._fetcher = api_fetcher
+
+    @property
+    def exchange(self) -> Exchange:
+        return self._exchange
 
     async def fetch_candles(
         self,

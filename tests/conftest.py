@@ -24,6 +24,7 @@ from locast.live_candle.dydx.dydx_live_candle import DydxV4LiveCandle
 
 from locast.candle.candle_utility import CandleUtility as cu
 
+from locast.store_manager.store_manager import StoreManager
 from tests.helper.candle_mockery.v4_indexer_mock import V4IndexerClientMock
 from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
     mock_dydx_v4_candle_dict_batch,
@@ -37,6 +38,7 @@ MAINNET = make_mainnet(
 )
 
 
+# region - Candles
 @pytest.fixture
 def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
     start_str = "2024-01-01T00:00:00+00:00"
@@ -73,7 +75,7 @@ async def dydx_v4_live_candle() -> AsyncGenerator[DydxV4LiveCandle, None]:
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def mock_dydx_v4_candle_fetcher() -> AsyncGenerator[DydxV4CandleFetcher, None]:
+async def dydx_v4_candle_fetcher_mock() -> AsyncGenerator[DydxV4CandleFetcher, None]:
     mock_client = V4IndexerClientMock()
     yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(mock_client))
 
@@ -90,6 +92,10 @@ async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxV4CandleFetcher
     yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(mainnet_client))
 
 
+# endregion
+
+
+# region - SQLite
 @pytest.fixture
 def sqlite_engine_in_memory() -> Generator[Engine, None, None]:
     yield create_engine(
@@ -112,3 +118,21 @@ def sqlite_candle_storage_memory(
     sqlite_engine_in_memory: Engine,
 ) -> Generator[SqliteCandleStorage, None, None]:
     yield SqliteCandleStorage(sqlite_engine_in_memory)
+
+
+# endregion
+
+
+# region - StoreManager
+@pytest.fixture
+def store_manager_mock_memory(
+    dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> Generator[StoreManager, None, None]:
+    yield StoreManager(
+        candle_fetcher=dydx_v4_candle_fetcher_mock,
+        candle_storage=sqlite_candle_storage_memory,
+    )
+
+
+# endregion

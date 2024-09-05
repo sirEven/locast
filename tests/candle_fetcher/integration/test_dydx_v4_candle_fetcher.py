@@ -13,8 +13,10 @@ from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
 from tests.helper.parametrization.list_of_amounts import amounts
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
+resolutions_reduced = resolutions[:-2]  # Backend too young still
 
-@pytest.mark.parametrize("resolution", resolutions)
+
+@pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v4_fetch_range_of_candles_testnet(
     dydx_v4_candle_fetcher_testnet: DydxV4CandleFetcher,
@@ -41,7 +43,7 @@ async def test_v4_fetch_range_of_candles_testnet(
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
-@pytest.mark.parametrize("resolution", resolutions)
+@pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v4_fetch_range_of_candles_mainnet(
     dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
@@ -69,7 +71,7 @@ async def test_v4_fetch_range_of_candles_mainnet(
 
 
 @pytest.mark.parametrize("amount", amounts)
-@pytest.mark.parametrize("resolution", resolutions)
+@pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
     dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,

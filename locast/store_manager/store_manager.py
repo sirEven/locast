@@ -42,13 +42,13 @@ class StoreManager:
                 resolution.seconds,
             )
 
-            cluster = await self._candle_fetcher.fetch_candles_up_to_now(
-                market,
-                resolution,
-                start_date,
-            )
+        cluster = await self._candle_fetcher.fetch_candles_up_to_now(
+            market,
+            resolution,
+            start_date,
+        )
 
-            await self._candle_storage.store_candles(cluster)
+        await self._candle_storage.store_candles(cluster)
 
     # WIP: CONTINUE - write tests create_cluster()
     async def retrieve_cluster(

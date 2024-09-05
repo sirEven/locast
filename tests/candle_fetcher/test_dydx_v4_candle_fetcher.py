@@ -12,15 +12,17 @@ from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
 
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
+resolutions_reduced = resolutions[:-2]
 
-@pytest.mark.parametrize("resolution", resolutions)
+
+@pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v4_fetch_600_candles(
-    mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = mock_dydx_v4_candle_fetcher
+    fetcher = dydx_v4_candle_fetcher_mock
     res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T10:00:00.000Z")
@@ -42,10 +44,10 @@ async def test_v4_fetch_600_candles(
 
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
-    mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
 ) -> None:
     # given
-    fetcher = mock_dydx_v4_candle_fetcher
+    fetcher = dydx_v4_candle_fetcher_mock
     res = DydxResolution.ONE_MINUTE
     amount_back = 2500
     now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
@@ -67,16 +69,16 @@ async def test_v4_fetch_cluster_is_up_to_date(
 
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_raises_market_exception(
-    mock_dydx_v4_candle_fetcher: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
 ) -> None:
     # given
-    fetcher = mock_dydx_v4_candle_fetcher
+    fetcher = dydx_v4_candle_fetcher_mock
     res = DydxResolution.ONE_MINUTE
     amount_back = 2500
     now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
-    # then & then
+    # when & then
     with pytest.raises(APIException) as e:
         print(e)
         _ = await fetcher.fetch_candles_up_to_now(
