@@ -47,7 +47,7 @@ def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
     resolution = DydxResolution.ONE_MINUTE
     start = string_to_datetime(start_str)
     end = string_to_datetime(end_str)
-    amount = cu.amount_of_candles_in_range(start, end, resolution.seconds)
+    amount = cu.amount_of_candles_in_range(start, end, resolution)
     eth_dicts = mock_dydx_v4_candle_dict_batch(
         resolution.notation,
         market,

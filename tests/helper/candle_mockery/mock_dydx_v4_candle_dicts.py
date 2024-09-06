@@ -59,21 +59,21 @@ def mock_dydx_v4_candle_dict_batch(
         5) V4 TESTNET backend responds in batch sizes of 100 candle dicts.
     """
 
-    temp_candle = copy_dydx_v4_base_candle_dict()
-    temp_candle = replace_date(
-        temp_candle,
+    temp_candle_dict = copy_dydx_v4_base_candle_dict()
+    temp_candle_dict = replace_date(
+        temp_candle_dict,
         subtract_resolution(to_iso, resolution),
     )
-    temp_candle["resolution"] = resolution
-    temp_candle["ticker"] = market
+    temp_candle_dict["resolution"] = resolution
+    temp_candle_dict["ticker"] = market
 
-    candle_dicts_batch: List[Dict[str, Any]] = [temp_candle]
+    candle_dicts_batch: List[Dict[str, Any]] = [temp_candle_dict]
 
     amount = min(
         cu.amount_of_candles_in_range(
             string_to_datetime(from_iso),
             string_to_datetime(to_iso),
-            DydxResolution.notation_to_seconds(resolution),
+            DydxResolution.notation_to_resolution_detail(resolution),
         ),
         batch_size,
     )

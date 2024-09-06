@@ -36,7 +36,7 @@ async def test_v4_fetch_600_candles(
     )
 
     # then
-    amount = cu.amount_of_candles_in_range(start, end, res.seconds)
+    amount = cu.amount_of_candles_in_range(start, end, res)
     assert len(candles) == amount
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
@@ -50,7 +50,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
     fetcher = dydx_v4_candle_fetcher_mock
     res = DydxResolution.ONE_MINUTE
     amount_back = 2500
-    now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
+    now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
     # when
@@ -75,7 +75,7 @@ async def test_v4_fetch_cluster_raises_market_exception(
     fetcher = dydx_v4_candle_fetcher_mock
     res = DydxResolution.ONE_MINUTE
     amount_back = 2500
-    now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
+    now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
     # when & then

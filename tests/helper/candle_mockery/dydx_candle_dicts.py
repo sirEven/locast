@@ -9,7 +9,7 @@ bv = copy_base_values()
 dydx_v4_candle_dict: Dict[str, Any] = {
     "startedAt": bv["STARTED_AT"],
     "ticker": bv["TICKER"],
-    "resolution": bv["RESOLUTION"],
+    "resolution": bv["RESOLUTION"]["notation"],
     "low": bv["PRICE"],
     "high": bv["PRICE"],
     "open": bv["PRICE"],
@@ -24,7 +24,7 @@ dydx_v4_candle_dict: Dict[str, Any] = {
 dydx_v3_candle_dict: Dict[str, Any] = {
     "startedAt": bv["STARTED_AT"],
     "market": bv["TICKER"],
-    "resolution": bv["RESOLUTION"],
+    "resolution": bv["RESOLUTION"]["notation"],
     "low": bv["PRICE"],
     "high": bv["PRICE"],
     "open": bv["PRICE"],

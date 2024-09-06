@@ -15,7 +15,8 @@ class SqliteExchange(SQLModel, table=True):
 class SqliteResolution(SQLModel, table=True):
     __tablename__ = "resolution"  # type: ignore
     id: int | None = Field(default=None, primary_key=True)
-    resolution: Seconds = Field(nullable=False, unique=True)
+    seconds: Seconds = Field(nullable=False, unique=True)
+    notation: str = Field(nullable=False, unique=True)
 
 
 class SqliteMarket(SQLModel, table=True):
@@ -28,7 +29,7 @@ class SqliteMarket(SQLModel, table=True):
 class SqliteCandle(SQLModel, table=True):
     __tablename__ = "candle"  # type: ignore
     id: int | None = Field(default=None, primary_key=True)
-
+    # TODO: Check why we have | None here when in fact they are not nullable.
     exchange_id: int | None = Field(
         default=None,
         foreign_key=("exchange.id"),

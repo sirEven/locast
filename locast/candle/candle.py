@@ -2,7 +2,7 @@ from enum import Enum
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from locast.candle.resolution import Seconds
+from locast.candle.resolution import ResolutionDetail
 from locast.candle.exchange import Exchange
 
 
@@ -18,7 +18,7 @@ class Candle:
     id: int | None
     exchange: Exchange
     market: str
-    resolution: Seconds
+    resolution: ResolutionDetail
 
     started_at: datetime
 

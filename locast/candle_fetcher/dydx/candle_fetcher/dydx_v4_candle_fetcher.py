@@ -69,7 +69,7 @@ class DydxV4CandleFetcher(CandleFetcher):
                 # DEBUG prints
                 print(f"Batch #{count} size: {len(candle_batch)}")
                 print(
-                    f"Candles left: {cu.amount_of_candles_in_range(start_date, candles[-1].started_at, candles[-1].resolution)}"
+                    f"Candles left: {cu.amount_of_candles_in_range(start_date, candles[-1].started_at, resolution)}"
                 )
                 temp_end_date = candles[-1].started_at
                 count += 1
@@ -98,14 +98,13 @@ class DydxV4CandleFetcher(CandleFetcher):
             List[Candle]: A list of candles from the start date up to the most recently finished candle.
         """
         candles: List[Candle] = []
-        res_sec = resolution.seconds
 
         temp_start_date = start_date
-        temp_norm_now = cu.normalized_now(res_sec)
+        temp_norm_now = cu.normalized_now(resolution)
 
         # This is what we wait for: The newest candle (at index 0) to have started_at one resolution below NOW,
         # which only happens, if during fetch_candles a new candle started.
-        temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, res_sec)
+        temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, resolution)
         while (not candles) or candles[0].started_at < temp_now_minus_res:
             new_candles = await self.fetch_candles(
                 market,
@@ -119,11 +118,11 @@ class DydxV4CandleFetcher(CandleFetcher):
                 candles = new_candles + candles
 
             # Update input for next iteration
-            next_started_at = cu.add_one_resolution(candles[0].started_at, res_sec)
+            next_started_at = cu.add_one_resolution(candles[0].started_at, resolution)
 
             temp_start_date = next_started_at
-            temp_norm_now = cu.normalized_now(res_sec)
-            temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, res_sec)
+            temp_norm_now = cu.normalized_now(resolution)
+            temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, resolution)
 
         return candles
 

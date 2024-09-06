@@ -5,7 +5,7 @@ from sqlmodel import SQLModel, Session, asc, desc, select, func
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import Seconds
+from locast.candle.resolution import ResolutionDetail
 from locast.candle_storage.candle_storage import CandleStorage
 from locast.candle_storage.cluster_info import ClusterInfo
 from locast.candle_storage.database_candle_mapper import DatabaseCandleMapper
@@ -37,7 +37,7 @@ class SqliteCandleStorage(CandleStorage):
         self,
         exchange: Exchange,
         market: str,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
     ) -> List[Candle]:
         with Session(self._engine) as session:
             if foreign_keys := self._look_up_foreign_keys(
@@ -64,7 +64,7 @@ class SqliteCandleStorage(CandleStorage):
         self,
         exchange: Exchange,
         market: str,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
     ) -> None:
         with Session(self._engine) as session:
             if foreign_keys := self._look_up_foreign_keys(
@@ -91,7 +91,7 @@ class SqliteCandleStorage(CandleStorage):
         self,
         exchange: Exchange,
         market: str,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
     ) -> ClusterInfo:
         result = ClusterInfo(None, None, 0, False)
         with Session(self._engine) as session:
@@ -129,7 +129,7 @@ class SqliteCandleStorage(CandleStorage):
         self,
         exchange: Exchange,
         market: str,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
         session: Session,
     ) -> Tuple[SqliteExchange, SqliteMarket, SqliteResolution] | None:
         sqlite_exchange = tu.lookup_sqlite_exchange(exchange, session)

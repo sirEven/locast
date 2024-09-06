@@ -19,7 +19,7 @@ def mock_dydx_v4_candle_range(
     start_date: datetime,
     end_date: datetime,
 ) -> List[Candle]:
-    amount = cu.amount_of_candles_in_range(start_date, end_date, resolution.seconds)
+    amount = cu.amount_of_candles_in_range(start_date, end_date, resolution)
     mock_candle_dicts = mock_dydx_v4_candle_dict_batch(
         resolution.notation,
         market,

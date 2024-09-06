@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import List
+
+from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
@@ -27,7 +29,7 @@ class StoreManager:
         cluster_info = await self._candle_storage.get_cluster_info(
             self._candle_fetcher.exchange,
             market,
-            resolution.seconds,
+            resolution,
         )
 
         if cluster_info.head:
@@ -63,9 +65,26 @@ class StoreManager:
         exchange: Exchange,
         market: str,
         resolution: ResolutionDetail,
-    ) -> List[Candle]:
-        # TODO: If cluster does not exist, throw exception
-        raise NotImplementedError
+    ) -> None:
+        cluster_info = await self._candle_storage.get_cluster_info(
+            exchange,
+            market,
+            resolution,
+        )
+
+        if not (head := cluster_info.head):
+            raise MissingClusterException(
+                f"Cluster does not exist for market {market} and resolution {resolution}."
+            )
+
+        start_date = cu.add_one_resolution(head.started_at, resolution)
+        new_candles = await self._candle_fetcher.fetch_candles_up_to_now(
+            market,
+            resolution,
+            start_date,
+        )
+
+        await self._candle_storage.store_candles(new_candles)
 
     async def delete_cluster(
         self,
@@ -76,7 +95,7 @@ class StoreManager:
         cluster_info = await self._candle_storage.get_cluster_info(
             exchange,
             market,
-            resolution.seconds,
+            resolution,
         )
 
         if not cluster_info.head:
@@ -87,7 +106,7 @@ class StoreManager:
         await self._candle_storage.delete_cluster(
             exchange,
             market,
-            resolution.seconds,
+            resolution,
         )
 
 

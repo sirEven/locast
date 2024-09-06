@@ -19,7 +19,7 @@ from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
 
 async def main() -> None:
     exchange = Exchange.DYDX_V4
-    resolution = DydxResolution.ONE_MINUTE.seconds
+    resolution = DydxResolution.ONE_MINUTE
     market = "ETH-USD"
     start_str = "2024-02-01T00:00:00+00:00"
     end_str = "2024-02-25T00:00:00+00:00"

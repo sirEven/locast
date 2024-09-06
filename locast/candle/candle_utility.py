@@ -3,7 +3,7 @@ from typing import List, TypeVar
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from locast.candle.candle import Candle
-from locast.candle.resolution import Seconds
+from locast.candle.resolution import ResolutionDetail
 
 EnumType = TypeVar("EnumType", bound=Enum)
 
@@ -24,26 +24,26 @@ class CandleUtility:
         return started_at == valid_up_to
 
     @classmethod
-    def valid_up_to(cls, resolution: Seconds) -> datetime:
+    def valid_up_to(cls, resolution: ResolutionDetail) -> datetime:
         # check the most recent date at which candles for this resolution are valid
         last_tick = cls.last_tick(resolution)
-        return (last_tick - timedelta(seconds=resolution)).replace(
+        return (last_tick - timedelta(seconds=resolution.seconds)).replace(
             tzinfo=ZoneInfo("UTC")
         )
 
     @classmethod
-    def last_tick(cls, resolution_seconds: int) -> datetime:
+    def last_tick(cls, resolution: ResolutionDetail) -> datetime:
         # calculate the last tick date of that resolution
         utc_now = datetime.now(timezone.utc)
         unix_epoch = datetime.fromtimestamp(0, timezone.utc)
         now_seconds = (utc_now - unix_epoch).total_seconds()
 
-        remainder_sec = now_seconds % resolution_seconds
+        remainder_sec = now_seconds % resolution.seconds
         last_tick_sec = now_seconds - remainder_sec
         return datetime.fromtimestamp(last_tick_sec, ZoneInfo("UTC"))
 
     @classmethod
-    def norm_date(cls, date: datetime, res: Seconds) -> datetime:
+    def norm_date(cls, date: datetime, resolution: ResolutionDetail) -> datetime:
         """
         Normalize a given datetime to the nearest lower multiple of a given resolution.
         In other words: Round down a date by a given resolution.
@@ -66,7 +66,7 @@ class CandleUtility:
 
         # Calculate the normalized seconds
         normalized_seconds = int(seconds_since_reference) - (
-            int(seconds_since_reference) % res
+            int(seconds_since_reference) % resolution.seconds
         )
 
         # Create a new datetime with the normalized seconds
@@ -75,17 +75,25 @@ class CandleUtility:
         )
 
     @classmethod
-    def normalized_now(cls, resolution: Seconds) -> datetime:
+    def normalized_now(cls, resolution: ResolutionDetail) -> datetime:
         # Generate the startedAt date for the newest finished candle (now - 1 res)
         return cls.norm_date(datetime.now(timezone.utc), resolution)
 
     @classmethod
-    def subtract_one_resolution(cls, date: datetime, resolution: Seconds) -> datetime:
-        return date - timedelta(seconds=resolution)
+    def subtract_one_resolution(
+        cls,
+        date: datetime,
+        resolution: ResolutionDetail,
+    ) -> datetime:
+        return date - timedelta(seconds=resolution.seconds)
 
     @classmethod
-    def add_one_resolution(cls, date: datetime, resolution: Seconds) -> datetime:
-        return date + timedelta(seconds=resolution)
+    def add_one_resolution(
+        cls,
+        date: datetime,
+        resolution: ResolutionDetail,
+    ) -> datetime:
+        return date + timedelta(seconds=resolution.seconds)
 
     @classmethod
     def assert_candle_unity(cls, candles: List[Candle]) -> None:
@@ -115,14 +123,14 @@ class CandleUtility:
     def assert_chronologic_order(cls, candles: List[Candle]) -> None:
         # All date diffs == 1 res (no gaps, no duplicates, right order)
         assert candles
-        res = candles[0].resolution
+        res_sec = candles[0].resolution.seconds
         for i, candle in enumerate(candles):
             if i > 0:
                 msg = "Order violated from Candles"
                 new = candles[i - 1].started_at
                 old = candle.started_at
                 assert candles[i - 1].started_at - candle.started_at == timedelta(
-                    seconds=res
+                    seconds=res_sec
                 ), f"{msg} {candle.id} ({old}) to {candles[i - 1].id} ({new})."
 
     @classmethod
@@ -130,9 +138,9 @@ class CandleUtility:
         cls,
         start_date: datetime,
         end_date: datetime,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
     ) -> int:
         assert start_date <= end_date, "start_date must be before end_date."
 
         range_seconds = (end_date - start_date).total_seconds()
-        return int(range_seconds / resolution)
+        return int(range_seconds / resolution.seconds)

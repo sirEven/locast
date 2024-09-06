@@ -23,6 +23,10 @@ class ResolutionDetail:
 
 class ExchangeResolution(ABC):
     @classmethod
+    def notation_to_resolution_detail(cls, notation: str) -> ResolutionDetail:
+        return ResolutionDetail(cls.notation_to_seconds(notation), notation)
+
+    @classmethod
     def notation_to_seconds(cls, notation: str) -> Seconds:
         resolutions = cls._resolution_list()
 

@@ -37,7 +37,7 @@ async def test_v4_fetch_range_of_candles_testnet(
     )
 
     # then
-    amount = cu.amount_of_candles_in_range(start, end, res.seconds)
+    amount = cu.amount_of_candles_in_range(start, end, res)
     assert len(candles) == amount
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
@@ -64,7 +64,7 @@ async def test_v4_fetch_range_of_candles_mainnet(
     )
 
     # then
-    amount = cu.amount_of_candles_in_range(start, end, res.seconds)
+    amount = cu.amount_of_candles_in_range(start, end, res)
     assert len(candles) == amount
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
@@ -82,7 +82,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
     fetcher = dydx_v4_candle_fetcher_mainnet
     res = resolution
     amount_back = amount
-    now_rounded = cu.norm_date(now_utc_iso(), res.seconds)
+    now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
     candles = await fetcher.fetch_candles_up_to_now(

@@ -3,6 +3,7 @@ from sqlmodel import Session
 from datetime import timezone
 
 from locast.candle.candle import Candle
+from locast.candle.resolution import ResolutionDetail
 from locast.candle_storage.database_candle_mapping import DatabaseCandleMapping
 from locast.candle_storage.sql.tables import (
     SqliteCandle,
@@ -26,7 +27,10 @@ class SqliteCandleMapping(DatabaseCandleMapping):
             id=database_candle.id,
             exchange=database_candle.exchange.exchange,
             market=database_candle.market.market,
-            resolution=database_candle.resolution.resolution,
+            resolution=ResolutionDetail(
+                database_candle.resolution.seconds,
+                database_candle.resolution.notation,
+            ),
             started_at=database_candle.started_at.replace(tzinfo=timezone.utc),
             open=Decimal(database_candle.open),
             high=Decimal(database_candle.high),

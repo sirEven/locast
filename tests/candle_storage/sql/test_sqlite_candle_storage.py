@@ -93,13 +93,13 @@ async def test_retrieve_candles_results_in_correct_cluster(
     await storage.store_candles(candles)
 
     # when
-    retrieved_candles = await storage.retrieve_cluster(exchange, market, res.seconds)
+    retrieved_candles = await storage.retrieve_cluster(exchange, market, res)
 
     # then
     assert len(retrieved_candles) == amount
     assert retrieved_candles[0].exchange == exchange
     assert retrieved_candles[0].market == market
-    assert retrieved_candles[0].resolution == res.seconds
+    assert retrieved_candles[0].resolution == res
 
 
 @pytest.mark.asyncio
@@ -114,7 +114,7 @@ async def test_retrieve_candles_results_in_empty_list(
     market = "ETH-USD"
 
     # when no cluster in storage
-    retrieved_candles = await storage.retrieve_cluster(exchange, market, res.seconds)
+    retrieved_candles = await storage.retrieve_cluster(exchange, market, res)
 
     # then
     assert len(retrieved_candles) == 0
@@ -140,7 +140,7 @@ async def test_delete_cluster_results_in_correct_state(
     await storage.store_candles(candles)
 
     # when
-    await storage.delete_cluster(exchange, market, res.seconds)
+    await storage.delete_cluster(exchange, market, res)
 
     # then
     assert _table_has_amount_of_rows(engine, SqliteCandle, 0)
@@ -167,7 +167,7 @@ async def test_get_cluster_head_results_in_newest_candle(
     await storage.store_candles(candles)
 
     # when
-    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+    cluster_info = await storage.get_cluster_info(exchange, market, res)
 
     # then
     expected_started_at = end_date - timedelta(seconds=res.seconds)
@@ -187,7 +187,7 @@ async def test_get_cluster_head_results_in_None(
     res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
 
     # when
-    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+    cluster_info = await storage.get_cluster_info(exchange, market, res)
 
     # then
     assert cluster_info.head is None
@@ -210,10 +210,10 @@ async def test_get_cluster_head_when_foreign_tables_exist_results_in_None(
 
     tu.lookup_or_insert_sqlite_exchange(exchange, sqlite_session_in_memory)
     tu.lookup_or_insert_sqlite_market(market, sqlite_session_in_memory)
-    tu.lookup_or_insert_sqlite_resolution(res.seconds, sqlite_session_in_memory)
+    tu.lookup_or_insert_sqlite_resolution(res, sqlite_session_in_memory)
 
     # when
-    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+    cluster_info = await storage.get_cluster_info(exchange, market, res)
 
     # then
     assert cluster_info.head is None
@@ -237,13 +237,11 @@ async def test_get_cluster_info_results_in_correct_info(
     end_date = string_to_datetime("2024-01-01T00:05:00.000Z")
 
     candles = mock_dydx_v4_candle_range(market, res, start_date, end_date)
-    candles[0].started_at = cu.normalized_now(res.seconds) - timedelta(
-        seconds=res.seconds
-    )
+    candles[0].started_at = cu.normalized_now(res) - timedelta(seconds=res.seconds)
     await storage.store_candles(candles)
 
     # when
-    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+    cluster_info = await storage.get_cluster_info(exchange, market, res)
 
     # then
     expected_head = candles[0]
@@ -268,7 +266,7 @@ async def test_get_cluster_info_results_in_none(
     res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
 
     # when
-    cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
+    cluster_info = await storage.get_cluster_info(exchange, market, res)
 
     # then
     assert cluster_info.head is None

@@ -86,11 +86,12 @@ def test_look_up_sql_resolution_returns_none(
     # given a database with empty resolution table
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
-    resolution = DydxResolution.ONE_MINUTE.seconds
+    resolution = DydxResolution.ONE_MINUTE
 
     # when
     sql_resolution = table_utility.lookup_sqlite_resolution(
-        resolution, sqlite_session_in_memory
+        resolution,
+        sqlite_session_in_memory,
     )
 
     # then
@@ -104,17 +105,20 @@ def test_look_up_sql_resolution_returns_correctly(
     # given a database with non-empty resolution table
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
-    resolution = DydxResolution.ONE_MINUTE.seconds
+    resolution = DydxResolution.ONE_MINUTE
     table_utility.lookup_or_insert_sqlite_resolution(
-        resolution, sqlite_session_in_memory
+        resolution,
+        sqlite_session_in_memory,
     )
 
     # when
     sql_resolution = table_utility.lookup_sqlite_resolution(
-        resolution, sqlite_session_in_memory
+        resolution,
+        sqlite_session_in_memory,
     )
 
     # then
     assert sql_resolution is not None
-    assert sql_resolution.resolution == resolution
+    assert sql_resolution.seconds == resolution.seconds
+    assert sql_resolution.notation == resolution.notation
     assert sql_resolution.id is not None

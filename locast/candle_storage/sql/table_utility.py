@@ -3,7 +3,7 @@ from sqlmodel import (
     select,  # type: ignore
 )
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import Seconds
+from locast.candle.resolution import ResolutionDetail
 from locast.candle_storage.sql.tables import (
     SqliteExchange,
     SqliteMarket,
@@ -25,11 +25,14 @@ class TableUtility:
 
     @staticmethod
     def lookup_sqlite_resolution(
-        resolution: Seconds,
+        resolution: ResolutionDetail,
         session: Session,
     ) -> SqliteResolution | None:
         return session.exec(
-            select(SqliteResolution).filter_by(resolution=resolution)
+            select(SqliteResolution).filter_by(
+                seconds=resolution.seconds,
+                notation=resolution.notation,
+            )
         ).first()
 
     @staticmethod
@@ -63,7 +66,7 @@ class TableUtility:
 
     @staticmethod
     def lookup_or_insert_sqlite_resolution(
-        resolution: Seconds,
+        resolution: ResolutionDetail,
         session: Session,
     ) -> SqliteResolution:
         sql_resolution = TableUtility.lookup_sqlite_resolution(
@@ -72,7 +75,10 @@ class TableUtility:
         )
 
         if not sql_resolution:
-            sql_resolution = SqliteResolution(resolution=resolution)
+            sql_resolution = SqliteResolution(
+                seconds=resolution.seconds,
+                notation=resolution.notation,
+            )
             session.add(sql_resolution)
             session.commit()
         return sql_resolution

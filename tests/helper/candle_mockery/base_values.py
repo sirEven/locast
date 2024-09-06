@@ -5,7 +5,7 @@ from typing import Any, Dict
 base_values = {
     "STARTED_AT": "2024-05-06T17:24:00.000Z",
     "TICKER": "LINK-USD",
-    "RESOLUTION": "1MIN",
+    "RESOLUTION": {"seconds": 60, "notation": "1MIN"},
     "PRICE": "14.688",
     "BASE_TOKEN_VOLUME": "0",
     "USD_VOLUME": "0",
