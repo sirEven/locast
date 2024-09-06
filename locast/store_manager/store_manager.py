@@ -52,6 +52,7 @@ class StoreManager:
 
         await self._candle_storage.store_candles(cluster)
 
+    # TODO: CONTINUE implementing and testing!
     async def retrieve_cluster(
         self,
         exchange: Exchange,

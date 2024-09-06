@@ -60,6 +60,7 @@ class SqliteCandleStorage(CandleStorage):
                 return []
 
     # TODO: Find out how to bulk delete instead of loop - where clause seems to be the issue 0.o
+    # Also, find out if there is even a benefit to doing so. Maybe loop is fine for SQLModel?
     async def delete_cluster(
         self,
         exchange: Exchange,

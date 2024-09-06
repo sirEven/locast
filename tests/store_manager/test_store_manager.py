@@ -6,7 +6,11 @@ from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail, Seconds
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
-from locast.store_manager.store_manager import ExistingClusterException, StoreManager
+from locast.store_manager.store_manager import (
+    ExistingClusterException,
+    MissingClusterException,
+    StoreManager,
+)
 from tests.helper.candle_mockery.mock_dydx_v4_candles import mock_dydx_v4_candle_range
 
 
@@ -44,7 +48,7 @@ async def test_create_cluster_results_in_correct_cluster_state(
 
 
 @pytest.mark.asyncio
-async def test_create_cluster_throws_error(
+async def test_create_cluster_results_in_error(
     store_manager_mock_memory: StoreManager,
 ) -> None:
     # given a cluster is already present
@@ -139,3 +143,35 @@ async def test_update_cluster_results_in_uptodate_cluster(
     assert cluster_info.head
     assert cluster_info.tail
     assert cluster_info.is_uptodate
+
+
+@pytest.mark.asyncio
+async def test_update_cluster_results_in_error(
+    store_manager_mock_memory: StoreManager,
+) -> None:
+    # given storage containing no cluster
+    manager = store_manager_mock_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
+
+    # when & then
+    with pytest.raises(MissingClusterException):
+        await manager.update_cluster(exchange, market, resolution)
+
+
+@pytest.mark.asyncio
+async def test_delete_cluster_results_in_error(
+    store_manager_mock_memory: StoreManager,
+) -> None:
+    # given storage containing no cluster
+    manager = store_manager_mock_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
+
+    # when & then
+    with pytest.raises(MissingClusterException):
+        await manager.delete_cluster(exchange, market, resolution)
