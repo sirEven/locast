@@ -33,46 +33,75 @@ class SqliteCandleStorage(CandleStorage):
                 session.add(mapper.to_database_candle(candle))
             session.commit()
 
-    async def retrieve_candles(
+    async def retrieve_cluster(
         self,
         exchange: Exchange,
         market: str,
         resolution: Seconds,
     ) -> List[Candle]:
         with Session(self._engine) as session:
-            sql_exchange = tu.lookup_sqlite_exchange(exchange, session)
-            sql_market = tu.lookup_sqlite_market(market, session)
-            sql_resolution = tu.lookup_sqlite_resolution(resolution, session)
-
-            assert sql_exchange, f"Exchange {exchange} not found in database."
-            assert sql_market, f"Market {market} not found in database."
-            assert sql_resolution, f"Resolution {resolution} not found in database."
-
-            statement = select(SqliteCandle).where(
-                (SqliteCandle.exchange_id == sql_exchange.id)
-                & (SqliteCandle.market_id == sql_market.id)
-                & (SqliteCandle.resolution_id == sql_resolution.id)
-            )
-
-            results = session.exec(statement)
-            return self._to_candles(list(results.all()))
-
-    # TODO: Rename this func
-    async def get_cluster_info(
-        self,
-        exchange: Exchange,
-        market: str,
-        resolution: Seconds,
-    ) -> ClusterInfo | None:
-        result: ClusterInfo | None = None
-        with Session(self._engine) as session:
-            if sqlite_properties := self._look_up_foreign_values(
+            if foreign_keys := self._look_up_foreign_keys(
                 exchange,
                 market,
                 resolution,
                 session,
             ):
-                sqlite_exchange, sqlite_market, sqlite_resolution = sqlite_properties
+                sqlite_exchange, sqlite_market, sqlite_resolution = foreign_keys
+
+                stmnt = select(SqliteCandle).where(
+                    (SqliteCandle.exchange_id == sqlite_exchange.id)
+                    & (SqliteCandle.market_id == sqlite_market.id)
+                    & (SqliteCandle.resolution_id == sqlite_resolution.id)
+                )
+
+                results = session.exec(stmnt)
+                return self._to_candles(list(results.all()))
+            else:
+                return []
+
+    # TODO: Find out how to bulk delete instead of loop - where clause seems to be the issue 0.o
+    async def delete_cluster(
+        self,
+        exchange: Exchange,
+        market: str,
+        resolution: Seconds,
+    ) -> None:
+        with Session(self._engine) as session:
+            if foreign_keys := self._look_up_foreign_keys(
+                exchange,
+                market,
+                resolution,
+                session,
+            ):
+                sqlite_exchange, sqlite_market, sqlite_resolution = foreign_keys
+
+                stmt = select(SqliteCandle).where(
+                    (SqliteCandle.exchange_id == sqlite_exchange.id)
+                    & (SqliteCandle.market_id == sqlite_market.id)
+                    & (SqliteCandle.resolution_id == sqlite_resolution.id)
+                )
+
+                results = session.exec(stmt)
+                for result in results:
+                    session.delete(result)
+
+                session.commit()
+
+    async def get_cluster_info(
+        self,
+        exchange: Exchange,
+        market: str,
+        resolution: Seconds,
+    ) -> ClusterInfo:
+        result = ClusterInfo(None, None, 0, False)
+        with Session(self._engine) as session:
+            if foreign_keys := self._look_up_foreign_keys(
+                exchange,
+                market,
+                resolution,
+                session,
+            ):
+                sqlite_exchange, sqlite_market, sqlite_resolution = foreign_keys
 
                 if head_and_tail := self._query_head_and_tail(
                     sqlite_exchange,
@@ -96,7 +125,7 @@ class SqliteCandleStorage(CandleStorage):
         mapper = DatabaseCandleMapper(SqliteCandleMapping())
         return [mapper.to_candle(sqlite_candle) for sqlite_candle in database_candles]
 
-    def _look_up_foreign_values(
+    def _look_up_foreign_keys(
         self,
         exchange: Exchange,
         market: str,
@@ -192,16 +221,16 @@ class SqliteCandleStorage(CandleStorage):
         sqlite_resolution: SqliteResolution,
         session: Session,
     ) -> int | None:
-        statement = select(SqliteCandle).where(
+        stmnt = select(SqliteCandle).where(
             (SqliteCandle.exchange_id == sqlite_exchange.id)
             & (SqliteCandle.market_id == sqlite_market.id)
             & (SqliteCandle.resolution_id == sqlite_resolution.id)
         )
 
         count_query = (
-            statement.with_only_columns(func.count())
+            stmnt.with_only_columns(func.count())
             .order_by(None)
-            .select_from(statement.get_final_froms()[0])
+            .select_from(stmnt.get_final_froms()[0])
         )
 
         return session.scalar(count_query)

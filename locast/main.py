@@ -51,7 +51,7 @@ async def main() -> None:
     )
 
     start_time = time.time()
-    retrieved_candles = await candle_storage.retrieve_candles(
+    retrieved_candles = await candle_storage.retrieve_cluster(
         exchange,
         market,
         resolution,
@@ -70,7 +70,7 @@ async def main() -> None:
     cluster_info = await candle_storage.get_cluster_info(exchange, market, resolution)
     print(f"Time to get cluster info: ({round(time.time()-start_time,2)} seconds).")
 
-    if cluster_info:
+    if cluster_info.head and cluster_info.tail:
         print(f"Tail started at: {cluster_info.tail.started_at}.")
         print(f"Head started at: {cluster_info.head.started_at}.")
 

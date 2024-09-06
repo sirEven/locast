@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail, Seconds
+from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_storage.candle_storage import CandleStorage
 
@@ -30,7 +30,7 @@ class StoreManager:
             resolution.seconds,
         )
 
-        if cluster_info:
+        if cluster_info.head:
             if not replace_existing_cluster:
                 raise ExistingClusterException(
                     f"Cluster already exists for market {market} and resolution {resolution}."
@@ -39,7 +39,7 @@ class StoreManager:
             await self.delete_cluster(
                 self._candle_fetcher.exchange,
                 market,
-                resolution.seconds,
+                resolution,
             )
 
         cluster = await self._candle_fetcher.fetch_candles_up_to_now(
@@ -50,12 +50,11 @@ class StoreManager:
 
         await self._candle_storage.store_candles(cluster)
 
-    # WIP: CONTINUE - write tests create_cluster()
     async def retrieve_cluster(
         self,
         exchange: Exchange,
         market: str,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
     ) -> List[Candle]:
         raise NotImplementedError
 
@@ -63,7 +62,7 @@ class StoreManager:
         self,
         exchange: Exchange,
         market: str,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
     ) -> List[Candle]:
         # TODO: If cluster does not exist, throw exception
         raise NotImplementedError
@@ -72,10 +71,24 @@ class StoreManager:
         self,
         exchange: Exchange,
         market: str,
-        resolution: Seconds,
+        resolution: ResolutionDetail,
     ) -> None:
-        # TODO: If cluster does not exist, throw exception
-        raise NotImplementedError
+        cluster_info = await self._candle_storage.get_cluster_info(
+            exchange,
+            market,
+            resolution.seconds,
+        )
+
+        if not cluster_info.head:
+            raise MissingClusterException(
+                f"Cluster does not exist for market {market} and resolution {resolution}."
+            )
+
+        await self._candle_storage.delete_cluster(
+            exchange,
+            market,
+            resolution.seconds,
+        )
 
 
 class ExistingClusterException(Exception):

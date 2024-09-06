@@ -9,16 +9,23 @@ from locast.candle_storage.cluster_info import ClusterInfo
 class CandleStorage(Protocol):
     async def store_candles(self, candles: List[Candle]) -> None: ...
 
-    async def retrieve_candles(
+    async def retrieve_cluster(
         self,
         exchange: Exchange,
         market: str,
         resolution: Seconds,
     ) -> List[Candle]: ...
 
+    async def delete_cluster(
+        self,
+        exchange: Exchange,
+        market: str,
+        resolution: Seconds,
+    ) -> None: ...
+
     async def get_cluster_info(
         self,
         exchange: Exchange,
         market: str,
         resolution: Seconds,
-    ) -> ClusterInfo | None: ...
+    ) -> ClusterInfo: ...

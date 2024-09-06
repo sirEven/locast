@@ -93,13 +93,60 @@ async def test_retrieve_candles_results_in_correct_cluster(
     await storage.store_candles(candles)
 
     # when
-    retrieved_candles = await storage.retrieve_candles(exchange, market, res.seconds)
+    retrieved_candles = await storage.retrieve_cluster(exchange, market, res.seconds)
 
     # then
     assert len(retrieved_candles) == amount
     assert retrieved_candles[0].exchange == exchange
     assert retrieved_candles[0].market == market
     assert retrieved_candles[0].resolution == res.seconds
+
+
+@pytest.mark.asyncio
+async def test_retrieve_candles_results_in_empty_list(
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+    market = "ETH-USD"
+
+    # when no cluster in storage
+    retrieved_candles = await storage.retrieve_cluster(exchange, market, res.seconds)
+
+    # then
+    assert len(retrieved_candles) == 0
+
+
+@pytest.mark.parametrize("amount", few_amounts)
+@pytest.mark.asyncio
+async def test_delete_cluster_results_in_correct_state(
+    sqlite_engine_in_memory: Engine,
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+    amount: int,
+) -> None:
+    # given
+    engine = sqlite_engine_in_memory
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+    start_date = string_to_datetime("2022-01-01T00:00:00.000Z")
+    market = "ETH-USD"
+
+    candles = mock_dydx_v4_candles(market, res, amount, start_date)
+    await storage.store_candles(candles)
+
+    # when
+    await storage.delete_cluster(exchange, market, res.seconds)
+
+    # then
+    assert _table_has_amount_of_rows(engine, SqliteCandle, 0)
+    assert _table_has_amount_of_rows(engine, SqliteExchange, 1)
+    assert _table_has_amount_of_rows(engine, SqliteMarket, 1)
+    assert _table_has_amount_of_rows(engine, SqliteResolution, 1)
 
 
 @pytest.mark.asyncio
@@ -124,7 +171,7 @@ async def test_get_cluster_head_results_in_newest_candle(
 
     # then
     expected_started_at = end_date - timedelta(seconds=res.seconds)
-    assert cluster_info is not None
+    assert cluster_info.head
     assert cluster_info.head.started_at == expected_started_at
 
 
@@ -143,7 +190,10 @@ async def test_get_cluster_head_results_in_None(
     cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
 
     # then
-    assert cluster_info is None
+    assert cluster_info.head is None
+    assert cluster_info.tail is None
+    assert cluster_info.amount == 0
+    assert cluster_info.is_uptodate is False
 
 
 @pytest.mark.asyncio
@@ -166,7 +216,10 @@ async def test_get_cluster_head_when_foreign_tables_exist_results_in_None(
     cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
 
     # then
-    assert cluster_info is None
+    assert cluster_info.head is None
+    assert cluster_info.tail is None
+    assert cluster_info.amount == 0
+    assert cluster_info.is_uptodate is False
 
 
 @pytest.mark.asyncio
@@ -195,7 +248,7 @@ async def test_get_cluster_info_results_in_correct_info(
     # then
     expected_head = candles[0]
     expected_tail = candles[-1]
-    assert cluster_info is not None
+    assert cluster_info.head and cluster_info.tail
     assert cluster_info.head.started_at == expected_head.started_at
     assert cluster_info.tail.started_at == expected_tail.started_at
     assert cluster_info.amount == len(candles)
@@ -218,7 +271,10 @@ async def test_get_cluster_info_results_in_none(
     cluster_info = await storage.get_cluster_info(exchange, market, res.seconds)
 
     # then
-    assert cluster_info is None
+    assert cluster_info.head is None
+    assert cluster_info.tail is None
+    assert cluster_info.amount == 0
+    assert cluster_info.is_uptodate is False
 
 
 def _table_exists(engine: Engine, table: Type[SQLModel]) -> bool:
