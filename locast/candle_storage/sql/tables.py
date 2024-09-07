@@ -8,20 +8,20 @@ from locast.candle.resolution import Seconds
 
 class SqliteExchange(SQLModel, table=True):
     __tablename__ = "exchange"  # type: ignore
-    id: int | None = Field(default=None, primary_key=True)
+    id: int = Field(default=None, primary_key=True)
     exchange: Exchange = Field(nullable=False, unique=True)
 
 
 class SqliteResolution(SQLModel, table=True):
     __tablename__ = "resolution"  # type: ignore
-    id: int | None = Field(default=None, primary_key=True)
+    id: int = Field(default=None, primary_key=True)
     seconds: Seconds = Field(nullable=False, unique=True)
     notation: str = Field(nullable=False, unique=True)
 
 
 class SqliteMarket(SQLModel, table=True):
     __tablename__ = "market"  # type: ignore
-    id: int | None = Field(default=None, primary_key=True)
+    id: int = Field(default=None, primary_key=True)
     market: str = Field(nullable=False, unique=True)
 
 
@@ -29,20 +29,19 @@ class SqliteMarket(SQLModel, table=True):
 class SqliteCandle(SQLModel, table=True):
     __tablename__ = "candle"  # type: ignore
     id: int | None = Field(default=None, primary_key=True)
-    # TODO: Check why we have | None here when in fact they are not nullable.
-    exchange_id: int | None = Field(
+    exchange_id: int = Field(
         default=None,
         foreign_key=("exchange.id"),
         nullable=False,
         index=True,
     )
-    market_id: int | None = Field(
+    market_id: int = Field(
         default=None,
         foreign_key=("market.id"),
         nullable=False,
         index=True,
     )
-    resolution_id: int | None = Field(
+    resolution_id: int = Field(
         default=None,
         foreign_key=("resolution.id"),
         nullable=False,
