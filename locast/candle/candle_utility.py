@@ -80,12 +80,13 @@ class CandleUtility:
         return cls.norm_date(datetime.now(timezone.utc), resolution)
 
     @classmethod
-    def subtract_one_resolution(
+    def subtract_n_resolutions(
         cls,
         date: datetime,
         resolution: ResolutionDetail,
+        n: int,
     ) -> datetime:
-        return date - timedelta(seconds=resolution.seconds)
+        return date - timedelta(seconds=resolution.seconds * n)
 
     @classmethod
     def add_one_resolution(

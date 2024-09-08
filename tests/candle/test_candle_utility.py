@@ -12,9 +12,10 @@ def test_is_newest_valid_candles_returns_true() -> None:
     # given
     candle = mock_candle(Exchange.DYDX_V4)
     candle.started_at = now_utc_iso()
-    newest_valid_date = uc.subtract_one_resolution(
+    newest_valid_date = uc.subtract_n_resolutions(
         uc.norm_date(now_utc_iso(), candle.resolution),
         candle.resolution,
+        1,
     )
 
     # when
@@ -27,13 +28,18 @@ def test_is_newest_valid_candles_returns_true() -> None:
 def test_is_newest_valid_candles_returns_false() -> None:
     # given
     candle = mock_candle(Exchange.DYDX_V4)
-    newest_valid_date = uc.subtract_one_resolution(
+    newest_valid_date = uc.subtract_n_resolutions(
         uc.norm_date(now_utc_iso(), candle.resolution),
         candle.resolution,
+        1,
     )
 
     # when one resolution older than newest finished candle
-    candle.started_at = uc.subtract_one_resolution(newest_valid_date, candle.resolution)
+    candle.started_at = uc.subtract_n_resolutions(
+        newest_valid_date,
+        candle.resolution,
+        1,
+    )
 
     # then
     assert uc.is_newest_valid_candle(candle) is False

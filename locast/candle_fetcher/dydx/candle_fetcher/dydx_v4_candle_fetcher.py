@@ -104,7 +104,7 @@ class DydxV4CandleFetcher(CandleFetcher):
 
         # This is what we wait for: The newest candle (at index 0) to have started_at one resolution below NOW,
         # which only happens, if during fetch_candles a new candle started.
-        temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, resolution)
+        temp_now_minus_res = cu.subtract_n_resolutions(temp_norm_now, resolution, 1)
         while (not candles) or candles[0].started_at < temp_now_minus_res:
             new_candles = await self.fetch_candles(
                 market,
@@ -122,7 +122,7 @@ class DydxV4CandleFetcher(CandleFetcher):
 
             temp_start_date = next_started_at
             temp_norm_now = cu.normalized_now(resolution)
-            temp_now_minus_res = cu.subtract_one_resolution(temp_norm_now, resolution)
+            temp_now_minus_res = cu.subtract_n_resolutions(temp_norm_now, resolution, 1)
 
         return candles
 

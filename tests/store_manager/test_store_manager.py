@@ -1,6 +1,5 @@
 from datetime import timedelta
 import pytest
-from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.exchange import Exchange
@@ -27,8 +26,9 @@ async def test_create_cluster_results_in_correct_cluster_state(
     market = "ETH-USD"
     resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
 
-    start_date = string_to_datetime("2024-08-01T00:00:00.000Z")
     end_date = cu.normalized_now(resolution)
+    start_date = cu.subtract_n_resolutions(end_date, resolution, 10)
+
     # when
     await manager.create_cluster(market, resolution, start_date)
 
@@ -39,12 +39,12 @@ async def test_create_cluster_results_in_correct_cluster_state(
         resolution,
     )
 
-    cluster_info = await storage.get_cluster_info(exchange, market, resolution)
+    info = await storage.get_cluster_info(exchange, market, resolution)
 
-    assert cluster_info.head and cluster_info.tail
-    assert cluster_info.is_uptodate
-    assert cluster_info.amount == expected_amount
-    assert cluster_info.tail.started_at == start_date
+    assert info.head and info.tail
+    assert info.is_uptodate
+    assert info.amount == expected_amount
+    assert info.tail.started_at == start_date
 
 
 @pytest.mark.asyncio
@@ -57,7 +57,11 @@ async def test_create_cluster_results_in_error(
     market = "ETH-USD"
     resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
 
-    start_date = string_to_datetime("2024-08-01T00:00:00.000Z")
+    start_date = cu.subtract_n_resolutions(
+        cu.normalized_now(resolution),
+        resolution,
+        10,
+    )
     await manager.create_cluster(market, resolution, start_date)
 
     # when the same cluster is created again
@@ -78,8 +82,8 @@ async def test_create_cluster_replaces_existing_cluster(
     market = "ETH-USD"
     resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
 
-    start_date = string_to_datetime("2024-08-01T00:00:00.000Z")
     end_date = cu.normalized_now(resolution)
+    start_date = cu.subtract_n_resolutions(end_date, resolution, 10)
 
     await manager.create_cluster(market, resolution, start_date)
 
@@ -98,12 +102,12 @@ async def test_create_cluster_replaces_existing_cluster(
         resolution,
     )
 
-    cluster_info = await storage.get_cluster_info(exchange, market, resolution)
+    info = await storage.get_cluster_info(exchange, market, resolution)
 
-    assert cluster_info.head and cluster_info.tail
-    assert cluster_info.is_uptodate
-    assert cluster_info.amount == expected_amount
-    assert cluster_info.tail.started_at == start_date
+    assert info.head and info.tail
+    assert info.is_uptodate
+    assert info.amount == expected_amount
+    assert info.tail.started_at == start_date
 
 
 @pytest.mark.asyncio
@@ -131,18 +135,14 @@ async def test_update_cluster_results_in_uptodate_cluster(
     await manager.update_cluster(exchange, market, resolution)
 
     # then
-    cluster_info = await storage.get_cluster_info(
-        exchange,
-        market,
-        resolution,
-    )
+    info = await storage.get_cluster_info(exchange, market, resolution)
 
     assert old_info
     assert not old_info.is_uptodate
 
-    assert cluster_info.head
-    assert cluster_info.tail
-    assert cluster_info.is_uptodate
+    assert info.head
+    assert info.tail
+    assert info.is_uptodate
 
 
 @pytest.mark.asyncio
@@ -175,3 +175,41 @@ async def test_delete_cluster_results_in_error(
     # when & then
     with pytest.raises(MissingClusterException):
         await manager.delete_cluster(exchange, market, resolution)
+
+
+@pytest.mark.asyncio
+async def test_retrieve_cluster_results_in_error(
+    store_manager_mock_memory: StoreManager,
+) -> None:
+    # given storage containing no cluster
+    manager = store_manager_mock_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
+
+    # when & then
+    with pytest.raises(MissingClusterException):
+        await manager.retrieve_cluster(exchange, market, resolution)
+
+
+@pytest.mark.asyncio
+async def test_retrieve_cluster_results_in_correct_cluster(
+    store_manager_mock_memory: StoreManager,
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given storage containing no cluster
+    manager = store_manager_mock_memory
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
+
+    # when
+    cluster = await manager.retrieve_cluster(exchange, market, resolution)
+
+    # then
+    info = await storage.get_cluster_info(exchange, market, resolution)
+    assert cluster[0] == info.head
+    assert cluster[-1] == info.tail
