@@ -48,10 +48,14 @@ class SqliteCandleStorage(CandleStorage):
             ):
                 sqlite_exchange, sqlite_market, sqlite_resolution = foreign_keys
 
-                stmnt = select(SqliteCandle).where(
-                    (SqliteCandle.exchange_id == sqlite_exchange.id)
-                    & (SqliteCandle.market_id == sqlite_market.id)
-                    & (SqliteCandle.resolution_id == sqlite_resolution.id)
+                stmnt = (
+                    select(SqliteCandle)
+                    .where(
+                        (SqliteCandle.exchange_id == sqlite_exchange.id)
+                        & (SqliteCandle.market_id == sqlite_market.id)
+                        & (SqliteCandle.resolution_id == sqlite_resolution.id)
+                    )
+                    .order_by(desc(SqliteCandle.started_at))
                 )
 
                 results = session.exec(stmnt)

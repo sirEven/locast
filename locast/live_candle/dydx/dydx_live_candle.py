@@ -26,6 +26,7 @@ from locast.live_candle.live_candle import LiveCandle
 # logging.basicConfig(level=logging.DEBUG)
 
 
+# NOTE: This is an experimental component, not yet in use.
 class DydxV4LiveCandle(LiveCandle):
     def __init__(
         self,

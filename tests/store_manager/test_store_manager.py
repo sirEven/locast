@@ -140,9 +140,43 @@ async def test_update_cluster_results_in_uptodate_cluster(
     assert old_info
     assert not old_info.is_uptodate
 
-    assert info.head
-    assert info.tail
     assert info.is_uptodate
+
+
+@pytest.mark.asyncio
+async def test_update_cluster_results_in_valid_cluster(
+    store_manager_mock_memory: StoreManager,
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given storage containing out of date cluster
+    manager = store_manager_mock_memory
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
+    res_sec = resolution.seconds
+
+    start_date = cu.normalized_now(resolution) - timedelta(seconds=res_sec * 10)
+    end_date = cu.normalized_now(resolution) - timedelta(seconds=res_sec * 5)
+
+    old_cluster = mock_dydx_v4_candle_range(market, resolution, start_date, end_date)
+
+    await storage.store_candles(old_cluster)
+
+    # when
+    await manager.update_cluster(exchange, market, resolution)
+
+    # then
+    info = await storage.get_cluster_info(exchange, market, resolution)
+    cluster = await storage.retrieve_cluster(exchange, market, resolution)
+
+    cu.assert_candle_unity(cluster)
+    cu.assert_chronologic_order(cluster)
+    assert info.head
+    assert cu.is_newest_valid_candle(info.head)
+    assert cluster[0] == info.head
+    assert cluster[-1] == info.tail
 
 
 @pytest.mark.asyncio
@@ -198,7 +232,7 @@ async def test_retrieve_cluster_results_in_correct_cluster(
     store_manager_mock_memory: StoreManager,
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> None:
-    # given storage containing no cluster
+    # given
     manager = store_manager_mock_memory
     storage = sqlite_candle_storage_memory
 
@@ -206,10 +240,18 @@ async def test_retrieve_cluster_results_in_correct_cluster(
     market = "ETH-USD"
     resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
 
+    end_date = cu.normalized_now(resolution)
+    start_date = cu.subtract_n_resolutions(end_date, resolution, 10)
+    await manager.create_cluster(market, resolution, start_date)
+
     # when
     cluster = await manager.retrieve_cluster(exchange, market, resolution)
 
     # then
     info = await storage.get_cluster_info(exchange, market, resolution)
+    assert cluster[0] == info.head
+    assert cluster[-1] == info.tail
+    cu.assert_candle_unity(cluster)
+    cu.assert_chronologic_order(cluster)
     assert cluster[0] == info.head
     assert cluster[-1] == info.tail

@@ -59,7 +59,18 @@ class StoreManager:
         market: str,
         resolution: ResolutionDetail,
     ) -> List[Candle]:
-        raise NotImplementedError
+        cluster_info = await self._candle_storage.get_cluster_info(
+            exchange,
+            market,
+            resolution,
+        )
+
+        if not cluster_info.head:
+            raise MissingClusterException(
+                f"Cluster does not exist for market {market} and resolution {resolution}."
+            )
+
+        return await self._candle_storage.retrieve_cluster(exchange, market, resolution)
 
     async def update_cluster(
         self,
