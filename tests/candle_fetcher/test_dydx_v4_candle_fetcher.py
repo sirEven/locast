@@ -68,13 +68,14 @@ async def test_v4_fetch_cluster_is_up_to_date(
 
 
 @pytest.mark.asyncio
-async def test_v4_fetch_cluster_raises_market_exception(
+async def test_v4_fetch_cluster_raises_api_exception(
     dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_mock
     res = DydxResolution.ONE_MINUTE
     amount_back = 2500
+    market = "INVALID_MARKET"
     now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
@@ -82,7 +83,7 @@ async def test_v4_fetch_cluster_raises_market_exception(
     with pytest.raises(APIException) as e:
         print(e)
         _ = await fetcher.fetch_candles_up_to_now(
-            "INVALID_MARKET",
+            market,
             res,
             start_date,
         )

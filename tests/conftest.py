@@ -75,9 +75,16 @@ async def dydx_v4_live_candle() -> AsyncGenerator[DydxV4LiveCandle, None]:
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_candle_fetcher_mock() -> AsyncGenerator[DydxV4CandleFetcher, None]:
+async def dydx_v4_fetcher_mock() -> AsyncGenerator[DydxV4Fetcher, None]:
     mock_client = V4IndexerClientMock()
-    yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(mock_client))
+    yield DydxV4Fetcher(mock_client)
+
+
+@pytest_asyncio.fixture  # type: ignore
+async def dydx_v4_candle_fetcher_mock(
+    dydx_v4_fetcher_mock: DydxV4Fetcher,
+) -> AsyncGenerator[DydxV4CandleFetcher, None]:
+    yield DydxV4CandleFetcher(api_fetcher=dydx_v4_fetcher_mock)
 
 
 @pytest_asyncio.fixture  # type: ignore
