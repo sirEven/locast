@@ -3,6 +3,7 @@ from sqlalchemy import Engine, and_, delete, literal
 
 from sqlmodel import SQLModel, Session, asc, desc, select, func
 
+from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
@@ -18,7 +19,6 @@ from locast.candle_storage.sql.tables import (
 )
 
 from locast.candle_storage.sql.table_utility import TableUtility as tu
-from locast.candle.candle_utility import CandleUtility as cu
 
 
 class SqliteCandleStorage(CandleStorage):
@@ -29,8 +29,13 @@ class SqliteCandleStorage(CandleStorage):
     async def store_candles(self, candles: List[Candle]) -> None:
         with Session(self._engine) as session:
             mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
-            for candle in candles:
-                session.add(mapper.to_database_candle(candle))
+            database_candles = [mapper.to_database_candle(candle) for candle in candles]
+
+            # for candle in database_candles:
+            #     session.add(candle)
+
+            session.bulk_save_objects(database_candles)
+
             session.commit()
 
     async def retrieve_cluster(
@@ -63,8 +68,6 @@ class SqliteCandleStorage(CandleStorage):
             else:
                 return []
 
-    # TODO: Find out how to bulk delete instead of loop - where clause seems to be the issue 0.o
-    # Also, find out if there is even a benefit to doing so. Maybe loop is fine for SQLModel?
     async def delete_cluster(
         self,
         exchange: Exchange,
@@ -80,18 +83,6 @@ class SqliteCandleStorage(CandleStorage):
             ):
                 sqlite_exchange, sqlite_market, sqlite_resolution = foreign_keys
 
-                # stmt = select(SqliteCandle).where(
-                #     (SqliteCandle.exchange_id == sqlite_exchange.id)
-                #     & (SqliteCandle.market_id == sqlite_market.id)
-                #     & (SqliteCandle.resolution_id == sqlite_resolution.id)
-                # )
-
-                # results = session.exec(stmt)
-                # for result in results:
-                #     session.delete(result)
-
-                # session.commit()
-
                 stmt = delete(SqliteCandle).where(
                     and_(
                         literal(sqlite_exchange.id) == SqliteCandle.exchange_id,
@@ -104,10 +95,6 @@ class SqliteCandleStorage(CandleStorage):
                     conn.execute(stmt)
 
                 session.commit()
-
-    # stmt = delete(Item).where(Item.id.in_([1, 2, 3]))
-    # session.exec(stmt)
-    # session.commit()
 
     async def get_cluster_info(
         self,

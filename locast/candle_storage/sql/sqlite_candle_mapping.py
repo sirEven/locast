@@ -44,38 +44,44 @@ class SqliteCandleMapping(DatabaseCandleMapping):
 
     # NOTE: lookup_or_insert funcs are only ever used here, before WRITING to database
     def to_database_candle(self, candle: Candle) -> SqliteCandle:
-        if not (
-            self._sql_exchange_cache
-            and self._sql_market_cache
-            and self._sql_resolution_cache
-        ):
+        try:
             assert self._session, "Session must be provided to map to SqliteCandle."
             with self._session as session:
-                self._sql_exchange_cache = tu.lookup_or_insert_sqlite_exchange(
-                    candle.exchange,
-                    session,
-                )
-                self._sql_market_cache = tu.lookup_or_insert_sqlite_market(
-                    candle.market,
-                    session,
-                )
-                self._sql_resolution_cache = tu.lookup_or_insert_sqlite_resolution(
-                    candle.resolution,
-                    session,
-                )
+                if not (
+                    self._sql_exchange_cache
+                    and self._sql_market_cache
+                    and self._sql_resolution_cache
+                ):
+                    self._sql_exchange_cache = tu.lookup_or_insert_sqlite_exchange(
+                        candle.exchange,
+                        session,
+                    )
+                    self._sql_market_cache = tu.lookup_or_insert_sqlite_market(
+                        candle.market,
+                        session,
+                    )
+                    self._sql_resolution_cache = tu.lookup_or_insert_sqlite_resolution(
+                        candle.resolution,
+                        session,
+                    )
 
-        return SqliteCandle(
-            id=candle.id,
-            exchange=self._sql_exchange_cache,
-            market=self._sql_market_cache,
-            resolution=self._sql_resolution_cache,
-            started_at=candle.started_at,
-            open=str(candle.open),
-            high=str(candle.high),
-            low=str(candle.low),
-            close=str(candle.close),
-            base_token_volume=str(candle.base_token_volume),
-            trades=candle.trades,
-            usd_volume=str(candle.usd_volume),
-            starting_open_interest=str(candle.starting_open_interest),
-        )
+                return SqliteCandle(
+                    id=candle.id,
+                    exchange=self._sql_exchange_cache,
+                    exchange_id=self._sql_exchange_cache.id,  # needed for bulk
+                    market=self._sql_market_cache,
+                    market_id=self._sql_market_cache.id,  # needed for bulk
+                    resolution=self._sql_resolution_cache,
+                    resolution_id=self._sql_resolution_cache.id,  # needed for bulk
+                    started_at=candle.started_at,
+                    open=str(candle.open),
+                    high=str(candle.high),
+                    low=str(candle.low),
+                    close=str(candle.close),
+                    base_token_volume=str(candle.base_token_volume),
+                    trades=candle.trades,
+                    usd_volume=str(candle.usd_volume),
+                    starting_open_interest=str(candle.starting_open_interest),
+                )
+        except Exception as e:
+            raise e
