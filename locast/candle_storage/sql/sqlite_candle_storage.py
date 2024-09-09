@@ -31,11 +31,7 @@ class SqliteCandleStorage(CandleStorage):
             mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
             database_candles = [mapper.to_database_candle(candle) for candle in candles]
 
-            # for candle in database_candles:
-            #     session.add(candle)
-
             session.bulk_save_objects(database_candles)
-
             session.commit()
 
     async def retrieve_cluster(
