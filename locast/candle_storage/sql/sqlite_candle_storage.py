@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from sqlalchemy import Engine
+from sqlalchemy import Engine, and_, delete, literal
 
 from sqlmodel import SQLModel, Session, asc, desc, select, func
 
@@ -80,17 +80,34 @@ class SqliteCandleStorage(CandleStorage):
             ):
                 sqlite_exchange, sqlite_market, sqlite_resolution = foreign_keys
 
-                stmt = select(SqliteCandle).where(
-                    (SqliteCandle.exchange_id == sqlite_exchange.id)
-                    & (SqliteCandle.market_id == sqlite_market.id)
-                    & (SqliteCandle.resolution_id == sqlite_resolution.id)
+                # stmt = select(SqliteCandle).where(
+                #     (SqliteCandle.exchange_id == sqlite_exchange.id)
+                #     & (SqliteCandle.market_id == sqlite_market.id)
+                #     & (SqliteCandle.resolution_id == sqlite_resolution.id)
+                # )
+
+                # results = session.exec(stmt)
+                # for result in results:
+                #     session.delete(result)
+
+                # session.commit()
+
+                stmt = delete(SqliteCandle).where(
+                    and_(
+                        literal(sqlite_exchange.id) == SqliteCandle.exchange_id,
+                        literal(sqlite_market.id) == SqliteCandle.market_id,
+                        literal(sqlite_resolution.id) == SqliteCandle.resolution_id,
+                    )
                 )
 
-                results = session.exec(stmt)
-                for result in results:
-                    session.delete(result)
+                with self._engine.begin() as conn:
+                    conn.execute(stmt)
 
                 session.commit()
+
+    # stmt = delete(Item).where(Item.id.in_([1, 2, 3]))
+    # session.exec(stmt)
+    # session.commit()
 
     async def get_cluster_info(
         self,

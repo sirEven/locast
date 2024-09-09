@@ -149,6 +149,39 @@ async def test_delete_cluster_results_in_correct_state(
     assert _table_has_amount_of_rows(engine, SqliteResolution, 1)
 
 
+@pytest.mark.parametrize("amount", few_amounts)
+@pytest.mark.asyncio
+async def test_delete_cluster_only_deletes_one_cluster(
+    sqlite_engine_in_memory: Engine,
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+    amount: int,
+) -> None:
+    # given
+    engine = sqlite_engine_in_memory
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+    start_date = string_to_datetime("2022-01-01T00:00:00.000Z")
+    eth = "ETH-USD"
+    btc = "BTC-USD"
+
+    eth_candles = mock_dydx_v4_candles(eth, res, amount, start_date)
+    btc_candles = mock_dydx_v4_candles(btc, res, amount, start_date)
+
+    await storage.store_candles(eth_candles)
+    await storage.store_candles(btc_candles)
+
+    # when
+    await storage.delete_cluster(exchange, eth, res)
+
+    # then
+    assert _table_has_amount_of_rows(engine, SqliteCandle, amount)
+    assert _table_has_amount_of_rows(engine, SqliteExchange, 1)
+    assert _table_has_amount_of_rows(engine, SqliteMarket, 2)
+    assert _table_has_amount_of_rows(engine, SqliteResolution, 1)
+
+
 @pytest.mark.asyncio
 async def test_get_cluster_head_results_in_newest_candle(
     sqlite_candle_storage_memory: SqliteCandleStorage,
