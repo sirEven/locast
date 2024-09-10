@@ -35,7 +35,7 @@ class StoreManager:
         if cluster_info.head:
             if not replace_existing_cluster:
                 raise ExistingClusterException(
-                    f"Cluster already exists for market {market} and resolution {resolution}."
+                    f"Cluster already exists for market {market} and resolution {resolution.notation}."
                 )
 
             await self.delete_cluster(
@@ -66,7 +66,7 @@ class StoreManager:
 
         if not cluster_info.head:
             raise MissingClusterException(
-                f"Cluster does not exist for market {market} and resolution {resolution}."
+                f"Cluster does not exist for market {market} and resolution {resolution.notation}."
             )
 
         return await self._candle_storage.retrieve_cluster(exchange, market, resolution)
@@ -85,7 +85,7 @@ class StoreManager:
 
         if not (head := cluster_info.head):
             raise MissingClusterException(
-                f"Cluster does not exist for market {market} and resolution {resolution}."
+                f"Cluster does not exist for market {market} and resolution {resolution.notation}."
             )
 
         start_date = cu.add_one_resolution(head.started_at, resolution)
@@ -111,7 +111,7 @@ class StoreManager:
 
         if not cluster_info.head:
             raise MissingClusterException(
-                f"Cluster does not exist for market {market} and resolution {resolution}."
+                f"Cluster does not exist for market {market} and resolution {resolution.notation}."
             )
 
         await self._candle_storage.delete_cluster(
