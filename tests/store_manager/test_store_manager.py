@@ -196,6 +196,25 @@ async def test_update_cluster_results_in_error(
 
 
 @pytest.mark.asyncio
+async def test_update_cluster_results_in_no_error_when_cluster_is_uptodate(
+    store_manager_mock_memory: StoreManager,
+) -> None:
+    # given up to date cluster
+    manager = store_manager_mock_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
+    start_date = cu.normalized_now(resolution) - timedelta(
+        seconds=resolution.seconds * 10
+    )
+    await manager.create_cluster(market, resolution, start_date)
+
+    # when & then
+    await manager.update_cluster(exchange, market, resolution)
+
+
+@pytest.mark.asyncio
 async def test_delete_cluster_results_in_error(
     store_manager_mock_memory: StoreManager,
 ) -> None:

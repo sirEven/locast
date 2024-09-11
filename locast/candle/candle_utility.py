@@ -26,21 +26,28 @@ class CandleUtility:
     @classmethod
     def valid_up_to(cls, resolution: ResolutionDetail) -> datetime:
         # check the most recent date at which candles for this resolution are valid
-        last_tick = cls.last_tick(resolution)
+        last_tick = cls.norm_date(datetime.now(timezone.utc), resolution)
         return (last_tick - timedelta(seconds=resolution.seconds)).replace(
             tzinfo=ZoneInfo("UTC")
         )
 
-    @classmethod
-    def last_tick(cls, resolution: ResolutionDetail) -> datetime:
-        # calculate the last tick date of that resolution
-        utc_now = datetime.now(timezone.utc)
-        unix_epoch = datetime.fromtimestamp(0, timezone.utc)
-        now_seconds = (utc_now - unix_epoch).total_seconds()
+    # @classmethod
+    # def last_tick(cls, resolution: ResolutionDetail) -> datetime:
+    #     # calculate the last tick date of that resolution
+    #     utc_now = datetime.now(timezone.utc)
+    #     unix_epoch = datetime.fromtimestamp(0, timezone.utc)
+    #     now_seconds = (utc_now - unix_epoch).total_seconds()
 
-        remainder_sec = now_seconds % resolution.seconds
-        last_tick_sec = now_seconds - remainder_sec
-        return datetime.fromtimestamp(last_tick_sec, ZoneInfo("UTC"))
+    #     remainder_sec = now_seconds % resolution.seconds
+    #     last_tick_sec = now_seconds - remainder_sec
+    #     return datetime.fromtimestamp(last_tick_sec, ZoneInfo("UTC"))
+
+    @classmethod
+    def next_tick(cls, resolution: ResolutionDetail) -> datetime:
+        utc_now = cls.norm_date(datetime.now(timezone.utc), resolution)
+        return utc_now + timedelta(
+            seconds=resolution.seconds - (utc_now.second % resolution.seconds)
+        )
 
     @classmethod
     def norm_date(cls, date: datetime, resolution: ResolutionDetail) -> datetime:
@@ -52,25 +59,27 @@ class CandleUtility:
         12:37:12 rounded down by 5min resolution becomes 12:35
         12:37:12 rounded down by 15min resolution becomes 12:30
 
+
         Args:
             date (datetime): The datetime to be normalized.
-            res (Seconds): The resolution to which the datetime should be normalized.
+            resolution (ResolutionDetail): The resolution to which the datetime should be normalized.
+
 
         Returns:
             datetime: The normalized datetime.
         """
-        # Calculate the number of seconds since a reference datetime (e.g., epoch)
-        seconds_since_reference = (
-            date - datetime(1970, 1, 1, tzinfo=date.tzinfo)
+        # Calculate the number of seconds since the epoch
+        seconds_since_epoch = (
+            date - datetime.fromtimestamp(0, tz=date.tzinfo)
         ).total_seconds()
 
         # Calculate the normalized seconds
-        normalized_seconds = int(seconds_since_reference) - (
-            int(seconds_since_reference) % resolution.seconds
+        normalized_seconds = seconds_since_epoch - (
+            seconds_since_epoch % resolution.seconds
         )
 
         # Create a new datetime with the normalized seconds
-        return datetime(1970, 1, 1, tzinfo=date.tzinfo) + timedelta(
+        return datetime.fromtimestamp(0, tz=date.tzinfo) + timedelta(
             seconds=normalized_seconds
         )
 

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from typing import List
 import pytest
 from sir_utilities.date_time import now_utc_iso
@@ -5,7 +6,10 @@ from sir_utilities.date_time import now_utc_iso
 from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as uc
 from locast.candle.exchange import Exchange
+from locast.candle.resolution import ResolutionDetail
 from tests.helper.candle_mockery.mock_candle import mock_candle
+
+from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 
 def test_is_newest_valid_candles_returns_true() -> None:
@@ -96,3 +100,27 @@ def test_assert_candle_unity_does_not_raise(candles: List[Candle]) -> None:
     too_few_candles = candles
     # when & then
     uc.assert_candle_unity(too_few_candles)
+
+
+@pytest.mark.parametrize("resolution", resolutions)
+def test_next_tick_returns_correctly(resolution: ResolutionDetail) -> None:
+    # given
+    res = resolution
+
+    # when
+    next_tick = uc.next_tick(res)
+
+    # then
+    expected_next_tick = alternate_next_tick(res)
+    assert next_tick == expected_next_tick
+
+
+def alternate_next_tick(resolution: ResolutionDetail) -> datetime:
+    utc_now = datetime.now(timezone.utc)
+    unix_epoch = datetime.fromtimestamp(0, timezone.utc)
+    now_seconds = (utc_now - unix_epoch).total_seconds()
+
+    remainder_sec = now_seconds % resolution.seconds
+    last_tick_sec = now_seconds - remainder_sec
+    last_tick = datetime.fromtimestamp(last_tick_sec, timezone.utc)
+    return last_tick + timedelta(seconds=resolution.seconds)

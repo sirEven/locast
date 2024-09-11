@@ -9,6 +9,7 @@ from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_storage.candle_storage import CandleStorage
 
 
+# TODO: Consider having a get_cluster_info function in here as well, so user does not need to interact with storage directly...
 class StoreManager:
     def __init__(
         self,
@@ -82,6 +83,11 @@ class StoreManager:
             market,
             resolution,
         )
+
+        # TODO: Should we inform about this case? Exception / assertion are killing code execution, which
+        # is not necessary...
+        if cluster_info.is_uptodate:
+            return
 
         if not (head := cluster_info.head):
             raise MissingClusterException(
