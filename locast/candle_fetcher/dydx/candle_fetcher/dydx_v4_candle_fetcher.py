@@ -66,7 +66,7 @@ class DydxV4CandleFetcher(CandleFetcher):
                 )
 
                 candles.extend(candle_batch)
-                # DEBUG prints
+                # DEBUG prints TODO: Implement meaningful logging, remove Debug prints
                 print(f"Batch #{count} size: {len(candle_batch)}")
                 print(
                     f"Candles left: {cu.amount_of_candles_in_range(start_date, candles[-1].started_at, resolution)}"

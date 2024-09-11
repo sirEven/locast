@@ -25,6 +25,12 @@ from locast.live_candle.live_candle import LiveCandle
 
 # logging.basicConfig(level=logging.DEBUG)
 
+# TODO: Think about how to implement this component from ground up:
+# - Do we want it to publish updates to who ever is subscribed?
+# - Or do we want it to expose getters instead, to who ever needs the data, can hold a reference to it?
+# - I find the latter design quite compelling. The live candle object can be passed into inits of others, while
+#   it is started and stopped from root at beginning and end of program execution.
+
 
 # NOTE: This is an experimental component, not yet in use.
 class DydxV4LiveCandle(LiveCandle):
