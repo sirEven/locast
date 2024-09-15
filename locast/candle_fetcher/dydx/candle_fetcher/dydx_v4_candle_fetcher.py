@@ -1,10 +1,3 @@
-# Stuff that will be needed down the line:
-# - Getting candles via websocket (live) ✅
-# - as well as via api requests (historic) ✅
-# - Opening & closing a position
-# - Querying position data such as pnl...
-# - Querying account balance
-
 from datetime import datetime
 from typing import List
 
@@ -20,7 +13,10 @@ from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 
 class DydxV4CandleFetcher(CandleFetcher):
     def __init__(self, api_fetcher: DydxV4Fetcher) -> None:
-        self._exchange = Exchange.DYDX_V4
+        assertion_error = f"APIFetcher must address API of {Exchange.DYDX_V4.name}."
+        assert api_fetcher.exchange == Exchange.DYDX_V4, assertion_error
+
+        self._exchange = api_fetcher.exchange
         self._fetcher = api_fetcher
 
     @property

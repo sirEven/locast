@@ -30,6 +30,7 @@ class SqliteCandleStorage(CandleStorage):
         candle_count = len(candles)
 
         # Some experimentation showed better results batched, above 100k
+        # TODO: Make more benchmarks in candle_storage_bench.ipynb by running end date upwards month wise - save store times in some table, in order to compare a) both implementations, b) if duration increases roughly in linear way.
         if candle_count < 100000:
             await self._store_candles(candles)
         else:
@@ -48,6 +49,7 @@ class SqliteCandleStorage(CandleStorage):
         candles: List[Candle],
         batch_size: int = 10000,
     ) -> None:
+        # TODO: DO the bulk_save_objects (batched) benchmark first, as this is its stupid implementation right heree
         total_candles = len(candles)
         num_batches = (total_candles + batch_size - 1) // batch_size  # Ceiling division
 

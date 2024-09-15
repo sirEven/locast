@@ -8,6 +8,7 @@ from dydx_v4_client.network import TESTNET  # type: ignore
 from locast.candle.candle import Candle
 
 from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
+from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.api_fetcher import APIFetcher
@@ -21,8 +22,13 @@ class DydxV4Fetcher(APIFetcher):
         self,
         client: IndexerClient = IndexerClient(TESTNET.rest_indexer),
     ) -> None:
+        self._exchange = Exchange.DYDX_V4
         self._client = client
         self._mapper = ExchangeCandleMapper(DydxV4CandleMapping())
+
+    @property
+    def exchange(self) -> Exchange:
+        return self._exchange
 
     async def fetch(
         self,
