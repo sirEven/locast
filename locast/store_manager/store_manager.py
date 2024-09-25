@@ -6,10 +6,10 @@ from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
+from locast.candle_storage.cluster_info import ClusterInfo
 from locast.candle_storage.candle_storage import CandleStorage
 
 
-# TODO: Consider having a get_cluster_info function in here as well, so user does not need to interact with storage directly...
 class StoreManager:
     def __init__(
         self,
@@ -85,8 +85,7 @@ class StoreManager:
         )
 
         # TODO: Should we inform about this case? Exception / assertion are killing code execution, which
-        # is not necessary...
-        # Might get a solution once logging is carried out.
+        # is not necessary... Might get a solution once logging is carried out.
         if cluster_info.is_uptodate:
             return
 
@@ -126,6 +125,11 @@ class StoreManager:
             market,
             resolution,
         )
+
+    async def get_cluster_info(
+        self, exchange: Exchange, market: str, resolution: ResolutionDetail
+    ) -> ClusterInfo:
+        return await self._candle_storage.get_cluster_info(exchange, market, resolution)
 
 
 class ExistingClusterException(Exception):

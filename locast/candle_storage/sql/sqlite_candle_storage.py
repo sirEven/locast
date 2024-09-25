@@ -27,27 +27,8 @@ class SqliteCandleStorage(CandleStorage):
         SQLModel.metadata.create_all(self._engine)
 
     async def store_candles(self, candles: List[Candle]) -> None:
-        batch_size = 5000
-
         # NOTE: Benchmarking showed stable, scalable results across different amounts with a batch size of 5k
-        await self._bulk_save_objects_batched(candles, batch_size)
-
-    async def _add_in_for_loop(self, candles: List[Candle]) -> None:
-        with Session(self._engine) as session:
-            mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
-            db_candles = [mapper.to_database_candle(candle) for candle in candles]
-            for candle in db_candles:
-                session.add(candle)
-            session.commit()
-
-    async def _bulk_save_objects(self, candles: List[Candle]) -> None:
-        with Session(self._engine) as session:
-            mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
-
-            session.bulk_save_objects(
-                [mapper.to_database_candle(candle) for candle in candles]
-            )
-            session.commit()
+        await self._bulk_save_objects_batched(candles, 5000)
 
     async def _bulk_save_objects_batched(
         self,
@@ -71,12 +52,6 @@ class SqliteCandleStorage(CandleStorage):
                     [mapper.to_database_candle(candle) for candle in batch]
                 )
                 session.commit()
-
-    async def _add_all_(self, candles: List[Candle]) -> None:
-        with Session(self._engine) as session:
-            mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
-            session.add_all([mapper.to_database_candle(candle) for candle in candles])
-            session.commit()
 
     async def retrieve_cluster(
         self,

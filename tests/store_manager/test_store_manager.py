@@ -272,5 +272,27 @@ async def test_retrieve_cluster_results_in_correct_cluster(
     assert cluster[-1] == info.tail
     cu.assert_candle_unity(cluster)
     cu.assert_chronologic_order(cluster)
-    assert cluster[0] == info.head
-    assert cluster[-1] == info.tail
+
+
+@pytest.mark.asyncio
+async def test_get_cluster_info_returns_correctly(
+    store_manager_mock_memory: StoreManager,
+) -> None:
+    # given
+    manager = store_manager_mock_memory
+
+    exchange = Exchange.DYDX_V4
+    market = "ETH-USD"
+    resolution = ResolutionDetail(Seconds.FOUR_HOURS, "4HOURS")
+
+    end_date = cu.normalized_now(resolution)
+    start_date = cu.subtract_n_resolutions(end_date, resolution, 10)
+    await manager.create_cluster(market, resolution, start_date)
+
+    # when
+    info = await manager.get_cluster_info(exchange, market, resolution)
+
+    # then
+    expected_cluster = await manager.retrieve_cluster(exchange, market, resolution)
+    assert info.head == expected_cluster[0]
+    assert info.tail == expected_cluster[-1]
