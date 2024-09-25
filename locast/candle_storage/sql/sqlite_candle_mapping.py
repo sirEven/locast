@@ -61,7 +61,9 @@ class SqliteCandleMapping(DatabaseCandleMapping):
     # NOTE: lookup_or_insert funcs are only ever used here, before WRITING to database
     def to_database_candle(self, candle: Candle) -> SqliteCandle:
         try:
-            assert self._session, "Session must be provided to map to SqliteCandle."
+            assert (
+                self._session
+            ), f"Session must be provided to map to {SqliteCandle.__name__}."
             with self._session as session:
                 if not self._sql_exchange_cache:
                     self._sql_exchange_cache = tu.lookup_or_insert_sqlite_exchange(

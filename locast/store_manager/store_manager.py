@@ -86,6 +86,7 @@ class StoreManager:
 
         # TODO: Should we inform about this case? Exception / assertion are killing code execution, which
         # is not necessary...
+        # Might get a solution once logging is carried out.
         if cluster_info.is_uptodate:
             return
 
