@@ -9,13 +9,15 @@ from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
+from locast.logging import log_progress
 
 
 class DydxV4CandleFetcher(CandleFetcher):
-    def __init__(self, api_fetcher: DydxV4Fetcher) -> None:
+    def __init__(self, api_fetcher: DydxV4Fetcher, log_progress: bool = False) -> None:
         assertion_error = f"APIFetcher must address API of {Exchange.DYDX_V4.name}."
         assert api_fetcher.exchange == Exchange.DYDX_V4, assertion_error
 
+        self._log_progress = log_progress
         self._exchange = api_fetcher.exchange
         self._fetcher = api_fetcher
 
@@ -52,6 +54,8 @@ class DydxV4CandleFetcher(CandleFetcher):
         temp_end_date = end_date
         iteration = 0
 
+        total, done = self._create_log_vars(resolution, start_date, end_date)
+
         try:
             while (not candles) or candles[-1].started_at > start_date:
                 candle_batch: List[Candle] = await self._fetcher.fetch(
@@ -62,13 +66,13 @@ class DydxV4CandleFetcher(CandleFetcher):
                 )
 
                 candles.extend(candle_batch)
-                # TODO: Implement meaningful logging, remove Debug prints
-                # print(f"Batch #{iteration} size: {len(candle_batch)}")
-                # print(
-                #     f"Candles left: {cu.amount_of_candles_in_range(start_date, candles[-1].started_at, resolution)}"
-                # )
                 temp_end_date = candles[-1].started_at
                 iteration += 1
+
+                if self._log_progress:
+                    done += len(candle_batch)
+                    log_progress("🚛", "candles", "fetched", done, total)
+
         except Exception as e:
             raise APIException(market, resolution, e) from e
 
@@ -121,6 +125,20 @@ class DydxV4CandleFetcher(CandleFetcher):
             temp_now_minus_res = cu.subtract_n_resolutions(temp_norm_now, resolution, 1)
 
         return candles
+
+    def _create_log_vars(
+        self,
+        resolution: ResolutionDetail,
+        start_date: datetime,
+        end_date: datetime,
+    ):
+        if self._log_progress:
+            total = cu.amount_of_candles_in_range(start_date, end_date, resolution)
+            done = 0
+        else:
+            done = 0
+            total = 0
+        return total, done
 
 
 class APIException(Exception):

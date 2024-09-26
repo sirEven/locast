@@ -19,39 +19,18 @@ from locast.candle_storage.sql.tables import (
 )
 
 from locast.candle_storage.sql.table_utility import TableUtility as tu
+from locast.logging import log_progress
 
 
 class SqliteCandleStorage(CandleStorage):
-    def __init__(self, engine: Engine) -> None:
+    def __init__(self, engine: Engine, log_progress: bool = False) -> None:
+        self._log_progress = log_progress
         self._engine = engine
         SQLModel.metadata.create_all(self._engine)
 
     async def store_candles(self, candles: List[Candle]) -> None:
-        # NOTE: Benchmarking showed stable, scalable results across different amounts with a batch size of 5k
+        # NOTE: Benchmarking showed stable, scalable results across different orders of magnitudes with a batch size of 5k
         await self._bulk_save_objects_batched(candles, 5000)
-
-    async def _bulk_save_objects_batched(
-        self,
-        candles: List[Candle],
-        batch_size: int,
-    ) -> None:
-        total_candles = len(candles)
-        num_batches = (total_candles + batch_size - 1) // batch_size  # Ceiling division
-
-        for i in range(num_batches):
-            # Get the current batch of candles
-            batch = candles[i * batch_size : (i + 1) * batch_size]
-
-            # Create a new session for this batch
-            with Session(self._engine) as session:
-                # Initialize mapper with the current session
-                mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
-
-                # Perform bulk insert
-                session.bulk_save_objects(
-                    [mapper.to_database_candle(candle) for candle in batch]
-                )
-                session.commit()
 
     async def retrieve_cluster(
         self,
@@ -144,6 +123,35 @@ class SqliteCandleStorage(CandleStorage):
                     if head and amount:
                         result = ClusterInfo(head, tail, amount, is_uptodate)
         return result
+
+    async def _bulk_save_objects_batched(
+        self,
+        candles: List[Candle],
+        batch_size: int,
+    ) -> None:
+        done = 0
+        total = len(candles)
+
+        num_batches = (total + batch_size - 1) // batch_size  # Ceiling division
+
+        for i in range(num_batches):
+            # Get the current batch of candles
+            batch = candles[i * batch_size : (i + 1) * batch_size]
+
+            # Create a new session for this batch
+            with Session(self._engine) as session:
+                # Initialize mapper with the current session
+                mapper = DatabaseCandleMapper(SqliteCandleMapping(session))
+
+                # Perform bulk insert
+                session.bulk_save_objects(
+                    [mapper.to_database_candle(candle) for candle in batch]
+                )
+                session.commit()
+
+                if self._log_progress:
+                    done += len(batch)
+                    log_progress("📀", "candles", "stored", done, total)
 
     def _to_candles(self, database_candles: List[SqliteCandle]) -> List[Candle]:
         mapper = DatabaseCandleMapper(SqliteCandleMapping())

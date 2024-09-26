@@ -30,7 +30,7 @@ class StoreManager:
         replace_existing_cluster: bool = False,
     ) -> None:
         # 1) Check if cluster exists in candle store
-        cluster_info = await self._candle_storage.get_cluster_info(
+        cluster_info = await self.get_cluster_info(
             self._candle_fetcher.exchange,
             market,
             resolution,
@@ -62,11 +62,7 @@ class StoreManager:
         market: str,
         resolution: ResolutionDetail,
     ) -> List[Candle]:
-        cluster_info = await self._candle_storage.get_cluster_info(
-            exchange,
-            market,
-            resolution,
-        )
+        cluster_info = await self.get_cluster_info(exchange, market, resolution)
 
         if not cluster_info.head:
             raise MissingClusterException(
@@ -81,11 +77,7 @@ class StoreManager:
         market: str,
         resolution: ResolutionDetail,
     ) -> None:
-        cluster_info = await self._candle_storage.get_cluster_info(
-            exchange,
-            market,
-            resolution,
-        )
+        cluster_info = await self.get_cluster_info(exchange, market, resolution)
 
         # TODO: Should we inform about this case? Exception / assertion are killing code execution, which
         # is not necessary... Might get a solution once logging is carried out.
@@ -112,11 +104,7 @@ class StoreManager:
         market: str,
         resolution: ResolutionDetail,
     ) -> None:
-        cluster_info = await self._candle_storage.get_cluster_info(
-            exchange,
-            market,
-            resolution,
-        )
+        cluster_info = await self.get_cluster_info(exchange, market, resolution)
 
         if not cluster_info.head:
             raise MissingClusterException(
@@ -130,7 +118,10 @@ class StoreManager:
         )
 
     async def get_cluster_info(
-        self, exchange: Exchange, market: str, resolution: ResolutionDetail
+        self,
+        exchange: Exchange,
+        market: str,
+        resolution: ResolutionDetail,
     ) -> ClusterInfo:
         return await self._candle_storage.get_cluster_info(exchange, market, resolution)
 
