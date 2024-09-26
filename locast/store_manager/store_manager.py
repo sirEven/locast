@@ -10,6 +10,7 @@ from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_storage.cluster_info import ClusterInfo
 from locast.candle_storage.candle_storage import CandleStorage
+from locast.logging import log_redundant_call
 
 
 class StoreManager:
@@ -79,9 +80,10 @@ class StoreManager:
     ) -> None:
         cluster_info = await self.get_cluster_info(exchange, market, resolution)
 
-        # TODO: Should we inform about this case? Exception / assertion are killing code execution, which
-        # is not necessary... Might get a solution once logging is carried out.
         if cluster_info.is_uptodate:
+            next_tick = cu.next_tick(resolution)
+            msg = f"Cluster is already up to date. Try again after {next_tick}."
+            log_redundant_call("♻️", msg)
             return
 
         if not (head := cluster_info.head):
