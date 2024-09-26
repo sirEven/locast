@@ -10,7 +10,6 @@ jobs:
     uses: ./.github/workflows/test_suite.yml
     with:
       branch: release
-    secrets:
 
   setup_poetry_and_publish_to_pypi:
     runs-on: ubuntu-latest

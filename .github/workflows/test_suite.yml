@@ -6,9 +6,6 @@ on:
         description: 'The branch to test'
         required: true
         type: string
-        
-    secrets:
-
 
 jobs:
   run_test_suite:
@@ -27,8 +24,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Set environment variables
 
       - name: Install Poetry
         run: | 
