@@ -1,11 +1,11 @@
 def log_progress(
     emoji: str,
     group_name: str,
-    past_tence: str,
+    past_tense: str,
     amount_done: int,
     total: int,
 ) -> None:
-    progress_message = f"{amount_done} of {total} {group_name} {past_tence}."
+    progress_message = f"{amount_done} of {total} {group_name} {past_tense}."
     if amount_done == total:
         print(f"\r{emoji} {progress_message} ✅", end="\n", flush=True)
     else:
