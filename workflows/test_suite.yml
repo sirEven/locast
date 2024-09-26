@@ -1,0 +1,46 @@
+name: Test Suite
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: 'The branch to test'
+        required: true
+        type: string
+        
+    secrets:
+
+
+jobs:
+  run_test_suite:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.11", "3.10"]
+
+    steps:
+      - name: Checkout code on ${{ inputs.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set environment variables
+
+      - name: Install Poetry
+        run: | 
+          python -m pip install --upgrade pip
+          pip install poetry
+        
+      - name: Generate lock file
+        run: poetry lock
+
+      - name: Install dependencies
+        run: poetry install --no-root --with dev
+
+      - name: Run tests
+        run: |
+          poetry run pytest

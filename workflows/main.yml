@@ -1,0 +1,14 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:       
+  run_test_suite_workflow:
+    uses: ./.github/workflows/test_suite.yml
+    with:
+      branch: main
+    secrets:
+      
