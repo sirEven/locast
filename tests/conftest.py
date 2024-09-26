@@ -20,7 +20,6 @@ from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
     DydxV4CandleFetcher,
 )
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
-from locast.live_candle.dydx.dydx_live_candle import DydxV4LiveCandle
 
 from locast.candle.candle_utility import CandleUtility as cu
 
@@ -57,21 +56,6 @@ def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
     )
     mapper = ExchangeCandleMapper(DydxV4CandleMapping())
     yield mapper.to_candles(eth_dicts)
-
-
-@pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_live_candle() -> AsyncGenerator[DydxV4LiveCandle, None]:
-    eth_usd = "ETH-USD"
-    btc_usd = "BTC-USD"
-    one_min = DydxResolution.ONE_MINUTE.notation
-    markets_per_resolution = {one_min: [eth_usd, btc_usd]}
-    live_candle = DydxV4LiveCandle(
-        host_url=TESTNET.websocket_indexer,
-        markets_per_resolution=markets_per_resolution,
-    )
-
-    yield live_candle
-    await live_candle.stop()
 
 
 @pytest_asyncio.fixture  # type: ignore

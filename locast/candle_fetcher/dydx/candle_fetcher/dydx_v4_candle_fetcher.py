@@ -50,7 +50,7 @@ class DydxV4CandleFetcher(CandleFetcher):
         candles: List[Candle] = []
 
         temp_end_date = end_date
-        count = 0
+        iteration = 0
 
         try:
             while (not candles) or candles[-1].started_at > start_date:
@@ -62,13 +62,13 @@ class DydxV4CandleFetcher(CandleFetcher):
                 )
 
                 candles.extend(candle_batch)
-                # DEBUG prints TODO: Implement meaningful logging, remove Debug prints
-                print(f"Batch #{count} size: {len(candle_batch)}")
-                print(
-                    f"Candles left: {cu.amount_of_candles_in_range(start_date, candles[-1].started_at, resolution)}"
-                )
+                # TODO: Implement meaningful logging, remove Debug prints
+                # print(f"Batch #{iteration} size: {len(candle_batch)}")
+                # print(
+                #     f"Candles left: {cu.amount_of_candles_in_range(start_date, candles[-1].started_at, resolution)}"
+                # )
                 temp_end_date = candles[-1].started_at
-                count += 1
+                iteration += 1
         except Exception as e:
             raise APIException(market, resolution, e) from e
 

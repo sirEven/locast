@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List
 
+from sir_utilities.logger import module_logger
+
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
@@ -18,6 +20,7 @@ class StoreManager:
     ) -> None:
         self._candle_fetcher = candle_fetcher
         self._candle_storage = candle_storage
+        self._logger = module_logger(type(self).__name__)
 
     async def create_cluster(
         self,
