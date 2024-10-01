@@ -5,6 +5,9 @@ from sir_utilities.date_time import now_utc_iso, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.resolution import ResolutionDetail
+from locast.candle_fetcher.dydx.candle_fetcher.dydx_v3_candle_fetcher import (
+    DydxV3CandleFetcher,
+)
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
     DydxV4CandleFetcher,
     APIException,
@@ -14,15 +17,15 @@ from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 resolutions_reduced = resolutions[:-2]
 
-# TODO: If combination in other TODO works, parametrize fetchers here
+
 @pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
-async def test_v4_fetch_600_candles(
-    dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
+async def test_v3_fetch_600_candles(
+    dydx_v3_candle_fetcher_mock: DydxV3CandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = dydx_v4_candle_fetcher_mock
+    fetcher = dydx_v3_candle_fetcher_mock
     res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T10:00:00.000Z")
@@ -43,7 +46,7 @@ async def test_v4_fetch_600_candles(
 
 
 @pytest.mark.asyncio
-async def test_v4_fetch_cluster_is_up_to_date(
+async def test_v3_fetch_cluster_is_up_to_date(
     dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
 ) -> None:
     # given
@@ -68,7 +71,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
 
 
 @pytest.mark.asyncio
-async def test_v4_fetch_cluster_raises_api_exception(
+async def test_v3_fetch_cluster_raises_api_exception(
     dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
 ) -> None:
     # given

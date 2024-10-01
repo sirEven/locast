@@ -6,7 +6,11 @@ from sir_utilities.date_time import datetime_to_string, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 
-from tests.helper.candle_mockery.dydx_candle_dicts import copy_dydx_v4_base_candle_dict
+from locast.candle.exchange import Exchange
+from tests.helper.candle_mockery.dydx_candle_dicts import (
+    copy_dydx_v3_base_candle_dict,
+    copy_dydx_v4_base_candle_dict,
+)
 
 
 def replace_date(
@@ -24,7 +28,9 @@ def subtract_resolution(date_str: str, resolution: str) -> datetime:
     return date - timedelta(seconds=res_sec)
 
 
+# TODO: Rename to elevate above v3 and v4
 def mock_dydx_v4_candle_dict_batch(
+    exchange: Exchange,
     resolution: str,
     market: str,
     from_iso: str,
@@ -55,17 +61,24 @@ def mock_dydx_v4_candle_dict_batch(
         3) Because of this strategy (adding the first candle by hand) we need to subtract 1 from the range input in our
         for loop, since we want every batch to be either 1000 candles wide
         or less, if the provided range entails less.
-        4) V4 MAINNET backend responds in batch sizes of 1000 candle dicts,
+        4) V4 MAINNET backend responds in batch sizes of 1000 candle dicts (default of this function),
         5) V4 TESTNET backend responds in batch sizes of 100 candle dicts.
+        6) V3 MAINNET backend responds in batch sizes of 100 candles dicts
+        7) V3 TESTNET backend responds in batch sizes of 100 candles dicts
     """
 
-    temp_candle_dict = copy_dydx_v4_base_candle_dict()
+    if exchange == Exchange.DYDX_V4:
+        temp_candle_dict = copy_dydx_v4_base_candle_dict()
+        temp_candle_dict["ticker"] = market
+    elif exchange == Exchange.DYDX:
+        temp_candle_dict = copy_dydx_v3_base_candle_dict()
+        temp_candle_dict["market"] = market
+
     temp_candle_dict = replace_date(
         temp_candle_dict,
         subtract_resolution(to_iso, resolution),
     )
     temp_candle_dict["resolution"] = resolution
-    temp_candle_dict["ticker"] = market
 
     candle_dicts_batch: List[Dict[str, Any]] = [temp_candle_dict]
 

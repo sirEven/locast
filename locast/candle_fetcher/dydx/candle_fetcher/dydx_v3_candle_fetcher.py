@@ -8,17 +8,14 @@ from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
-from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
+from locast.candle_fetcher.dydx.api_fetcher.dydx_v3_fetcher import DydxV3Fetcher
 from locast.logging import log_progress
 
-# TODO: See if this can be elevated to be used with either of both dydx versions
-# TODO: Merge with v3 as this is currently code duplicate - api_fetcher becomes type APIFetcher
 
-
-class DydxV4CandleFetcher(CandleFetcher):
-    def __init__(self, api_fetcher: DydxV4Fetcher, log_progress: bool = False) -> None:
-        assertion_error = f"APIFetcher must address API of {Exchange.DYDX_V4.name}."
-        assert api_fetcher.exchange == Exchange.DYDX_V4, assertion_error
+class DydxV3CandleFetcher(CandleFetcher):
+    def __init__(self, api_fetcher: DydxV3Fetcher, log_progress: bool = False) -> None:
+        assertion_error = f"APIFetcher must address API of {Exchange.DYDX.name}."
+        assert api_fetcher.exchange == Exchange.DYDX, assertion_error
 
         self._log_progress = log_progress
         self._exchange = api_fetcher.exchange
@@ -36,7 +33,7 @@ class DydxV4CandleFetcher(CandleFetcher):
         end_date: datetime,
     ) -> List[Candle]:
         """
-        Fetches candles from exchange (derived from api_fetcher) and market within a given time range.
+        Fetches candles from the exchange (derived from api_fetcher) and market within a given time range.
 
         Args:
             market (str): The market to fetch candles for.

@@ -2,7 +2,7 @@ from copy import copy
 from typing import Any, Dict
 
 
-base_values = {
+base_values: Dict[str, Any] = {
     "STARTED_AT": "2024-05-06T17:24:00.000Z",
     "TICKER": "LINK-USD",
     "RESOLUTION": {"seconds": 60, "notation": "1MIN"},
