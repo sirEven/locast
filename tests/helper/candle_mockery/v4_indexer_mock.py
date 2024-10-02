@@ -5,8 +5,8 @@ from dydx_v4_client.indexer.rest.indexer_client import IndexerClient, MarketsCli
 from dydx_v4_client.network import TESTNET  # type: ignore
 
 from locast.candle.exchange import Exchange
-from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
-    mock_dydx_v4_candle_dict_batch,
+from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
+    mock_dydx_candle_dict_batch,
 )
 
 
@@ -27,14 +27,14 @@ class V4MarketsClientMock(MarketsClient):
 
         assert market.find("-") > 0, f"Invalid market: {market}."
 
-        candle_dicts_batch = mock_dydx_v4_candle_dict_batch(
+        candle_dicts_batch = mock_dydx_candle_dict_batch(
             Exchange.DYDX_V4,
             resolution,
             market,
             from_iso,
             to_iso,
         )
-        
+
         return {"candles": candle_dicts_batch}
 
 

@@ -9,8 +9,8 @@ from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle.resolution import ResolutionDetail
-from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
-    mock_dydx_v4_candle_dict_batch,
+from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
+    mock_dydx_candle_dict_batch,
 )
 
 
@@ -22,7 +22,7 @@ def mock_dydx_v4_candle_range(
 ) -> List[Candle]:
     amount = cu.amount_of_candles_in_range(start_date, end_date, resolution)
 
-    mock_candle_dicts = mock_dydx_v4_candle_dict_batch(
+    mock_candle_dicts = mock_dydx_candle_dict_batch(
         Exchange.DYDX_V4,
         resolution.notation,
         market,
@@ -44,7 +44,7 @@ def mock_dydx_v4_candles(
 ) -> List[Candle]:
     end_date = start_date + timedelta(seconds=resolution.seconds * amount)
 
-    mock_candle_dicts = mock_dydx_v4_candle_dict_batch(
+    mock_candle_dicts = mock_dydx_candle_dict_batch(
         Exchange.DYDX_V4,
         resolution.notation,
         market,

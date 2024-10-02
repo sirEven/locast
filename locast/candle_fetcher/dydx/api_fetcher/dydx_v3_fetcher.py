@@ -17,7 +17,6 @@ from locast.candle_fetcher.dydx.api_fetcher.datetime_format import (
 
 
 class DydxV3Fetcher(APIFetcher):
-    # TODO: Find smallest possible throttle
     def __init__(self, client: Client, rate_throttle_sec: float = 0.4) -> None:
         self._exchange = Exchange.DYDX
         self._client = client

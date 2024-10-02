@@ -28,8 +28,7 @@ def subtract_resolution(date_str: str, resolution: str) -> datetime:
     return date - timedelta(seconds=res_sec)
 
 
-# TODO: Rename to elevate above v3 and v4
-def mock_dydx_v4_candle_dict_batch(
+def mock_dydx_candle_dict_batch(
     exchange: Exchange,
     resolution: str,
     market: str,

@@ -5,8 +5,8 @@ from dydx3.modules.public import Public  # type: ignore
 from dydx3.helpers.requests import Response  # type: ignore
 
 from locast.candle.exchange import Exchange
-from tests.helper.candle_mockery.mock_dydx_v4_candle_dicts import (
-    mock_dydx_v4_candle_dict_batch,
+from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
+    mock_dydx_candle_dict_batch,
 )  # type: ignore
 
 
@@ -32,7 +32,7 @@ class V3PublicMock(Public):
 
         assert market.find("-") > 0, f"Invalid market: {market}."
 
-        candle_dicts_batch = mock_dydx_v4_candle_dict_batch(
+        candle_dicts_batch = mock_dydx_candle_dict_batch(
             Exchange.DYDX,
             resolution,
             market,
