@@ -11,13 +11,13 @@ from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle.resolution import ResolutionDetail
-from locast.candle_fetcher.api_fetcher import APIFetcher
 from locast.candle_fetcher.dydx.api_fetcher.datetime_format import (
     datetime_to_dydx_iso_str,
 )
+from locast.candle_fetcher.dydx.api_fetcher.dydx_fetcher import DydxFetcher
 
 
-class DydxV4Fetcher(APIFetcher):
+class DydxV4Fetcher(DydxFetcher):
     def __init__(
         self,
         client: IndexerClient = IndexerClient(TESTNET.rest_indexer),

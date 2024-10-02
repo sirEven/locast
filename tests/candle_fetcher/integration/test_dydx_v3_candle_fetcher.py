@@ -5,8 +5,8 @@ from sir_utilities.date_time import now_utc_iso, string_to_datetime
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.resolution import ResolutionDetail
-from locast.candle_fetcher.dydx.candle_fetcher.dydx_v3_candle_fetcher import (
-    DydxV3CandleFetcher,
+from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
+    DydxCandleFetcher,
 )
 
 from tests.helper.parametrization.list_of_amounts import amounts
@@ -18,7 +18,7 @@ resolutions_reduced = resolutions[:-2]  # Backend too young still
 @pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v3_fetch_range_of_candles_testnet(
-    dydx_v3_candle_fetcher_testnet: DydxV3CandleFetcher,
+    dydx_v3_candle_fetcher_testnet: DydxCandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
     # given
@@ -45,7 +45,7 @@ async def test_v3_fetch_range_of_candles_testnet(
 @pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v3_fetch_range_of_candles_mainnet(
-    dydx_v3_candle_fetcher_mainnet: DydxV3CandleFetcher,
+    dydx_v3_candle_fetcher_mainnet: DydxCandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
     # given
@@ -73,7 +73,7 @@ async def test_v3_fetch_range_of_candles_mainnet(
 @pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v3_fetch_cluster_is_up_to_date(
-    dydx_v3_candle_fetcher_mainnet: DydxV3CandleFetcher,
+    dydx_v3_candle_fetcher_mainnet: DydxCandleFetcher,
     amount: int,
     resolution: ResolutionDetail,
 ) -> None:

@@ -5,11 +5,9 @@ from sir_utilities.date_time import now_utc_iso, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.resolution import ResolutionDetail
-from locast.candle_fetcher.dydx.candle_fetcher.dydx_v3_candle_fetcher import (
-    DydxV3CandleFetcher,
-)
-from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
-    DydxV4CandleFetcher,
+
+from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
+    DydxCandleFetcher,
     APIException,
 )
 
@@ -21,7 +19,7 @@ resolutions_reduced = resolutions[:-2]
 @pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v3_fetch_600_candles(
-    dydx_v3_candle_fetcher_mock: DydxV3CandleFetcher,
+    dydx_v3_candle_fetcher_mock: DydxCandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
     # given
@@ -47,7 +45,7 @@ async def test_v3_fetch_600_candles(
 
 @pytest.mark.asyncio
 async def test_v3_fetch_cluster_is_up_to_date(
-    dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mock: DydxCandleFetcher,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_mock
@@ -72,7 +70,7 @@ async def test_v3_fetch_cluster_is_up_to_date(
 
 @pytest.mark.asyncio
 async def test_v3_fetch_cluster_raises_api_exception(
-    dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mock: DydxCandleFetcher,
 ) -> None:
     # given
     fetcher = dydx_v4_candle_fetcher_mock

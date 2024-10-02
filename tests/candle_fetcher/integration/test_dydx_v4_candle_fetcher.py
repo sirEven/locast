@@ -6,8 +6,8 @@ from sir_utilities.date_time import now_utc_iso, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.resolution import ResolutionDetail
-from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
-    DydxV4CandleFetcher,
+from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
+    DydxCandleFetcher,
 )
 
 from tests.helper.parametrization.list_of_amounts import amounts
@@ -19,7 +19,7 @@ resolutions_reduced = resolutions[:-2]  # Backend too young still
 @pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v4_fetch_range_of_candles_testnet(
-    dydx_v4_candle_fetcher_testnet: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_testnet: DydxCandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
     # given
@@ -46,7 +46,7 @@ async def test_v4_fetch_range_of_candles_testnet(
 @pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v4_fetch_range_of_candles_mainnet(
-    dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher,
     resolution: ResolutionDetail,
 ) -> None:
     # given
@@ -74,7 +74,7 @@ async def test_v4_fetch_range_of_candles_mainnet(
 @pytest.mark.parametrize("resolution", resolutions_reduced)
 @pytest.mark.asyncio
 async def test_v4_fetch_cluster_is_up_to_date(
-    dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher,
     amount: int,
     resolution: ResolutionDetail,
 ) -> None:
@@ -104,7 +104,7 @@ async def test_v4_fetch_cluster_is_up_to_date(
 @pytest.mark.skip(reason="This is only to check if dYdX fixed their missing candle.")
 @pytest.mark.asyncio
 async def test_candle_error_at_2024_07_25_06_52(
-    dydx_v4_candle_fetcher_mainnet: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher,
 ) -> None:
     # given
     res = DydxResolution.ONE_MINUTE

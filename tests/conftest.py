@@ -21,11 +21,8 @@ from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v3_fetcher import DydxV3Fetcher
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
-from locast.candle_fetcher.dydx.candle_fetcher.dydx_v3_candle_fetcher import (
-    DydxV3CandleFetcher,
-)
-from locast.candle_fetcher.dydx.candle_fetcher.dydx_v4_candle_fetcher import (
-    DydxV4CandleFetcher,
+from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
+    DydxCandleFetcher,
 )
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 
@@ -78,20 +75,20 @@ async def dydx_v4_fetcher_mock() -> AsyncGenerator[DydxV4Fetcher, None]:
 @pytest_asyncio.fixture  # type: ignore
 async def dydx_v4_candle_fetcher_mock(
     dydx_v4_fetcher_mock: DydxV4Fetcher,
-) -> AsyncGenerator[DydxV4CandleFetcher, None]:
-    yield DydxV4CandleFetcher(api_fetcher=dydx_v4_fetcher_mock)
+) -> AsyncGenerator[DydxCandleFetcher, None]:
+    yield DydxCandleFetcher(api_fetcher=dydx_v4_fetcher_mock)
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_candle_fetcher_testnet() -> AsyncGenerator[DydxV4CandleFetcher, None]:
+async def dydx_v4_candle_fetcher_testnet() -> AsyncGenerator[DydxCandleFetcher, None]:
     testnet_client = IndexerClient(TESTNET.rest_indexer)
-    yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(testnet_client))
+    yield DydxCandleFetcher(api_fetcher=DydxV4Fetcher(testnet_client))
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxV4CandleFetcher, None]:
+async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxCandleFetcher, None]:
     mainnet_client = IndexerClient(MAINNET.rest_indexer)
-    yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(mainnet_client))
+    yield DydxCandleFetcher(api_fetcher=DydxV4Fetcher(mainnet_client))
 
 
 # region - dYdX v3
@@ -104,20 +101,20 @@ async def dydx_v3_fetcher_mock() -> AsyncGenerator[DydxV3Fetcher, None]:
 @pytest_asyncio.fixture  # type: ignore
 async def dydx_v3_candle_fetcher_mock(
     dydx_v3_fetcher_mock: DydxV3Fetcher,
-) -> AsyncGenerator[DydxV3CandleFetcher, None]:
-    yield DydxV3CandleFetcher(api_fetcher=dydx_v3_fetcher_mock)
+) -> AsyncGenerator[DydxCandleFetcher, None]:
+    yield DydxCandleFetcher(api_fetcher=dydx_v3_fetcher_mock)
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def dydx_v3_candle_fetcher_testnet() -> AsyncGenerator[DydxV3CandleFetcher, None]:
+async def dydx_v3_candle_fetcher_testnet() -> AsyncGenerator[DydxCandleFetcher, None]:
     testnet_client = Client(host=API_HOST_SEPOLIA)
-    yield DydxV3CandleFetcher(api_fetcher=DydxV3Fetcher(testnet_client))
+    yield DydxCandleFetcher(api_fetcher=DydxV3Fetcher(testnet_client))
 
 
 @pytest_asyncio.fixture  # type: ignore
-async def dydx_v3_candle_fetcher_mainnet() -> AsyncGenerator[DydxV3CandleFetcher, None]:
+async def dydx_v3_candle_fetcher_mainnet() -> AsyncGenerator[DydxCandleFetcher, None]:
     mainnet_client = Client(host=API_HOST_MAINNET)
-    yield DydxV3CandleFetcher(api_fetcher=DydxV3Fetcher(mainnet_client))
+    yield DydxCandleFetcher(api_fetcher=DydxV3Fetcher(mainnet_client))
 
 
 # endregion
@@ -154,7 +151,7 @@ def sqlite_candle_storage_memory(
 # region - StoreManager
 @pytest.fixture
 def store_manager_mock_memory(
-    dydx_v4_candle_fetcher_mock: DydxV4CandleFetcher,
+    dydx_v4_candle_fetcher_mock: DydxCandleFetcher,
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> Generator[StoreManager, None, None]:
     yield StoreManager(

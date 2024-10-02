@@ -7,19 +7,14 @@ from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
+from locast.candle_fetcher.api_exception import APIException
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
-from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
+from locast.candle_fetcher.dydx.api_fetcher.dydx_fetcher import DydxFetcher
 from locast.logging import log_progress
 
-# TODO: See if this can be elevated to be used with either of both dydx versions
-# TODO: Merge with v3 as this is currently code duplicate - api_fetcher becomes type APIFetcher
 
-
-class DydxV4CandleFetcher(CandleFetcher):
-    def __init__(self, api_fetcher: DydxV4Fetcher, log_progress: bool = False) -> None:
-        assertion_error = f"APIFetcher must address API of {Exchange.DYDX_V4.name}."
-        assert api_fetcher.exchange == Exchange.DYDX_V4, assertion_error
-
+class DydxCandleFetcher(CandleFetcher):
+    def __init__(self, api_fetcher: DydxFetcher, log_progress: bool = False) -> None:
         self._log_progress = log_progress
         self._exchange = api_fetcher.exchange
         self._fetcher = api_fetcher
@@ -141,16 +136,3 @@ class DydxV4CandleFetcher(CandleFetcher):
             done = 0
             total = 0
         return total, done
-
-
-class APIException(Exception):
-    def __init__(
-        self,
-        market: str,
-        resolution: ResolutionDetail,
-        exception: Exception,
-        message: str | None = None,
-    ) -> None:
-        if message is None:
-            message = f"Error fetching market data for market '{market}' and resolution '{resolution.notation}: {exception}'."
-        super().__init__(message)
