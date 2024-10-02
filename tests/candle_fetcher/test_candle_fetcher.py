@@ -2,16 +2,21 @@ from datetime import timedelta
 import pytest
 
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
+
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
     APIException,
+    DydxCandleFetcher,
 )
 
-# NOTE: Add additional mock implementations into this list, to include them in the test suite.
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
+from tests.conftest import get_typed_fixture
+
+
+# NOTE: Add additional mock implementations into this list, to include them in the unit test suite.
 mocked_candle_fetchers = ["dydx_v3_candle_fetcher_mock", "dydx_v4_candle_fetcher_mock"]
 resolutions_reduced = resolutions[:-2]
 
@@ -25,7 +30,7 @@ async def test_fetch_600_candles(
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = request.getfixturevalue(candle_fetcher_mock)
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T10:00:00.000Z")
@@ -52,7 +57,7 @@ async def test_fetch_cluster_is_up_to_date(
     candle_fetcher_mock: str,
 ) -> None:
     # given
-    fetcher = request.getfixturevalue(candle_fetcher_mock)
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     res = DydxResolution.ONE_MINUTE
     amount_back = 2500
     now_rounded = cu.norm_date(now_utc_iso(), res)
@@ -79,7 +84,7 @@ async def test_fetch_cluster_raises_api_exception(
     candle_fetcher_mock: str,
 ) -> None:
     # given
-    fetcher = request.getfixturevalue(candle_fetcher_mock)
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     res = DydxResolution.ONE_MINUTE
     amount_back = 2500
     market = "INVALID_MARKET"

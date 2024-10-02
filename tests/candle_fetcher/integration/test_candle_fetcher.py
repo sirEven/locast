@@ -1,4 +1,5 @@
 from datetime import timedelta
+
 import pytest
 
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
@@ -6,10 +7,16 @@ from sir_utilities.date_time import now_utc_iso, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.resolution import ResolutionDetail
 
+from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
+    DydxCandleFetcher,
+)
 from tests.helper.parametrization.list_of_amounts import amounts
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
-# NOTE: Add additional implementations into these lists, to include them in the test suite.
+from tests.conftest import get_typed_fixture
+
+
+# NOTE: Add additional implementations into these lists, to include them in the integration test suite.
 testnet_candle_fetchers = [
     "dydx_v3_candle_fetcher_testnet",
     "dydx_v4_candle_fetcher_testnet",
@@ -32,7 +39,7 @@ async def test_fetch_range_of_candles_testnet(
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = request.getfixturevalue(candle_fetcher_testnet)
+    fetcher = get_typed_fixture(request, candle_fetcher_testnet, DydxCandleFetcher)
     res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T10:00:00.000Z")
@@ -61,7 +68,7 @@ async def test_fetch_range_of_candles_mainnet(
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = request.getfixturevalue(candle_fetcher_mainnet)
+    fetcher = get_typed_fixture(request, candle_fetcher_mainnet, DydxCandleFetcher)
     res = resolution
     start = string_to_datetime("2024-06-01T00:00:00.000Z")
     end = string_to_datetime("2024-06-01T10:00:00.000Z")
@@ -92,7 +99,7 @@ async def test_fetch_cluster_is_up_to_date(
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = request.getfixturevalue(candle_fetcher_mainnet)
+    fetcher = get_typed_fixture(request, candle_fetcher_mainnet, DydxCandleFetcher)
     res = resolution
     amount_back = amount
     now_rounded = cu.norm_date(now_utc_iso(), res)

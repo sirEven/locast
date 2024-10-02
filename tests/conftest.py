@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator, Type, TypeVar, cast
 import pytest
 import pytest_asyncio
 
@@ -167,3 +167,11 @@ def store_manager_mock_memory(
 
 
 # endregion
+
+T = TypeVar("T")
+
+
+def get_typed_fixture(
+    request: pytest.FixtureRequest, fixture_name: str, fixture_type: Type[T]
+) -> T:
+    return cast(fixture_type, request.getfixturevalue(fixture_name))

@@ -71,7 +71,7 @@ class DydxCandleFetcher(CandleFetcher):
                     log_progress("🚛", "candles", "fetched", done, total)
 
         except Exception as e:
-            raise APIException(market, resolution, e) from e
+            raise APIException(self._exchange, market, resolution, e) from e
 
         return candles
 
