@@ -67,7 +67,7 @@ def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
     mapper = ExchangeCandleMapper(DydxV4CandleMapping())
     yield mapper.to_candles(eth_dicts)
 
-
+# region - dYdX v4
 @pytest_asyncio.fixture  # type: ignore
 async def dydx_v4_fetcher_mock() -> AsyncGenerator[DydxV4Fetcher, None]:
     mock_client = V4IndexerClientMock()
@@ -93,7 +93,7 @@ async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxV4CandleFetcher
     yield DydxV4CandleFetcher(api_fetcher=DydxV4Fetcher(mainnet_client))
 
 
-# dydx v3
+# region - dYdX v3
 @pytest_asyncio.fixture  # type: ignore
 async def dydx_v3_fetcher_mock() -> AsyncGenerator[DydxV3Fetcher, None]:
     mock_client = V3ClientMock()

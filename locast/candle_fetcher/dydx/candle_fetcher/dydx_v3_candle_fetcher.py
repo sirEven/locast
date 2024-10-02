@@ -33,19 +33,19 @@ class DydxV3CandleFetcher(CandleFetcher):
         end_date: datetime,
     ) -> List[Candle]:
         """
-        Fetches candles from the exchange (derived from api_fetcher) and market within a given time range.
+        Fetches candles from the derived exchange (api_fetcher) for specified market within the given time range.
 
         Args:
             market (str): The market to fetch candles for.
             resolution (str): The resolution of the candles to fetch.
             start_date (datetime): The start date of the time range (the started_at value of the oldest candle in the range).
-            end_date (datetime): The end date of the time range (the theoretical end date of the newest candle in the range).
+            end_date (datetime): The end date of the time range (the theoretical close date of the newest candle in the range).
 
         Returns:
             List[Candle]: A list of candles fetched from the specified exchange and market.
 
         Note: This function does not guarantee its returned candles to be reaching to the most recent existing candle on the exchange.
-        It simply fetches candles making up the range between the provided start_date and end_date. If this takes longer than newer
+        It simply fetches candles making up the range between the provided start_date and end_date at the time of fetching. If this takes longer than newer
         candles to be created on the exchange, those candles will not be fetched.
         """
         candles: List[Candle] = []
@@ -73,7 +73,7 @@ class DydxV3CandleFetcher(CandleFetcher):
                     log_progress("🚛", "candles", "fetched", done, total)
 
         except Exception as e:
-            raise APIException(market, resolution, e) from e
+            raise APIException(self._exchange, market, resolution, e) from e
 
         return candles
 
@@ -101,8 +101,8 @@ class DydxV3CandleFetcher(CandleFetcher):
         temp_start_date = start_date
         temp_norm_now = cu.normalized_now(resolution)
 
-        # This is what we wait for: The newest candle (at index 0) to have started_at one resolution below NOW,
-        # which only happens, if during fetch_candles a new candle started.
+        # This is what we wait for: The newest candle (at index 0) to have started_at exactly one resolution below NOW,
+        # which means, it is currently the newest finished candle. If below that value, it is already out of date.
         temp_now_minus_res = cu.subtract_n_resolutions(temp_norm_now, resolution, 1)
         while (not candles) or candles[0].started_at < temp_now_minus_res:
             new_candles = await self.fetch_candles(
@@ -143,11 +143,12 @@ class DydxV3CandleFetcher(CandleFetcher):
 class APIException(Exception):
     def __init__(
         self,
+        exchange: Exchange,
         market: str,
         resolution: ResolutionDetail,
         exception: Exception,
         message: str | None = None,
     ) -> None:
         if message is None:
-            message = f"Error fetching market data for market '{market}' and resolution '{resolution.notation}: {exception}'."
+            message = f"Error ({exchange.name}) fetching market data for market '{market}' and resolution '{resolution.notation}: {exception}'."
         super().__init__(message)
