@@ -36,7 +36,7 @@ class DydxV3Fetcher(DydxFetcher):
         start_date: datetime,
         end_date: datetime,
     ) -> List[Candle]:
-        # NOTE: If only one candle is requested this prevents black magic in v3 backend
+        # If only one candle is requested this prevents black magic in v3 backend
         if cu.amount_of_candles_in_range(start_date, end_date, resolution) == 1:
             start_date -= timedelta(seconds=1)
 

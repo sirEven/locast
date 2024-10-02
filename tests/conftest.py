@@ -35,6 +35,10 @@ from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
     mock_dydx_candle_dict_batch,
 )
 
+import nest_asyncio  # type: ignore
+
+nest_asyncio.apply()  # type: ignore
+
 
 MAINNET = make_mainnet(
     rest_indexer="https://indexer.dydx.trade/",
@@ -116,6 +120,8 @@ async def dydx_v3_candle_fetcher_mainnet() -> AsyncGenerator[DydxCandleFetcher, 
     mainnet_client = Client(host=API_HOST_MAINNET)
     yield DydxCandleFetcher(api_fetcher=DydxV3Fetcher(mainnet_client))
 
+
+# region - mock fetchers
 
 # endregion
 
