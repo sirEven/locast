@@ -17,9 +17,6 @@ from locast.candle_fetcher.dydx.api_fetcher.datetime_format import (
 from locast.candle_fetcher.dydx.api_fetcher.dydx_fetcher import DydxFetcher
 from locast.candle_fetcher.exceptions import APIException
 
-
-# TODO: Sort out Exception handling - maybe here an APIException might be fine - but it only should be raised when something goes wrong api wise - NOT when integrity errors or empty lists come back.
-# OR no exception at all??
 class DydxV4Fetcher(DydxFetcher):
     def __init__(
         self,
