@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Generator, Type, TypeVar, cast
+from typing import AsyncGenerator, Generator, List, Type, TypeVar, cast
 import pytest
 import pytest_asyncio
 
@@ -38,6 +38,13 @@ from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
 import nest_asyncio  # type: ignore
 
 nest_asyncio.apply()  # type: ignore
+
+
+# NOTE: Mark all tests inside an integration directory as integration tests, which we exclude in CI.
+def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item]):
+    for item in items:
+        if "integration" in str(item.fspath):
+            item.add_marker(pytest.mark.integration)
 
 
 MAINNET = make_mainnet(

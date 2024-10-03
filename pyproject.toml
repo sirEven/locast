@@ -30,3 +30,8 @@ omit = [
     "main.py",
     "tests/*",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: mark test as integration test"
+]
