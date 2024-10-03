@@ -35,8 +35,11 @@ from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
     mock_dydx_candle_dict_batch,
 )
 
+
 import nest_asyncio  # type: ignore
 
+# region - Testing Setup
+# Prevent asyncio "runloop already running" error
 nest_asyncio.apply()  # type: ignore
 
 
@@ -46,6 +49,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item
         if "integration" in str(item.fspath):
             item.add_marker(pytest.mark.integration)
 
+
+# endregion
 
 MAINNET = make_mainnet(
     rest_indexer="https://indexer.dydx.trade/",
