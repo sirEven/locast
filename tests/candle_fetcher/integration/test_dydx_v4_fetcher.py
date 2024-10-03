@@ -10,8 +10,8 @@ from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
 )
 
 
-# This test exists only to see, wether the v4 backend is being maintained to sometime include missing candles again or not (which I'm sure will not happen).
-# Meaning: The (mainnet!) backend is actually missing candles
+# This test documents missing candles on dydx mainnet (!) backend.
+# Trust me, you can look them up in their frontend - they are missing...
 
 
 missing_candle_dates: List[str] = [
@@ -20,7 +20,7 @@ missing_candle_dates: List[str] = [
 ]
 
 
-# @pytest.mark.skip(reason="This is only to check if dYdX fixed their missing candle.")
+@pytest.mark.skip(reason="This is only to check if dYdX fixed their missing candles.")
 @pytest.mark.parametrize("started_at", missing_candle_dates)
 @pytest.mark.asyncio
 async def test_missing_candles_on_mainnet(

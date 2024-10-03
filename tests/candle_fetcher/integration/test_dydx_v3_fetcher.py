@@ -16,7 +16,7 @@ from locast.candle_fetcher.dydx.api_fetcher.dydx_v3_fetcher import DydxV3Fetcher
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 
 
-# NOTE: TDD in order to find a fix for dydx v3 "backend magic"
+# TDD in order to find a fix for dydx v3 "backend magic"
 @pytest.mark.asyncio
 async def test_v3_fetch_range_of_one_candle_returns_one_candle() -> None:
     # given
