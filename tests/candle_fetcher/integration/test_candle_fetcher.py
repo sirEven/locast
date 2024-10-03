@@ -53,8 +53,6 @@ async def test_fetch_range_of_candles_testnet(
     )
 
     # then
-    amount = cu.amount_of_candles_in_range(start, end, res)
-    assert len(candles) == amount
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
@@ -82,8 +80,6 @@ async def test_fetch_range_of_candles_mainnet(
     )
 
     # then
-    amount = cu.amount_of_candles_in_range(start, end, res)
-    assert len(candles) == amount
     assert candles[-1].started_at == start
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
@@ -105,6 +101,7 @@ async def test_fetch_cluster_is_up_to_date(
     now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
+    # when
     candles = await fetcher.fetch_candles_up_to_now(
         "ETH-USD",
         res,
@@ -113,6 +110,4 @@ async def test_fetch_cluster_is_up_to_date(
 
     # then
     cu.assert_candle_unity(candles)
-    cu.assert_chronologic_order(candles)
     assert cu.is_newest_valid_candle(candles[0])
-    assert len(candles) >= amount_back

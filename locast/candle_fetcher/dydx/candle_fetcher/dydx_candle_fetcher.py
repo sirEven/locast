@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 
 from locast.candle.candle import Candle
@@ -7,10 +7,10 @@ from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
-from locast.candle_fetcher.api_exception import APIException
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_fetcher.dydx.api_fetcher.dydx_fetcher import DydxFetcher
-from locast.logging import log_progress
+from locast.candle_fetcher.exceptions import APIException
+from locast.logging import log_integrity_violations, log_progress
 
 
 class DydxCandleFetcher(CandleFetcher):
@@ -49,9 +49,9 @@ class DydxCandleFetcher(CandleFetcher):
         candles: List[Candle] = []
 
         temp_end_date = end_date
-        iteration = 0
-
-        total, done = self._create_log_vars(resolution, start_date, end_date)
+        total = cu.amount_of_candles_in_range(start_date, end_date, resolution)
+        done = 0
+        violations: List[Tuple[Candle, Candle]] = []
 
         try:
             while (not candles) or candles[-1].started_at > start_date:
@@ -62,16 +62,32 @@ class DydxCandleFetcher(CandleFetcher):
                     temp_end_date,
                 )
 
-                candles.extend(candle_batch)
-                temp_end_date = candles[-1].started_at
-                iteration += 1
+                if len(candle_batch) > 0:
+                    for violation in cu.find_integrity_violations(candle_batch):
+                        violations.append(violation)
+                        total -= 1
 
-                if self._log_progress:
-                    done += len(candle_batch)
-                    log_progress("🚛", "candles", "fetched", done, total)
+                    if self._log_progress:
+                        done += len(candle_batch)
+                        log_progress("🚛", "candles", "fetched", done, total)
+
+                    candles.extend(candle_batch)
+                    temp_end_date = candles[-1].started_at
+
+                else:
+                    break
+
+            if len(violations) > 0:
+                log_integrity_violations(
+                    "🚨",
+                    self._exchange,
+                    market,
+                    resolution,
+                    violations,
+                )
 
         except Exception as e:
-            raise APIException(self._exchange, market, resolution, e) from e
+            raise APIException(self._exchange, market, resolution, e)
 
         return candles
 
@@ -122,17 +138,3 @@ class DydxCandleFetcher(CandleFetcher):
             temp_now_minus_res = cu.subtract_n_resolutions(temp_norm_now, resolution, 1)
 
         return candles
-
-    def _create_log_vars(
-        self,
-        resolution: ResolutionDetail,
-        start_date: datetime,
-        end_date: datetime,
-    ):
-        if self._log_progress:
-            total = cu.amount_of_candles_in_range(start_date, end_date, resolution)
-            done = 0
-        else:
-            done = 0
-            total = 0
-        return total, done

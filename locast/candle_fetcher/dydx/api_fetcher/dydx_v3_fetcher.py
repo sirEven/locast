@@ -14,8 +14,11 @@ from locast.candle_fetcher.dydx.api_fetcher.datetime_format import (
     datetime_to_dydx_iso_str,
 )
 from locast.candle_fetcher.dydx.api_fetcher.dydx_fetcher import DydxFetcher
+from locast.candle_fetcher.exceptions import APIException
 
 
+# TODO: Sort out Exception handling - maybe here an APIException might be fine - but it only should be raised when something goes wrong api wise - NOT when integrity errors or empty lists come back.
+# OR no exception at all??
 class DydxV3Fetcher(DydxFetcher):
     def __init__(self, client: Client, rate_throttle_sec: float = 0.4) -> None:
         self._exchange = Exchange.DYDX
@@ -36,26 +39,30 @@ class DydxV3Fetcher(DydxFetcher):
         start_date: datetime,
         end_date: datetime,
     ) -> List[Candle]:
-        # If only one candle is requested this prevents black magic in v3 backend
-        if cu.amount_of_candles_in_range(start_date, end_date, resolution) == 1:
-            start_date -= timedelta(seconds=1)
+        try:
+            # If only one candle is requested this prevents black magic in v3 backend
+            if cu.amount_of_candles_in_range(start_date, end_date, resolution) == 1:
+                start_date -= timedelta(seconds=1)
 
-        now = datetime.now()
-        time_since_last_request = (now - self._last_request_time).total_seconds()
+            now = datetime.now()
+            time_since_last_request = (now - self._last_request_time).total_seconds()
 
-        if time_since_last_request < self._throttle_rate:
-            await asyncio.sleep(self._throttle_rate - time_since_last_request)
+            if time_since_last_request < self._throttle_rate:
+                await asyncio.sleep(self._throttle_rate - time_since_last_request)
 
-        loop = asyncio.get_running_loop()
-        response: Dict[str, Any] = await loop.run_in_executor(
-            None,
-            lambda: self._client.public.get_candles(  # type: ignore
-                market,
-                resolution.notation,
-                from_iso=datetime_to_dydx_iso_str(start_date),
-                to_iso=datetime_to_dydx_iso_str(end_date),
-            ).data,
-        )
+            loop = asyncio.get_running_loop()
+            response: Dict[str, Any] = await loop.run_in_executor(
+                None,
+                lambda: self._client.public.get_candles(  # type: ignore
+                    market,
+                    resolution.notation,
+                    from_iso=datetime_to_dydx_iso_str(start_date),
+                    to_iso=datetime_to_dydx_iso_str(end_date),
+                ).data,
+            )
 
-        self._last_request_time = datetime.now()
+            self._last_request_time = datetime.now()
+        except Exception as e:
+            raise APIException(self._exchange, market, resolution, e)
+
         return self._mapper.to_candles(response["candles"])  # type: ignore

@@ -49,26 +49,31 @@ def test_is_newest_valid_candles_returns_false() -> None:
     assert uc.is_newest_valid_candle(candle) is False
 
 
-def test_assert_chronological_order_returns_true(
+def test_find_integrity_violations_returns_empty(
     dydx_v4_eth_one_min_mock_candles: List[Candle],
 ) -> None:
     # given
     candles = dydx_v4_eth_one_min_mock_candles
 
-    # when & then
-    uc.assert_chronologic_order(candles)
+    # when
+    violations = uc.find_integrity_violations(candles)
+
+    # then
+    assert len(violations) == 0
 
 
-def test_assert_chronological_order_returns_false(
+def test_find_integrity_violations_returns_violations(
     dydx_v4_eth_one_min_mock_candles: List[Candle],
 ) -> None:
     # given
     candles = dydx_v4_eth_one_min_mock_candles
     faulty_candles = [candles[0], candles[1], candles[3], candles[4]]
 
-    # when & then
-    with pytest.raises(AssertionError):
-        uc.assert_chronologic_order(faulty_candles)
+    # when
+    violations = uc.find_integrity_violations(faulty_candles)
+
+    # then
+    assert len(violations) > 0
 
 
 def test_assert_candle_unity_returns_true(

@@ -7,10 +7,10 @@ from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.resolution import ResolutionDetail
 from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
-    APIException,
     DydxCandleFetcher,
 )
 
+from locast.candle_fetcher.exceptions import APIException
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 from tests.conftest import get_typed_fixture
@@ -72,9 +72,7 @@ async def test_fetch_cluster_is_up_to_date(
 
     # then
     cu.assert_candle_unity(candles)
-    cu.assert_chronologic_order(candles)
     assert cu.is_newest_valid_candle(candles[0])
-    assert len(candles) >= amount_back
 
 
 @pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)

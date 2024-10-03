@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, TypeVar
+from typing import List, TypeVar, Tuple
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from locast.candle.candle import Candle
@@ -129,19 +129,27 @@ class CandleUtility:
         mismatch = f"(candle #{index} is a mismatch: {candle})."
         raise AssertionError(f"{msg} {mismatch}")
 
+    # TODO: Benchmark this func
     @classmethod
-    def assert_chronologic_order(cls, candles: List[Candle]) -> None:
-        # All date diffs == 1 res (no gaps, no duplicates, right order)
-        assert candles
-        res_sec = candles[0].resolution.seconds
+    def find_integrity_violations(
+        cls,
+        candles: List[Candle],
+    ) -> List[Tuple[Candle, Candle]]:
+        violations: List[Tuple[Candle, Candle]] = []
+
+        if len(candles) <= 1:
+            return violations
+
+        diff_ok = timedelta(seconds=candles[0].resolution.seconds)
         for i, candle in enumerate(candles):
             if i > 0:
-                msg = "Order violated from Candles"
-                new = candles[i - 1].started_at
-                old = candle.started_at
-                assert candles[i - 1].started_at - candle.started_at == timedelta(
-                    seconds=res_sec
-                ), f"{msg} {candle.id} ({old}) to {candles[i - 1].id} ({new})."
+                new = candles[i - 1]
+                old = candle
+                if (new.started_at - old.started_at) == diff_ok:
+                    pass
+                else:
+                    violations.append((old, new))
+        return violations
 
     @classmethod
     def amount_of_candles_in_range(

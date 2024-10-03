@@ -15,8 +15,11 @@ from locast.candle_fetcher.dydx.api_fetcher.datetime_format import (
     datetime_to_dydx_iso_str,
 )
 from locast.candle_fetcher.dydx.api_fetcher.dydx_fetcher import DydxFetcher
+from locast.candle_fetcher.exceptions import APIException
 
 
+# TODO: Sort out Exception handling - maybe here an APIException might be fine - but it only should be raised when something goes wrong api wise - NOT when integrity errors or empty lists come back.
+# OR no exception at all??
 class DydxV4Fetcher(DydxFetcher):
     def __init__(
         self,
@@ -37,14 +40,18 @@ class DydxV4Fetcher(DydxFetcher):
         start_date: datetime,
         end_date: datetime,
     ) -> List[Candle]:
-        response: Dict[
-            str,
-            Any,
-        ] = await self._client.markets.get_perpetual_market_candles(  # type: ignore
-            market=market,
-            resolution=resolution.notation,
-            from_iso=datetime_to_dydx_iso_str(start_date),
-            to_iso=datetime_to_dydx_iso_str(end_date),
-        )
-        assert response["candles"]
+        try:
+            response: Dict[
+                str,
+                Any,
+            ] = await self._client.markets.get_perpetual_market_candles(  # type: ignore
+                market=market,
+                resolution=resolution.notation,
+                from_iso=datetime_to_dydx_iso_str(start_date),
+                to_iso=datetime_to_dydx_iso_str(end_date),
+            )
+
+        except Exception as e:
+            raise APIException(self._exchange, market, resolution, e)
+
         return self._mapper.to_candles(response["candles"])

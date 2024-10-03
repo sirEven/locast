@@ -172,7 +172,7 @@ async def test_update_cluster_results_in_valid_cluster(
     cluster = await storage.retrieve_cluster(exchange, market, resolution)
 
     cu.assert_candle_unity(cluster)
-    cu.assert_chronologic_order(cluster)
+    assert len(cu.find_integrity_violations(cluster)) == 0
     assert info.head
     assert cu.is_newest_valid_candle(info.head)
     assert cluster[0] == info.head
@@ -268,10 +268,11 @@ async def test_retrieve_cluster_results_in_correct_cluster(
 
     # then
     info = await storage.get_cluster_info(exchange, market, resolution)
+
     assert cluster[0] == info.head
     assert cluster[-1] == info.tail
     cu.assert_candle_unity(cluster)
-    cu.assert_chronologic_order(cluster)
+    assert len(cu.find_integrity_violations(cluster)) == 0
 
 
 @pytest.mark.asyncio

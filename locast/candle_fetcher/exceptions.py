@@ -9,8 +9,6 @@ class APIException(Exception):
         market: str,
         resolution: ResolutionDetail,
         exception: Exception,
-        message: str | None = None,
     ) -> None:
-        if message is None:
-            message = f"{exchange.name}: Error fetching market data for market '{market}' and resolution '{resolution.notation}: {exception}'."
-        super().__init__(message)
+        msg = f"{exchange.name}: Error fetching market data for market '{market}' and resolution '{resolution.notation}: {exception}'."
+        super().__init__(msg)
