@@ -1,5 +1,6 @@
-<img src="locast@3x.png" alt="alt text" width="200" height="200">
-
+<div align="center">
+    <img src="locast@3x.png" alt="alt text" width="200" height="200">
+</div>
 LoCaSt: Local Candle Store - A module to download and store price candles from exchanges in a database.
 
 # Intro
