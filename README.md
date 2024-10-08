@@ -1,27 +1,4 @@
-<table>
-  <tr>
-    <td align="center"><img src="icons/deprecated_icon@3x.png" alt="" width="200"></td>
-    <td align="center"><img src="icons/color_black_white@3x.png" alt="" width="200"></td>
-    <td align="center"><img src="icons/color_transparent_1@3x.png" alt="" width="200"></td>
-    
-  </tr>
-  <tr>
-    <td align="center"><img src="icons/color_transparent_2@3x.png" alt="" width="200"></td>
-    <td align="center"><img src="icons/fancy_transparent@3x.png" alt="" width="200"></td>
-    <td align="center"><img src="icons/grey_1@3x.png" alt="" width="200"></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="icons/grey_2@3x.png" alt="" width="200"></td>
-    <td align="center"><img src="icons/grey_transparent_1@3x.png" alt="" width="200"></td>
-    <td align="center"><img src="icons/grey_transparent_2@3x.png" alt="" width="200"></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="icons/halloween_1@3x.png" alt="" width="200"></td>
-    <td align="center"><img src="icons/halloween_2@3x.png" alt="" width="200"></td>
-    <td align="center"><img src="icons/halloween_3@3x.png" alt="" width="200"></td>
-  </tr>
-</table>
-
+<div align="center"><img src="icons/halloween_3@3x.png" alt="" width="200"></td></div>
 LoCaSt: Local Candle Store - A module to download price candles from exchanges and store them in a database.
 
 # Intro
