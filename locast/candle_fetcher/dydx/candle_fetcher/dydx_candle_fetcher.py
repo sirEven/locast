@@ -23,14 +23,6 @@ class DydxCandleFetcher(CandleFetcher):
     def exchange(self) -> Exchange:
         return self._exchange
 
-    # TODO: This function contains violation detection and reporting code, that is not covering edge cases (where a gap exists in between two batches).
-    # Also i would like to refactor that code out of here to make fetch_candles really only call violoation and logging specific code.
-    # Idea:
-    # - Run violation detection not on batch, but on candles collected so far (where batches are incrementally added to)
-    # - Problem: We run detection over the same candles many times which is more expensive and forces us to handle duplicate detections.
-    # - The simpler apporach would be, to feed overlapping portions into detection func, by not strictly passing a batch,
-    #   but rather passing a candle range reaching from previous batch end to current batch end. This way, if a gap exists inbetween batches
-    #   it would still detect it.
     async def fetch_candles(
         self,
         market: str,
@@ -163,10 +155,6 @@ class DydxCandleFetcher(CandleFetcher):
 
     def _count_missing(self, batch_violations: List[Tuple[Candle, Candle]]):
         return sum(
-            cu.amount_of_candles_missing_inbetween(
-                vi[0].started_at,
-                vi[1].started_at,
-                vi[0].resolution,
-            )
+            cu.amount_missing(vi[0].started_at, vi[1].started_at, vi[0].resolution)
             for vi in batch_violations
         )

@@ -32,7 +32,7 @@ def log_integrity_violations(
     detail = f"{market}, {resolution.notation}"
     print(f"{emoji} Attention: {exchange.name} delivered {n} {vi} for {detail} {emoji}")
     for v in violations:
-        n_missing = cu.amount_of_candles_missing_inbetween(
+        n_missing = cu.amount_missing(
             v[0].started_at,
             v[1].started_at,
             resolution,

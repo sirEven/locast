@@ -126,7 +126,7 @@ def test_amount_of_candles_missing_intbetween_returns_correctly(amount: int) -> 
     start = candles[-1].started_at
     end = candles[0].started_at
     res = candles[0].resolution
-    missing = uc.amount_of_candles_missing_inbetween(start, end, res)
+    missing = uc.amount_missing(start, end, res)
 
     # then
     expected_missing = amount - 2

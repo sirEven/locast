@@ -161,9 +161,8 @@ class CandleUtility:
         range_seconds = (end_date - start_date).total_seconds()
         return int(range_seconds / resolution.seconds)
 
-    # TODO: Rename this func
     @classmethod
-    def amount_of_candles_missing_inbetween(
+    def amount_missing(
         cls,
         start_date: datetime,
         end_date: datetime,
