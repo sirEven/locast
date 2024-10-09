@@ -145,9 +145,7 @@ class CandleUtility:
             if i > 0:
                 new = candles[i - 1]
                 old = candle
-                if (new.started_at - old.started_at) == diff_ok:
-                    pass
-                else:
+                if new.started_at - old.started_at != diff_ok:
                     violations.append((old, new))
         return violations
 
@@ -162,3 +160,12 @@ class CandleUtility:
 
         range_seconds = (end_date - start_date).total_seconds()
         return int(range_seconds / resolution.seconds)
+
+    @classmethod
+    def amount_of_candles_missing_inbetween(
+        cls,
+        start_date: datetime,
+        end_date: datetime,
+        resolution: ResolutionDetail,
+    ) -> int:
+        return cls.amount_of_candles_in_range(start_date, end_date, resolution) - 1

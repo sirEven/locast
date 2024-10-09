@@ -23,6 +23,8 @@ class DydxCandleFetcher(CandleFetcher):
     def exchange(self) -> Exchange:
         return self._exchange
 
+    # TODO: This function contains violation detection and reporting code, that is not covering edge cases (where a gap exists in between two batches).
+    # Also i would like to refactor that code out of here to make this fetch_candles func really only call violoatio and logging specific code.
     async def fetch_candles(
         self,
         market: str,
@@ -62,22 +64,26 @@ class DydxCandleFetcher(CandleFetcher):
                     temp_end_date,
                 )
 
-                if len(candle_batch) > 0:
-                    for violation in cu.find_integrity_violations(candle_batch):
-                        violations.append(violation)
-                        total -= 1
-
-                    if self._log_progress:
-                        done += len(candle_batch)
-                        log_progress("🚛", "candles", "fetched", done, total)
-
-                    candles.extend(candle_batch)
-                    temp_end_date = candles[-1].started_at
-
-                else:
+                if not candle_batch:
                     break
 
-            if len(violations) > 0:
+                for violation in cu.find_integrity_violations(candle_batch):
+                    violations.append(violation)
+                    gap_size = cu.amount_of_candles_missing_inbetween(
+                        violation[0].started_at,
+                        violation[1].started_at,
+                        violation[0].resolution,
+                    )
+                    total -= gap_size
+
+                if self._log_progress:
+                    done += len(candle_batch)
+                    log_progress("🚛", "candles", "fetched", done, total)
+
+                candles.extend(candle_batch)
+                temp_end_date = candles[-1].started_at
+
+            if violations:
                 log_integrity_violations(
                     "🚨",
                     self._exchange,
@@ -87,7 +93,7 @@ class DydxCandleFetcher(CandleFetcher):
                 )
 
         except Exception as e:
-            raise APIException(self._exchange, market, resolution, e)
+            raise APIException(self._exchange, market, resolution, e) from e
 
         return candles
 
