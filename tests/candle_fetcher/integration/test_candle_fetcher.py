@@ -13,7 +13,7 @@ from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
 from tests.helper.parametrization.list_of_amounts import amounts
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
-from tests.conftest import get_typed_fixture
+from tests.helper.fixture_helpers import get_typed_fixture
 
 
 # NOTE: Add additional implementations into these lists, to include them in the integration test suite.

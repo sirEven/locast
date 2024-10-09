@@ -13,7 +13,7 @@ from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
 from locast.candle_fetcher.exceptions import APIException
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
-from tests.conftest import get_typed_fixture
+from tests.helper.fixture_helpers import get_typed_fixture
 
 
 # NOTE: Add additional mock implementations into this list, to include them in the unit test suite.
@@ -97,3 +97,29 @@ async def test_fetch_cluster_raises_api_exception(
             res,
             start_date,
         )
+
+
+@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.asyncio
+async def test_fetch_cluster_prints_correctly(
+    request: pytest.FixtureRequest,
+    capsys: pytest.CaptureFixture[str],
+    candle_fetcher_mock: str,
+) -> None:
+    # given
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
+    fetcher._log_progress = True  # TODO: Fix by either adding setter or differently.
+    res = DydxResolution.ONE_MINUTE
+    amount_back = 1200
+    market = "ETH-USD"
+
+    now_rounded = cu.norm_date(now_utc_iso(), res)
+    start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
+
+    # when
+    _ = await fetcher.fetch_candles_up_to_now(market, res, start_date)
+
+    # then
+    out, _ = capsys.readouterr()
+    assert f"of {amount_back} candles fetched." in out
+    assert f"🚛 {amount_back} of {amount_back} candles fetched. ✅" in out
