@@ -24,7 +24,13 @@ class DydxCandleFetcher(CandleFetcher):
         return self._exchange
 
     # TODO: This function contains violation detection and reporting code, that is not covering edge cases (where a gap exists in between two batches).
-    # Also i would like to refactor that code out of here to make this fetch_candles func really only call violoatio and logging specific code.
+    # Also i would like to refactor that code out of here to make fetch_candles really only call violoation and logging specific code.
+    # Idea:
+    # - Run violation detection not on batch, but on candles collected so far (where batches are incrementally added to)
+    # - Problem: We run detection over the same candles many times which is more expensive and forces us to handle duplicate detections.
+    # - The simpler apporach would be, to feed overlapping portions into detection func, by not strictly passing a batch,
+    #   but rather passing a candle range reaching from previous batch end to current batch end. This way, if a gap exists inbetween batches
+    #   it would still detect it.
     async def fetch_candles(
         self,
         market: str,
@@ -67,14 +73,9 @@ class DydxCandleFetcher(CandleFetcher):
                 if not candle_batch:
                     break
 
-                for violation in cu.find_integrity_violations(candle_batch):
-                    violations.append(violation)
-                    gap_size = cu.amount_of_candles_missing_inbetween(
-                        violation[0].started_at,
-                        violation[1].started_at,
-                        violation[0].resolution,
-                    )
-                    total -= gap_size
+                if batch_violations := self._violations_in_batch(candle_batch, candles):
+                    total -= self._count_missing(batch_violations)
+                    violations.extend(batch_violations)
 
                 if self._log_progress:
                     done += len(candle_batch)
@@ -144,3 +145,28 @@ class DydxCandleFetcher(CandleFetcher):
             temp_now_minus_res = cu.subtract_n_resolutions(temp_norm_now, resolution, 1)
 
         return candles
+
+    def _violations_in_batch(
+        self,
+        candle_batch: List[Candle],
+        candles: List[Candle],
+    ) -> List[Tuple[Candle, Candle]]:
+        detection_batch = candle_batch.copy()
+        if candles:
+            # Insert last candle of previous batch to have overlap to cover candles missing in between batches
+            detection_batch.insert(0, candles[-1])
+
+        violations: List[Tuple[Candle, Candle]] = list(
+            cu.find_integrity_violations(detection_batch)
+        )
+        return violations
+
+    def _count_missing(self, batch_violations: List[Tuple[Candle, Candle]]):
+        return sum(
+            cu.amount_of_candles_missing_inbetween(
+                vi[0].started_at,
+                vi[1].started_at,
+                vi[0].resolution,
+            )
+            for vi in batch_violations
+        )
