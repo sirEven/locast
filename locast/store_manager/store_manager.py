@@ -34,7 +34,7 @@ class StoreManager:
             resolution,
         )
 
-        if cluster_info.head:
+        if cluster_info.newest_candle:
             if not replace_existing_cluster:
                 raise ExistingClusterException(
                     f"Cluster already exists for market {market} and resolution {resolution.notation}."
@@ -62,7 +62,7 @@ class StoreManager:
     ) -> List[Candle]:
         cluster_info = await self.get_cluster_info(exchange, market, resolution)
 
-        if not cluster_info.head:
+        if not cluster_info.newest_candle:
             raise MissingClusterException(
                 f"Cluster does not exist for market {market} and resolution {resolution.notation}."
             )
@@ -83,7 +83,7 @@ class StoreManager:
             log_redundant_call("♻️", msg)
             return
 
-        if not (head := cluster_info.head):
+        if not (head := cluster_info.newest_candle):
             raise MissingClusterException(
                 f"Cluster does not exist for market {market} and resolution {resolution.notation}."
             )
@@ -105,7 +105,7 @@ class StoreManager:
     ) -> None:
         cluster_info = await self.get_cluster_info(exchange, market, resolution)
 
-        if not cluster_info.head:
+        if not cluster_info.newest_candle:
             raise MissingClusterException(
                 f"Cluster does not exist for market {market} and resolution {resolution.notation}."
             )

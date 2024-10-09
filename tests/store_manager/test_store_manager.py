@@ -41,10 +41,10 @@ async def test_create_cluster_results_in_correct_cluster_state(
 
     info = await storage.get_cluster_info(exchange, market, resolution)
 
-    assert info.head and info.tail
+    assert info.newest_candle and info.oldest_candle
     assert info.is_uptodate
-    assert info.amount == expected_amount
-    assert info.tail.started_at == start_date
+    assert info.size == expected_amount
+    assert info.oldest_candle.started_at == start_date
 
 
 @pytest.mark.asyncio
@@ -104,10 +104,10 @@ async def test_create_cluster_replaces_existing_cluster(
 
     info = await storage.get_cluster_info(exchange, market, resolution)
 
-    assert info.head and info.tail
+    assert info.newest_candle and info.oldest_candle
     assert info.is_uptodate
-    assert info.amount == expected_amount
-    assert info.tail.started_at == start_date
+    assert info.size == expected_amount
+    assert info.oldest_candle.started_at == start_date
 
 
 @pytest.mark.asyncio
@@ -173,10 +173,10 @@ async def test_update_cluster_results_in_valid_cluster(
 
     cu.assert_candle_unity(cluster)
     assert len(cu.find_integrity_violations(cluster)) == 0
-    assert info.head
-    assert cu.is_newest_valid_candle(info.head)
-    assert cluster[0] == info.head
-    assert cluster[-1] == info.tail
+    assert info.newest_candle
+    assert cu.is_newest_valid_candle(info.newest_candle)
+    assert cluster[0] == info.newest_candle
+    assert cluster[-1] == info.oldest_candle
 
 
 @pytest.mark.asyncio
@@ -269,8 +269,8 @@ async def test_retrieve_cluster_results_in_correct_cluster(
     # then
     info = await storage.get_cluster_info(exchange, market, resolution)
 
-    assert cluster[0] == info.head
-    assert cluster[-1] == info.tail
+    assert cluster[0] == info.newest_candle
+    assert cluster[-1] == info.oldest_candle
     cu.assert_candle_unity(cluster)
     assert len(cu.find_integrity_violations(cluster)) == 0
 
@@ -295,5 +295,5 @@ async def test_get_cluster_info_returns_correctly(
 
     # then
     expected_cluster = await manager.retrieve_cluster(exchange, market, resolution)
-    assert info.head == expected_cluster[0]
-    assert info.tail == expected_cluster[-1]
+    assert info.newest_candle == expected_cluster[0]
+    assert info.oldest_candle == expected_cluster[-1]

@@ -5,7 +5,7 @@ from locast.candle.candle import Candle
 
 @dataclass
 class ClusterInfo:
-    head: Candle | None
-    tail: Candle | None
-    amount: int
+    newest_candle: Candle | None
+    oldest_candle: Candle | None
+    size: int
     is_uptodate: bool

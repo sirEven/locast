@@ -204,8 +204,8 @@ async def test_get_cluster_head_results_in_newest_candle(
 
     # then
     expected_started_at = end_date - timedelta(seconds=res.seconds)
-    assert cluster_info.head
-    assert cluster_info.head.started_at == expected_started_at
+    assert cluster_info.newest_candle
+    assert cluster_info.newest_candle.started_at == expected_started_at
 
 
 @pytest.mark.asyncio
@@ -223,9 +223,9 @@ async def test_get_cluster_head_results_in_None(
     cluster_info = await storage.get_cluster_info(exchange, market, res)
 
     # then
-    assert cluster_info.head is None
-    assert cluster_info.tail is None
-    assert cluster_info.amount == 0
+    assert cluster_info.newest_candle is None
+    assert cluster_info.oldest_candle is None
+    assert cluster_info.size == 0
     assert cluster_info.is_uptodate is False
 
 
@@ -249,9 +249,9 @@ async def test_get_cluster_head_when_foreign_tables_exist_results_in_None(
     cluster_info = await storage.get_cluster_info(exchange, market, res)
 
     # then
-    assert cluster_info.head is None
-    assert cluster_info.tail is None
-    assert cluster_info.amount == 0
+    assert cluster_info.newest_candle is None
+    assert cluster_info.oldest_candle is None
+    assert cluster_info.size == 0
     assert cluster_info.is_uptodate is False
 
 
@@ -279,10 +279,10 @@ async def test_get_cluster_info_results_in_correct_info(
     # then
     expected_head = candles[0]
     expected_tail = candles[-1]
-    assert cluster_info.head and cluster_info.tail
-    assert cluster_info.head.started_at == expected_head.started_at
-    assert cluster_info.tail.started_at == expected_tail.started_at
-    assert cluster_info.amount == len(candles)
+    assert cluster_info.newest_candle and cluster_info.oldest_candle
+    assert cluster_info.newest_candle.started_at == expected_head.started_at
+    assert cluster_info.oldest_candle.started_at == expected_tail.started_at
+    assert cluster_info.size == len(candles)
     assert cluster_info.is_uptodate
 
 
@@ -302,9 +302,9 @@ async def test_get_cluster_info_results_in_none(
     cluster_info = await storage.get_cluster_info(exchange, market, res)
 
     # then
-    assert cluster_info.head is None
-    assert cluster_info.tail is None
-    assert cluster_info.amount == 0
+    assert cluster_info.newest_candle is None
+    assert cluster_info.oldest_candle is None
+    assert cluster_info.size == 0
     assert cluster_info.is_uptodate is False
 
 
