@@ -22,7 +22,14 @@ class DydxCandleFetcher(CandleFetcher):
     @property
     def exchange(self) -> Exchange:
         return self._exchange
-
+    @property
+    def log_progress(self) -> bool:
+        return self._log_progress
+    
+    @log_progress.setter
+    def log_progress(self, value: bool) -> None:
+        self._log_progress = value
+    
     async def fetch_candles(
         self,
         market: str,
@@ -64,8 +71,8 @@ class DydxCandleFetcher(CandleFetcher):
 
                 if not candle_batch:
                     break
-
-                if batch_violations := self._violations_in_batch(candle_batch, candles):
+                oldest = candles[-1] if candles else None
+                if batch_violations := self._violations_in_batch(candle_batch, oldest):
                     total -= self._count_missing(batch_violations)
                     violations.extend(batch_violations)
 
@@ -141,12 +148,12 @@ class DydxCandleFetcher(CandleFetcher):
     def _violations_in_batch(
         self,
         candle_batch: List[Candle],
-        candles: List[Candle],
+        previous_last_candle: Candle | None,
     ) -> List[Tuple[Candle, Candle]]:
         detection_batch = candle_batch.copy()
-        if candles:
+        if previous_last_candle:
             # Insert last candle of previous batch to have overlap to cover candles missing in between batches
-            detection_batch.insert(0, candles[-1])
+            detection_batch.insert(0, previous_last_candle)
 
         violations: List[Tuple[Candle, Candle]] = list(
             cu.find_integrity_violations(detection_batch)

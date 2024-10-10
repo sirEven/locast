@@ -108,7 +108,7 @@ async def test_fetch_cluster_prints_correctly(
 ) -> None:
     # given
     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
-    fetcher._log_progress = True  # TODO: Fix by either adding setter or differently.
+    fetcher.log_progress = True
     res = DydxResolution.ONE_MINUTE
     amount_back = 1200
     market = "ETH-USD"

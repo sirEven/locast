@@ -9,6 +9,13 @@ from locast.candle.resolution import ResolutionDetail
 class CandleFetcher(Protocol):
     @property
     def exchange(self) -> Exchange: ...
+
+    @property
+    def log_progress(self) -> bool: ...
+
+    @log_progress.setter
+    def log_progress(self, value: bool) -> None: ...
+
     async def fetch_candles(
         self,
         market: str,
