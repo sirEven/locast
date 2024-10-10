@@ -99,6 +99,8 @@ async def test_fetch_cluster_raises_api_exception(
         )
 
 
+# TODO: How to write the test in such a way, that we can tell the received fetcher, its api_fetcher mock
+# shall produce candle violations in order to test log output? chad chippity suggests dynamic test creation...
 @pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
 @pytest.mark.asyncio
 async def test_fetch_cluster_prints_correctly(
