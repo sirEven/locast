@@ -11,6 +11,7 @@ from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
 )
 
 from locast.candle_fetcher.exceptions import APIException
+from tests.helper.candle_mockery.dydx_candle_backend_mock import DydxCandleBackendMock
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 from tests.helper.fixture_helpers import get_typed_fixture
@@ -101,9 +102,12 @@ async def test_fetch_cluster_raises_api_exception(
 
 # TODO: How to write the test in such a way, that we can tell the received fetcher, its api_fetcher mock
 # shall produce candle violations in order to test log output? chad chippity suggests dynamic test creation...
+# An other Idea is to finally mock candles as a fake backend, such that it can be used as a fixture.
+# This way we could direct the client and indexer mocks candle creation towards that backend, and switch its mode from normal
+# to including missing candles when needed.
 @pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
 @pytest.mark.asyncio
-async def test_fetch_cluster_prints_correctly(
+async def test_fetch_cluster_prints_progress_correctly(
     request: pytest.FixtureRequest,
     capsys: pytest.CaptureFixture[str],
     candle_fetcher_mock: str,
@@ -125,3 +129,70 @@ async def test_fetch_cluster_prints_correctly(
     out, _ = capsys.readouterr()
     assert f"of {amount_back} candles fetched." in out
     assert f"🚛 {amount_back} of {amount_back} candles fetched. ✅" in out
+
+
+@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.asyncio
+async def test_fetch_cluster_prints_missing_candles_correctly(
+    request: pytest.FixtureRequest,
+    capsys: pytest.CaptureFixture[str],
+    dydx_candle_backend_mock: DydxCandleBackendMock,
+    candle_fetcher_mock: str,
+) -> None:
+    # given
+    backend = dydx_candle_backend_mock
+    backend.missing_candles = True
+
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
+    fetcher.log_progress = True
+    res = DydxResolution.ONE_MINUTE
+    amount_back = 120
+    market = "ETH-USD"
+
+    now_rounded = cu.norm_date(now_utc_iso(), res)
+    start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
+
+    # when
+    _ = await fetcher.fetch_candles_up_to_now(market, res, start_date)
+
+    # then
+    out, _ = capsys.readouterr()
+    assert "" in out  # TODO: Additional test for batch boundry errors.
+    assert "🚨 Attention:" in out
+    assert out.count("❌ Candle missing:") == 3
+
+
+# TODO: This test wont work yet and has 2 follow up tests (batch start and both togeter)
+# TODO: Think of the edge case, that the very first candle of the very first batch is missing. This is not handled by overlapping checks.
+# @pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+# @pytest.mark.asyncio
+# async def test_fetch_cluster_prints_violations_on_batch_end_correctly(
+#     request: pytest.FixtureRequest,
+#     capsys: pytest.CaptureFixture[str],
+#     dydx_candle_backend_mock: DydxCandleBackendMock,
+#     candle_fetcher_mock: str,
+# ) -> None:
+#     # given
+#     backend = dydx_candle_backend_mock
+#     backend.missing_candles_on_batch_end = True
+
+#     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
+#     fetcher.log_progress = True
+#     res = DydxResolution.ONE_MINUTE
+#     amount_back = 120
+#     market = "ETH-USD"
+
+#     now_rounded = cu.norm_date(now_utc_iso(), res)
+#     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
+
+#     # when
+#     _ = await fetcher.fetch_candles_up_to_now(market, res, start_date)
+
+#     # then
+#     out, _ = capsys.readouterr()
+#     assert "" in out  # TODO: batch boundry errors.
+#     assert "🚨 Attention:" in out
+#     assert "❌ 1 missing between" in out
+#     assert "❌ 2 missing between" in out
+
+#     print(out)

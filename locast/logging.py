@@ -1,9 +1,8 @@
-from typing import List, Tuple
+from datetime import datetime
+from typing import List
 
-from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
-from locast.candle.candle_utility import CandleUtility as cu
 
 
 def log_progress(
@@ -20,26 +19,21 @@ def log_progress(
         print(f"{emoji} {progress_message}", end="\r", flush=True)
 
 
-def log_integrity_violations(
+def log_missing_candles(
     emoji: str,
     exchange: Exchange,
     market: str,
     resolution: ResolutionDetail,
-    violations: List[Tuple[Candle, Candle]],
+    missing_candle_dates: List[datetime],
 ) -> None:
-    n = len(violations)
-    vi = "integrity violations" if n > 1 else "integrity violation"
+    n = len(missing_candle_dates)
+    vi = "candles" if n > 1 else "candle"
     detail = f"{market}, {resolution.notation}"
-    print(f"{emoji} Attention: {exchange.name} delivered {n} {vi} for {detail} {emoji}")
-    for v in violations:
-        n_missing = cu.amount_missing(
-            v[0].started_at,
-            v[1].started_at,
-            resolution,
-        )
-        print(
-            f"    ❌ {n_missing} missing between: {v[0].started_at} - {v[1].started_at}"
-        )
+    print(
+        f"{emoji} Attention: {exchange.name} failed to deliver {n} {vi} for {detail} {emoji}"
+    )
+    for date in missing_candle_dates:
+        print(f"    ❌ Candle missing: {date}.")
 
 
 def log_redundant_call(emoji: str, message: str) -> None:

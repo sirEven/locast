@@ -29,6 +29,7 @@ from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.candle.candle_utility import CandleUtility as cu
 
 from locast.store_manager.store_manager import StoreManager
+from tests.helper.candle_mockery.dydx_candle_backend_mock import DydxCandleBackendMock
 from tests.helper.candle_mockery.v3_client_mock import V3ClientMock
 from tests.helper.candle_mockery.v4_indexer_mock import V4IndexerClientMock
 from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
@@ -79,6 +80,12 @@ def dydx_v4_eth_one_min_mock_candles() -> Generator[list[Candle], None, None]:
     )
     mapper = ExchangeCandleMapper(DydxV4CandleMapping())
     yield mapper.to_candles(eth_dicts)
+
+
+@pytest.fixture(scope="function")
+def dydx_candle_backend_mock() -> Generator[DydxCandleBackendMock, None, None]:
+    yield DydxCandleBackendMock()
+    DydxCandleBackendMock.reset_instance()
 
 
 # region - dYdX v4

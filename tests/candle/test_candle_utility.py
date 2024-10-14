@@ -146,6 +146,25 @@ def test_next_tick_returns_correctly(resolution: ResolutionDetail) -> None:
     assert next_tick == expected_next_tick
 
 
+def test_missing_dates_inbetween() -> None:
+    # given
+    start = string_to_datetime("2022-01-01T00:00:00.000Z")
+    end = string_to_datetime("2022-01-01T00:05:00.000Z")
+    res = DydxResolution.ONE_MINUTE
+
+    # when
+    missing = uc.missing_dates_between(start, end, res)
+
+    # then
+    expected = [
+        string_to_datetime("2022-01-01T00:01:00.000Z"),
+        string_to_datetime("2022-01-01T00:02:00.000Z"),
+        string_to_datetime("2022-01-01T00:03:00.000Z"),
+        string_to_datetime("2022-01-01T00:04:00.000Z"),
+    ]
+    assert missing == expected
+
+
 def alternate_next_tick(resolution: ResolutionDetail) -> datetime:
     utc_now = datetime.now(timezone.utc)
     unix_epoch = datetime.fromtimestamp(0, timezone.utc)

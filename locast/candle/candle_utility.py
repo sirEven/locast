@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, TypeVar, Tuple
+from typing import List, TypeVar
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from locast.candle.candle import Candle
@@ -130,12 +130,13 @@ class CandleUtility:
         raise AssertionError(f"{msg} {mismatch}")
 
     # TODO: Benchmark this func
+    # TODO: Switch to only handle dates instead of whole candles when it comes to violations - also: a violation shall be only one date
     @classmethod
     def find_integrity_violations(
         cls,
         candles: List[Candle],
-    ) -> List[Tuple[Candle, Candle]]:
-        violations: List[Tuple[Candle, Candle]] = []
+    ) -> List[datetime]:
+        violations: List[datetime] = []
 
         if len(candles) <= 1:
             return violations
@@ -143,10 +144,15 @@ class CandleUtility:
         diff_ok = timedelta(seconds=candles[0].resolution.seconds)
         for i, candle in enumerate(candles):
             if i > 0:
-                new = candles[i - 1]
-                old = candle
-                if new.started_at - old.started_at != diff_ok:
-                    violations.append((old, new))
+                new = candles[i - 1].started_at
+                old = candle.started_at
+                if new - old != diff_ok:
+                    missing_dates = cls.missing_dates_between(
+                        old,
+                        new,
+                        candle.resolution,
+                    )
+                    violations.extend(missing_dates)
         return violations
 
     @classmethod
@@ -169,3 +175,20 @@ class CandleUtility:
         resolution: ResolutionDetail,
     ) -> int:
         return cls.amount_of_candles_in_range(start_date, end_date, resolution) - 1
+
+    @classmethod
+    def missing_dates_between(
+        cls,
+        start_date: datetime,
+        end_date: datetime,
+        resolution: ResolutionDetail,
+    ) -> List[datetime]:
+        missing_dates: List[datetime] = []
+        current_dt = start_date + timedelta(seconds=resolution.seconds)
+        while current_dt < end_date:
+            missing_dates.append(current_dt)
+            current_dt += timedelta(seconds=resolution.seconds)
+        return missing_dates
+
+
+# TODO: Check what functions are not needed anymore.
