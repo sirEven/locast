@@ -124,6 +124,8 @@ class StoreManager:
     ) -> ClusterInfo:
         return await self._candle_storage.get_cluster_info(exchange, market, resolution)
 
+    # TODO: Expand API by adding convenience methods such as def retrieve_segment(from, to, exchange, market, resolution) -> List[Candle]: ...
+
 
 class ExistingClusterException(Exception):
     def __init__(self, message: str) -> None:
