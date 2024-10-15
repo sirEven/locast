@@ -51,31 +51,36 @@ def test_is_newest_valid_candle_returns_false() -> None:
     assert uc.is_newest_valid_candle(candle) is False
 
 
-def test_find_integrity_violations_returns_empty(
+def test_detect_missing_dates_returns_empty(
     dydx_v4_eth_one_min_mock_candles: List[Candle],
 ) -> None:
     # given
     candles = dydx_v4_eth_one_min_mock_candles
+    candle_dates = [candle.started_at for candle in candles]
+    res = candles[0].resolution
 
     # when
-    violations = uc.find_integrity_violations(candles)
+    missing = uc.detect_missing_dates(candle_dates, res)
 
     # then
-    assert len(violations) == 0
+    assert len(missing) == 0
 
 
-def test_find_integrity_violations_returns_violations(
+def test_detect_missing_dates_returns_missing(
     dydx_v4_eth_one_min_mock_candles: List[Candle],
 ) -> None:
     # given
     candles = dydx_v4_eth_one_min_mock_candles
     faulty_candles = [candles[0], candles[1], candles[3], candles[4]]
 
+    faulty_dates = [candle.started_at for candle in faulty_candles]
+    res = candles[0].resolution
+
     # when
-    violations = uc.find_integrity_violations(faulty_candles)
+    missing = uc.detect_missing_dates(faulty_dates, res)
 
     # then
-    assert len(violations) > 0
+    assert len(missing) > 0
 
 
 def test_assert_candle_unity_returns_true(

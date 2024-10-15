@@ -1,3 +1,4 @@
+import random
 from typing import Any, Dict, List
 from locast.candle.exchange import Exchange
 from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
@@ -10,9 +11,9 @@ class DydxCandleBackendMock:
 
     def __new__(
         cls,
-        missing_candles: bool | None = None,
-        missing_candles_on_batch_end: bool | None = None,
-        missing_candles_on_batch_start: bool | None = None,
+        missing_random_candles: int = 0,
+        missing_candles_on_batch_end: int = 0,
+        missing_candles_on_batch_start: int = 0,
     ):
         if cls._instance is None:
             cls._instance = super(DydxCandleBackendMock, cls).__new__(cls)
@@ -20,40 +21,44 @@ class DydxCandleBackendMock:
 
     def __init__(
         self,
-        missing_candles: bool | None = None,
-        missing_candles_on_batch_end: bool | None = None,
-        missing_candles_on_batch_start: bool | None = None,
+        missing_random_candles: int = 0,
+        missing_candles_on_batch_end: int = 0,
+        missing_candles_on_batch_start: int = 0,
     ) -> None:
-        if not hasattr(self, "_missing_candles"):
-            self._missing_candles = missing_candles
-            self._missing_candles_on_batch_end = missing_candles_on_batch_end
-            self._missing_candles_on_batch_start = missing_candles_on_batch_start
-            self._random_candles_deleted = False
-            self._batch_end_deleted = False
-            self._batch_start_deleted = False
+        properties = {
+            "_missing_random_candles": missing_random_candles,
+            "_missing_candles_on_batch_end": missing_candles_on_batch_end,
+            "_missing_candles_on_batch_start": missing_candles_on_batch_start,
+        }
+        for prop, value in properties.items():
+            if not hasattr(self, prop):
+                setattr(self, prop, value)
+                # Initialize corresponding deleted flag
+                deleted_prop = f"{prop}_deleted"
+                setattr(self, deleted_prop, False)
 
     @property
-    def missing_candles(self) -> bool | None:
-        return self._missing_candles
+    def missing_random_candles(self) -> int:
+        return self._missing_random_candles
 
-    @missing_candles.setter
-    def missing_candles(self, value: bool | None) -> None:
-        self._missing_candles = value
+    @missing_random_candles.setter
+    def missing_random_candles(self, value: int) -> None:
+        self._missing_random_candles = value
 
     @property
-    def missing_candles_on_batch_end(self) -> bool | None:
+    def missing_candles_on_batch_end(self) -> int:
         return self._missing_candles_on_batch_end
 
     @missing_candles_on_batch_end.setter
-    def missing_candles_on_batch_end(self, value: bool | None) -> None:
+    def missing_candles_on_batch_end(self, value: int) -> None:
         self._missing_candles_on_batch_end = value
 
     @property
-    def missing_candles_on_batch_start(self) -> bool | None:
+    def missing_candles_on_batch_start(self) -> int:
         return self._missing_candles_on_batch_start
 
     @missing_candles_on_batch_start.setter
-    def missing_candles_on_batch_start(self, value: bool | None) -> None:
+    def missing_candles_on_batch_start(self, value: int) -> None:
         self._missing_candles_on_batch_start = value
 
     def mock_candles(
@@ -74,7 +79,7 @@ class DydxCandleBackendMock:
             batch_size,
         )
 
-        if self.missing_candles:
+        if self._missing_random_candles:
             self._delete_random_candles(candle_dicts_batch)
 
         if self._missing_candles_on_batch_end:
@@ -90,19 +95,17 @@ class DydxCandleBackendMock:
         cls._instance = None
 
     def _delete_random_candles(self, batch: List[Dict[str, Any]]) -> None:
-        if not self._random_candles_deleted:
-            for n in [17, 23]:
-                del batch[n]
-            del batch[23]
-            # TODO: Delete candles that fall on a batch boundary
-            self._random_candles_deleted = True
+        if not self._missing_random_candles_deleted:
+            for _ in range(self._missing_random_candles):
+                del batch[random.randint(10, 20)]
+            self._missing_random_candles_deleted = True
 
     def _delete_on_batch_start(self, batch: List[Dict[str, Any]]):
-        if not self._batch_start_deleted:
+        if not self._missing_candles_on_batch_start_deleted:
             del batch[0]
-            self._batch_start_deleted = True
+            self._missing_candles_on_batch_start_deleted = True
 
     def _delete_on_batch_end(self, batch: List[Dict[str, Any]]):
-        if not self._batch_end_deleted:
+        if not self._missing_candles_on_batch_end_deleted:
             del batch[-1]
-            self._batch_end_deleted = True
+            self._missing_candles_on_batch_end_deleted = True

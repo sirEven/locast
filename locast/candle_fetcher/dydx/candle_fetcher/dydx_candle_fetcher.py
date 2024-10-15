@@ -72,10 +72,12 @@ class DydxCandleFetcher(CandleFetcher):
 
                 if not candle_batch:
                     break
-                oldest = candles[-1] if candles else None
+
+                prev_oldest_date = candles[-1].started_at if candles else end_date
+
                 if missing_in_batch := self._detect_missing_in_batch(
                     candle_batch,
-                    oldest,
+                    prev_oldest_date,
                 ):
                     total -= len(missing_in_batch)
                     total_missing_candles.extend(missing_in_batch)
@@ -154,22 +156,22 @@ class DydxCandleFetcher(CandleFetcher):
     def _detect_missing_in_batch(
         self,
         candle_batch: List[Candle],
-        previous_last_candle: Candle | None,
+        previous_last_candle: datetime,
     ) -> List[datetime]:
-        detection_batch = candle_batch.copy()
-        if previous_last_candle:
-            # Insert last candle of previous batch to have overlap to cover candles missing in between batches
-            detection_batch.insert(0, previous_last_candle)
+        dates_to_check = [candle.started_at for candle in candle_batch]
 
-        return cu.find_integrity_violations(detection_batch)
+        # Insert last candle of previous batch to have overlap to cover candles missing in between batches
+        dates_to_check.insert(0, previous_last_candle)
 
-    def _detect_missing_oldest(self) -> List[datetime]:
-        # Detect if candles are missing at complete fetch start regionn (oldest)
+        return cu.detect_missing_dates(dates_to_check, candle_batch[0].resolution)
+
+    def _detect_missing_at_minus_one_edge(self) -> List[datetime]:
+        # Detect if candles are missing at complete fetch start region (oldest)
         return []
 
-    def _detect_missing_newest(self) -> List[datetime]:
-        # Detect if candles are missing at complete fetch end region (newest)
-        return []
+    # def _detect_missing_newest(self) -> List[datetime]:
+    #     # Detect if candles are missing at complete fetch end region (newest)
+    #     return []
 
     # def _count_missing(self, batch_violations: List[Tuple[datetime, datetime]]):
     #     return sum(

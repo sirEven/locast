@@ -141,7 +141,8 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
 ) -> None:
     # given
     backend = dydx_candle_backend_mock
-    backend.missing_candles = True
+    n_missing = 5
+    backend.missing_random_candles = n_missing
 
     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     fetcher.log_progress = True
@@ -159,8 +160,12 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
     out, _ = capsys.readouterr()
     assert "" in out  # TODO: Additional test for batch boundry errors.
     assert "🚨 Attention:" in out
-    assert out.count("❌ Candle missing:") == 3
+    assert out.count("❌ Candle missing:") == n_missing
 
+
+# TODO consolidated:
+# a) test batch boundary violations (3 versions: on batch start, on batch end, on both)
+# b) test complete fetch boundary violations: (5 versions: missing the newest, missing multiple newest, missing the oldest, missing multiple oldest, and all together)
 
 # TODO: This test wont work yet and has 2 follow up tests (batch start and both togeter)
 # TODO: Think of the edge case, that the very first candle of the very first batch is missing. This is not handled by overlapping checks.

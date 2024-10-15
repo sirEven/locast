@@ -132,28 +132,29 @@ class CandleUtility:
     # TODO: Benchmark this func
     # TODO: Switch to only handle dates instead of whole candles when it comes to violations - also: a violation shall be only one date
     @classmethod
-    def find_integrity_violations(
+    def detect_missing_dates(
         cls,
-        candles: List[Candle],
+        candle_dates: List[datetime],
+        resolution: ResolutionDetail,
     ) -> List[datetime]:
-        violations: List[datetime] = []
+        missing: List[datetime] = []
 
-        if len(candles) <= 1:
-            return violations
+        if len(candle_dates) <= 1:
+            return missing
 
-        diff_ok = timedelta(seconds=candles[0].resolution.seconds)
-        for i, candle in enumerate(candles):
+        diff_ok = resolution.seconds
+        for i, candle_date in enumerate(candle_dates):
             if i > 0:
-                new = candles[i - 1].started_at
-                old = candle.started_at
+                new = candle_dates[i - 1]
+                old = candle_date
                 if new - old != diff_ok:
                     missing_dates = cls.missing_dates_between(
                         old,
                         new,
-                        candle.resolution,
+                        resolution,
                     )
-                    violations.extend(missing_dates)
-        return violations
+                    missing.extend(missing_dates)
+        return missing
 
     @classmethod
     def amount_of_candles_in_range(
