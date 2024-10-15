@@ -100,11 +100,6 @@ async def test_fetch_cluster_raises_api_exception(
         )
 
 
-# TODO: How to write the test in such a way, that we can tell the received fetcher, its api_fetcher mock
-# shall produce candle violations in order to test log output? chad chippity suggests dynamic test creation...
-# An other Idea is to finally mock candles as a fake backend, such that it can be used as a fixture.
-# This way we could direct the client and indexer mocks candle creation towards that backend, and switch its mode from normal
-# to including missing candles when needed.
 @pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
 @pytest.mark.asyncio
 async def test_fetch_cluster_prints_progress_correctly(
@@ -158,20 +153,50 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
 
     # then
     out, _ = capsys.readouterr()
-    assert "" in out  # TODO: Additional test for batch boundry errors.
+    assert "" in out
     assert "🚨 Attention:" in out
     assert out.count("❌ Candle missing:") == n_missing
 
 
-# TODO consolidated:
-# a) test batch boundary violations (3 versions: on batch start, on batch end, on both)
-# b) test complete fetch boundary violations: (5 versions: missing the newest, missing multiple newest, missing the oldest, missing multiple oldest, and all together)
+@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.asyncio
+async def test_fetch_cluster_prints_missing_candles_on_batch_newest_edge_correctly(
+    request: pytest.FixtureRequest,
+    capsys: pytest.CaptureFixture[str],
+    dydx_candle_backend_mock: DydxCandleBackendMock,
+    candle_fetcher_mock: str,
+) -> None:
+    # given
+    backend = dydx_candle_backend_mock
+    n_missing = 5
+    backend.missing_candles_on_batch_newest_edge = n_missing
 
-# TODO: This test wont work yet and has 2 follow up tests (batch start and both togeter)
-# TODO: Think of the edge case, that the very first candle of the very first batch is missing. This is not handled by overlapping checks.
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
+    fetcher.log_progress = True
+    res = DydxResolution.ONE_MINUTE
+    amount_back = 120
+    market = "ETH-USD"
+
+    now_rounded = cu.norm_date(now_utc_iso(), res)
+    start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
+
+    # when
+    _ = await fetcher.fetch_candles_up_to_now(market, res, start_date)
+
+    # then
+    out, _ = capsys.readouterr()
+    assert "" in out
+    assert "🚨 Attention:" in out
+    assert out.count("❌ Candle missing:") == n_missing
+
+
+# TODO: This case can not be simulated with current backend mock - consider ditching it, as it is kinda included in the other tests,
+# because the way we detect missing candles is now the same for all scenarios. This is due to the fact, that fetching logic is based on
+# a while condition that does not allow missing edge candles at the oldest edge - it will rather
+# enforce a real gap to the following older candle - which then is detectable by overlapping algo.
 # @pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
 # @pytest.mark.asyncio
-# async def test_fetch_cluster_prints_violations_on_batch_end_correctly(
+# async def test_fetch_cluster_prints_missing_candles_on_batch_oldest_edge_inbetween_correctly(
 #     request: pytest.FixtureRequest,
 #     capsys: pytest.CaptureFixture[str],
 #     dydx_candle_backend_mock: DydxCandleBackendMock,
@@ -179,12 +204,14 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
 # ) -> None:
 #     # given
 #     backend = dydx_candle_backend_mock
-#     backend.missing_candles_on_batch_end = True
+#     n_missing = 5
+#     amount_back = 1000
+#     backend.missing_candles_on_batch_oldest_edge = n_missing
 
 #     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
 #     fetcher.log_progress = True
 #     res = DydxResolution.ONE_MINUTE
-#     amount_back = 120
+
 #     market = "ETH-USD"
 
 #     now_rounded = cu.norm_date(now_utc_iso(), res)
@@ -195,9 +222,6 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
 
 #     # then
 #     out, _ = capsys.readouterr()
-#     assert "" in out  # TODO: batch boundry errors.
+#     assert "" in out
 #     assert "🚨 Attention:" in out
-#     assert "❌ 1 missing between" in out
-#     assert "❌ 2 missing between" in out
-
-#     print(out)
+#     assert out.count("❌ Candle missing:") == n_missing

@@ -130,7 +130,6 @@ class CandleUtility:
         raise AssertionError(f"{msg} {mismatch}")
 
     # TODO: Benchmark this func
-    # TODO: Switch to only handle dates instead of whole candles when it comes to violations - also: a violation shall be only one date
     @classmethod
     def detect_missing_dates(
         cls,

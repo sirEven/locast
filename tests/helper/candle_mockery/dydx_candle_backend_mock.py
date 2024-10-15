@@ -11,9 +11,10 @@ class DydxCandleBackendMock:
 
     def __new__(
         cls,
+        mock_task: int = 0,
         missing_random_candles: int = 0,
-        missing_candles_on_batch_end: int = 0,
-        missing_candles_on_batch_start: int = 0,
+        # missing_candles_on_batch_oldest_edge: int = 0,
+        missing_candles_on_batch_newest_edge: int = 0,
     ):
         if cls._instance is None:
             cls._instance = super(DydxCandleBackendMock, cls).__new__(cls)
@@ -21,14 +22,15 @@ class DydxCandleBackendMock:
 
     def __init__(
         self,
+        mock_task: int = 0,
         missing_random_candles: int = 0,
-        missing_candles_on_batch_end: int = 0,
-        missing_candles_on_batch_start: int = 0,
+        # missing_candles_on_batch_oldest_edge: int = 0,
+        missing_candles_on_batch_newest_edge: int = 0,
     ) -> None:
         properties = {
             "_missing_random_candles": missing_random_candles,
-            "_missing_candles_on_batch_end": missing_candles_on_batch_end,
-            "_missing_candles_on_batch_start": missing_candles_on_batch_start,
+            # "_missing_candles_on_batch_oldest_edge": missing_candles_on_batch_oldest_edge,
+            "_missing_candles_on_batch_newest_edge": missing_candles_on_batch_newest_edge,
         }
         for prop, value in properties.items():
             if not hasattr(self, prop):
@@ -45,21 +47,21 @@ class DydxCandleBackendMock:
     def missing_random_candles(self, value: int) -> None:
         self._missing_random_candles = value
 
+    # @property
+    # def missing_candles_on_batch_oldest_edge(self) -> int:
+    #     return self._missing_candles_on_batch_oldest_edge
+
+    # @missing_candles_on_batch_oldest_edge.setter
+    # def missing_candles_on_batch_oldest_edge(self, value: int) -> None:
+    #     self._missing_candles_on_batch_oldest_edge = value
+
     @property
-    def missing_candles_on_batch_end(self) -> int:
-        return self._missing_candles_on_batch_end
+    def missing_candles_on_batch_newest_edge(self) -> int:
+        return self._missing_candles_on_batch_newest_edge
 
-    @missing_candles_on_batch_end.setter
-    def missing_candles_on_batch_end(self, value: int) -> None:
-        self._missing_candles_on_batch_end = value
-
-    @property
-    def missing_candles_on_batch_start(self) -> int:
-        return self._missing_candles_on_batch_start
-
-    @missing_candles_on_batch_start.setter
-    def missing_candles_on_batch_start(self, value: int) -> None:
-        self._missing_candles_on_batch_start = value
+    @missing_candles_on_batch_newest_edge.setter
+    def missing_candles_on_batch_newest_edge(self, value: int) -> None:
+        self._missing_candles_on_batch_newest_edge = value
 
     def mock_candles(
         self,
@@ -82,11 +84,11 @@ class DydxCandleBackendMock:
         if self._missing_random_candles:
             self._delete_random_candles(candle_dicts_batch)
 
-        if self._missing_candles_on_batch_end:
-            self._delete_on_batch_end(candle_dicts_batch)
+        if self._missing_candles_on_batch_newest_edge:
+            self._delete_on_batch_batch_newest_edge(candle_dicts_batch)
 
-        if self._missing_candles_on_batch_start:
-            self._delete_on_batch_start(candle_dicts_batch)
+        # if self._missing_candles_on_batch_oldest_edge:
+        #     self._delete_on_batch_oldest_edge(candle_dicts_batch)
 
         return {"candles": candle_dicts_batch}
 
@@ -100,12 +102,14 @@ class DydxCandleBackendMock:
                 del batch[random.randint(10, 20)]
             self._missing_random_candles_deleted = True
 
-    def _delete_on_batch_start(self, batch: List[Dict[str, Any]]):
-        if not self._missing_candles_on_batch_start_deleted:
-            del batch[0]
-            self._missing_candles_on_batch_start_deleted = True
+    def _delete_on_batch_batch_newest_edge(self, batch: List[Dict[str, Any]]):
+        if not self._missing_candles_on_batch_newest_edge_deleted:
+            for _ in range(self._missing_candles_on_batch_newest_edge):
+                del batch[0]
+            self._missing_candles_on_batch_newest_edge_deleted = True
 
-    def _delete_on_batch_end(self, batch: List[Dict[str, Any]]):
-        if not self._missing_candles_on_batch_end_deleted:
-            del batch[-1]
-            self._missing_candles_on_batch_end_deleted = True
+    # def _delete_on_batch_oldest_edge(self, batch: List[Dict[str, Any]]):
+    #     if not self._missing_candles_on_batch_oldest_edge_deleted:
+    #         for _ in range(self._missing_candles_on_batch_oldest_edge):
+    #             del batch[-1]
+    #         self._missing_candles_on_batch_oldest_edge_deleted = True
