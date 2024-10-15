@@ -62,9 +62,6 @@ class DydxCandleFetcher(CandleFetcher):
         total_missing_candles: List[datetime] = []
 
         try:
-            # NOTE: The > check makes missing an oldest edge impossible to be not detected by overlapping detection algo:
-            # it would not satisfy this while condition  here thus another fetch would download a candle that is finally < than start_date,
-            # satisfying the while condition, but also creating a detectable gap for the detection algo.
             while (not candles) or candles[-1].started_at > start_date:
                 candle_batch: List[Candle] = await self._fetcher.fetch(
                     market,
@@ -91,16 +88,6 @@ class DydxCandleFetcher(CandleFetcher):
 
                 candles.extend(candle_batch)
                 temp_end_date = candles[-1].started_at
-
-            # notTODO: detect missing candles at complete fetch oldest edge
-            # notTODO: if there are missing ones, update the logged progress again.
-            # notTODO: See if this can be extracted into a func, as it is lots of repetition
-
-            # NOTE: Actually not necessary, because of the nature of the fetch algo (while condition)
-            # if missing_at_oldest_edge := self._detect_missing_at_oldest_edge():
-            #     total -= len(missing_at_oldest_edge)
-            #     total_missing_candles.extend(missing_at_oldest_edge)
-            #     log_progress("🚛", "candles", "fetched", done, total)
 
             # TODO: See if ordering total_missing_candles makes sense.
             if total_missing_candles:
@@ -176,18 +163,3 @@ class DydxCandleFetcher(CandleFetcher):
         dates_to_check.insert(0, previous_last_candle)
 
         return cu.detect_missing_dates(dates_to_check, candle_batch[0].resolution)
-
-    # def _detect_missing_at_oldest_edge(self) -> List[datetime]:
-    #     # Detect if candles are missing at complete fetch [-1] region (oldest)
-
-    #     return []
-
-    # def _detect_missing_newest(self) -> List[datetime]:
-    #     # Detect if candles are missing at complete fetch end region (newest)
-    #     return []
-
-    # def _count_missing(self, batch_violations: List[Tuple[datetime, datetime]]):
-    #     return sum(
-    #         cu.amount_missing(vi[0].started_at, vi[1].started_at, vi[0].resolution)
-    #         for vi in batch_violations
-    #     )
