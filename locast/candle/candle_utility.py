@@ -184,10 +184,10 @@ class CandleUtility:
         resolution: ResolutionDetail,
     ) -> List[datetime]:
         missing_dates: List[datetime] = []
-        current_dt = start_date + timedelta(seconds=resolution.seconds)
-        while current_dt < end_date:
-            missing_dates.append(current_dt)
-            current_dt += timedelta(seconds=resolution.seconds)
+        current_date = start_date + timedelta(seconds=resolution.seconds)
+        while current_date < end_date:
+            missing_dates.append(current_date)
+            current_date += timedelta(seconds=resolution.seconds)
         return missing_dates
 
 
