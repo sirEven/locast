@@ -17,15 +17,20 @@ from tests.helper.parametrization.list_of_resolution_details import resolutions
 from tests.helper.fixture_helpers import get_typed_fixture
 
 
-# NOTE: Add additional mock implementations into this list, to include them in the unit test suite.
-mocked_candle_fetchers = ["dydx_v3_candle_fetcher_mock", "dydx_v4_candle_fetcher_mock"]
+# COLLABORATION: Add additional mock implementations into this dict, to include them in the unit test suite.
+# The number is the amount of candles to be fetched. One candle less than two full batches (e.g.: 199 for batch size 100).
+mocked_candle_fetchers = {
+    "dydx_v3_candle_fetcher_mock": 199,
+    "dydx_v4_candle_fetcher_mock": 1999,
+}
+
 resolutions_reduced = resolutions[:-2]
 
 
 @pytest.mark.parametrize("resolution", resolutions_reduced)
-@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
-async def test_fetch_600_candles(
+async def test_fetch_fixed_amount_of_candles(
     request: pytest.FixtureRequest,
     candle_fetcher_mock: str,
     resolution: ResolutionDetail,
@@ -34,7 +39,7 @@ async def test_fetch_600_candles(
     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
-    end = string_to_datetime("2024-04-01T10:00:00.000Z")
+    end = string_to_datetime("2024-04-01T05:00:00.000Z")
 
     # when
     candles = await fetcher.fetch_candles(
@@ -51,7 +56,7 @@ async def test_fetch_600_candles(
     assert candles[0].started_at == end - timedelta(seconds=res.seconds)
 
 
-@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
 async def test_fetch_cluster_is_up_to_date(
     request: pytest.FixtureRequest,
@@ -60,7 +65,7 @@ async def test_fetch_cluster_is_up_to_date(
     # given
     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     res = DydxResolution.ONE_MINUTE
-    amount_back = 2500
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
     now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
@@ -76,7 +81,7 @@ async def test_fetch_cluster_is_up_to_date(
     assert cu.is_newest_valid_candle(candles[0])
 
 
-@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
 async def test_fetch_cluster_raises_api_exception(
     request: pytest.FixtureRequest,
@@ -85,7 +90,7 @@ async def test_fetch_cluster_raises_api_exception(
     # given
     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     res = DydxResolution.ONE_MINUTE
-    amount_back = 2500
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
     market = "INVALID_MARKET"
     now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
@@ -100,7 +105,7 @@ async def test_fetch_cluster_raises_api_exception(
         )
 
 
-@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
 async def test_fetch_cluster_prints_progress_correctly(
     request: pytest.FixtureRequest,
@@ -111,7 +116,7 @@ async def test_fetch_cluster_prints_progress_correctly(
     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     fetcher.log_progress = True
     res = DydxResolution.ONE_MINUTE
-    amount_back = 1200
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
     market = "ETH-USD"
 
     now_rounded = cu.norm_date(now_utc_iso(), res)
@@ -126,7 +131,7 @@ async def test_fetch_cluster_prints_progress_correctly(
     assert f"🚛 {amount_back} of {amount_back} candles fetched. ✅" in out
 
 
-@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
 async def test_fetch_cluster_prints_missing_candles_correctly(
     request: pytest.FixtureRequest,
@@ -142,7 +147,7 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     fetcher.log_progress = True
     res = DydxResolution.ONE_MINUTE
-    amount_back = 120
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
     market = "ETH-USD"
 
     now_rounded = cu.norm_date(now_utc_iso(), res)
@@ -158,7 +163,7 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
     assert out.count("❌ Candle missing:") == n_missing
 
 
-@pytest.mark.parametrize("candle_fetcher_mock", mocked_candle_fetchers)
+@pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
 async def test_fetch_cluster_prints_missing_candles_on_batch_newest_edge_correctly(
     request: pytest.FixtureRequest,
@@ -174,7 +179,7 @@ async def test_fetch_cluster_prints_missing_candles_on_batch_newest_edge_correct
     fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
     fetcher.log_progress = True
     res = DydxResolution.ONE_MINUTE
-    amount_back = 120
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
     market = "ETH-USD"
 
     now_rounded = cu.norm_date(now_utc_iso(), res)
