@@ -44,7 +44,7 @@ import nest_asyncio  # type: ignore
 nest_asyncio.apply()  # type: ignore
 
 
-# NOTE: Mark all tests inside an integration directory as integration tests, which we exclude in CI.
+# NOTE: Marks all tests inside an integration directory as integration tests, which we exclude in CI.
 def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item]):
     for item in items:
         if "integration" in str(item.fspath):
@@ -138,11 +138,6 @@ async def dydx_v3_candle_fetcher_testnet() -> AsyncGenerator[DydxCandleFetcher, 
 async def dydx_v3_candle_fetcher_mainnet() -> AsyncGenerator[DydxCandleFetcher, None]:
     mainnet_client = Client(host=API_HOST_MAINNET)
     yield DydxCandleFetcher(api_fetcher=DydxV3Fetcher(mainnet_client))
-
-
-# region - mock fetchers
-
-# endregion
 
 
 # region - SQLite
