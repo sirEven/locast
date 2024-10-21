@@ -151,7 +151,6 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
     backend = get_typed_fixture(request, backend_mock_str, CandleBackendMock)
     n_missing = 5
     backend.missing_random_candles = n_missing
-
     fetcher = get_typed_fixture(request, candle_fetcher_mock, CandleFetcher)
     fetcher.log_progress = True
     res = resolutions_reduced[0]
@@ -176,11 +175,11 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
 async def test_fetch_cluster_prints_missing_candles_on_batch_newest_edge_correctly(
     request: pytest.FixtureRequest,
     capsys: pytest.CaptureFixture[str],
-    dydx_candle_backend_mock: CandleBackendMock,
     candle_fetcher_mock: str,
 ) -> None:
     # given
-    backend = dydx_candle_backend_mock
+    backend_mock_str = mocked_candle_fetchers[candle_fetcher_mock]["backend_mock"]
+    backend = get_typed_fixture(request, backend_mock_str, CandleBackendMock)
     n_missing = 5
     backend.missing_candles_on_batch_newest_edge = n_missing
 
