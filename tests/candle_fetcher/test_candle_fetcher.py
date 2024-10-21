@@ -14,11 +14,11 @@ from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 from tests.helper.fixture_helpers import get_typed_fixture
 
-# TODO: Incorporate backend mock protocol to get rid of dydx type DydxCandleBackendMock
+
 # COLLABORATION: Add additional mock implementations to this dictionary to include them in the unit test suite:
-# - The key is the name of the mocked candle fetcher fixture
+# - The key is the name of the fixture that delivers a candle fetcher that conforms to CandleFetcher
 # - amount_back is the number of candles to be fetched (One candle less than two full batches; e.g.: 199 for batch size 100).
-# - backend_mock is the name of the mocked backend in use for this mocked candle fetcher
+# - backend_mock holds the name of the fixture that delivers the mocked backend in use for this mocked candle fetcher conforming to CandleBackendMock
 
 mocked_candle_fetchers: Dict[str, Any] = {
     "dydx_v3_candle_fetcher_mock": {
@@ -138,7 +138,6 @@ async def test_fetch_cluster_prints_progress_correctly(
     assert f"🚛 {amount_back} of {amount_back} candles fetched. ✅" in out
 
 
-# TODO: Propagate this change to the rest of the tests.
 @pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
 async def test_fetch_cluster_prints_missing_candles_correctly(

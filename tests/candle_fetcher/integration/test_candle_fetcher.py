@@ -7,16 +7,18 @@ from sir_utilities.date_time import now_utc_iso, string_to_datetime
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.resolution import ResolutionDetail
 
-from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
-    DydxCandleFetcher,
-)
+from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from tests.helper.parametrization.list_of_amounts import amounts
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 from tests.helper.fixture_helpers import get_typed_fixture
 
 
-# NOTE: Add additional implementations into these lists, to include them in the integration test suite.
+# COLLABORATION: Add additional fixture names into these lists, that deliver candle fetcher implementations that conform to CandleFetcher:
+# - testnet list (if the exchange provides a testnet)
+# - mainnet list
+# They will be included in the integration tests for candle fetcher components.
+
 testnet_candle_fetchers = [
     "dydx_v3_candle_fetcher_testnet",
     "dydx_v4_candle_fetcher_testnet",
@@ -39,7 +41,7 @@ async def test_fetch_range_of_candles_testnet(
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = get_typed_fixture(request, candle_fetcher_testnet, DydxCandleFetcher)
+    fetcher = get_typed_fixture(request, candle_fetcher_testnet, CandleFetcher)
     res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T10:00:00.000Z")
@@ -66,7 +68,7 @@ async def test_fetch_range_of_candles_mainnet(
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = get_typed_fixture(request, candle_fetcher_mainnet, DydxCandleFetcher)
+    fetcher = get_typed_fixture(request, candle_fetcher_mainnet, CandleFetcher)
     res = resolution
     start = string_to_datetime("2024-06-01T00:00:00.000Z")
     end = string_to_datetime("2024-06-01T10:00:00.000Z")
@@ -95,7 +97,7 @@ async def test_fetch_cluster_is_up_to_date(
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = get_typed_fixture(request, candle_fetcher_mainnet, DydxCandleFetcher)
+    fetcher = get_typed_fixture(request, candle_fetcher_mainnet, CandleFetcher)
     res = resolution
     amount_back = amount
     now_rounded = cu.norm_date(now_utc_iso(), res)
