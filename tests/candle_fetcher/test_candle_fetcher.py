@@ -138,16 +138,17 @@ async def test_fetch_cluster_prints_progress_correctly(
     assert f"🚛 {amount_back} of {amount_back} candles fetched. ✅" in out
 
 
+# TODO: Propagate this change to the rest of the tests.
 @pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
 async def test_fetch_cluster_prints_missing_candles_correctly(
     request: pytest.FixtureRequest,
     capsys: pytest.CaptureFixture[str],
-    dydx_candle_backend_mock: CandleBackendMock,
     candle_fetcher_mock: str,
 ) -> None:
     # given
-    backend = dydx_candle_backend_mock
+    backend_mock_str = mocked_candle_fetchers[candle_fetcher_mock]["backend_mock"]
+    backend = get_typed_fixture(request, backend_mock_str, CandleBackendMock)
     n_missing = 5
     backend.missing_random_candles = n_missing
 

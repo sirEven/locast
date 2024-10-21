@@ -1,8 +1,9 @@
-from typing import Any, Dict, Protocol
+from typing import Any, Dict, Protocol, runtime_checkable
 
 from locast.candle.exchange import Exchange
 
 
+@runtime_checkable
 class CandleBackendMock(Protocol):
     @property
     def missing_random_candles(self) -> int: ...
