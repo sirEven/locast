@@ -1,27 +1,34 @@
 from datetime import timedelta
+from typing import Any, Dict
 import pytest
 
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
 
 from locast.candle.candle_utility import CandleUtility as cu
-from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.resolution import ResolutionDetail
-from locast.candle_fetcher.dydx.candle_fetcher.dydx_candle_fetcher import (
-    DydxCandleFetcher,
-)
+from locast.candle_fetcher.candle_fetcher import CandleFetcher
 
 from locast.candle_fetcher.exceptions import APIException
-from tests.helper.candle_mockery.dydx_candle_backend_mock import DydxCandleBackendMock
+from tests.helper.candle_mockery.candle_backend_mock import CandleBackendMock
 from tests.helper.parametrization.list_of_resolution_details import resolutions
 
 from tests.helper.fixture_helpers import get_typed_fixture
 
+# TODO: Incorporate backend mock protocol to get rid of dydx type DydxCandleBackendMock
+# COLLABORATION: Add additional mock implementations to this dictionary to include them in the unit test suite:
+# - The key is the name of the mocked candle fetcher fixture
+# - amount_back is the number of candles to be fetched (One candle less than two full batches; e.g.: 199 for batch size 100).
+# - backend_mock is the name of the mocked backend in use for this mocked candle fetcher
 
-# COLLABORATION: Add additional mock implementations into this dict, to include them in the unit test suite.
-# The number is the amount of candles to be fetched. One candle less than two full batches (e.g.: 199 for batch size 100).
-mocked_candle_fetchers = {
-    "dydx_v3_candle_fetcher_mock": 199,
-    "dydx_v4_candle_fetcher_mock": 1999,
+mocked_candle_fetchers: Dict[str, Any] = {
+    "dydx_v3_candle_fetcher_mock": {
+        "amount_back": 199,
+        "backend_mock": "dydx_candle_backend_mock",
+    },
+    "dydx_v4_candle_fetcher_mock": {
+        "amount_back": 1999,
+        "backend_mock": "dydx_candle_backend_mock",
+    },
 }
 
 resolutions_reduced = resolutions[:-2]
@@ -36,7 +43,7 @@ async def test_fetch_fixed_amount_of_candles(
     resolution: ResolutionDetail,
 ) -> None:
     # given
-    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, CandleFetcher)
     res = resolution
     start = string_to_datetime("2024-04-01T00:00:00.000Z")
     end = string_to_datetime("2024-04-01T05:00:00.000Z")
@@ -63,9 +70,9 @@ async def test_fetch_cluster_is_up_to_date(
     candle_fetcher_mock: str,
 ) -> None:
     # given
-    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
-    res = DydxResolution.ONE_MINUTE
-    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, CandleFetcher)
+    res = resolutions_reduced[0]
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock].get("amount_back")
     now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
 
@@ -88,9 +95,9 @@ async def test_fetch_cluster_raises_api_exception(
     candle_fetcher_mock: str,
 ) -> None:
     # given
-    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
-    res = DydxResolution.ONE_MINUTE
-    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, CandleFetcher)
+    res = resolutions_reduced[0]
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock].get("amount_back")
     market = "INVALID_MARKET"
     now_rounded = cu.norm_date(now_utc_iso(), res)
     start_date = now_rounded - timedelta(seconds=res.seconds * amount_back)
@@ -113,10 +120,10 @@ async def test_fetch_cluster_prints_progress_correctly(
     candle_fetcher_mock: str,
 ) -> None:
     # given
-    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, CandleFetcher)
     fetcher.log_progress = True
-    res = DydxResolution.ONE_MINUTE
-    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
+    res = resolutions_reduced[0]
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock].get("amount_back")
     market = "ETH-USD"
 
     now_rounded = cu.norm_date(now_utc_iso(), res)
@@ -136,7 +143,7 @@ async def test_fetch_cluster_prints_progress_correctly(
 async def test_fetch_cluster_prints_missing_candles_correctly(
     request: pytest.FixtureRequest,
     capsys: pytest.CaptureFixture[str],
-    dydx_candle_backend_mock: DydxCandleBackendMock,
+    dydx_candle_backend_mock: CandleBackendMock,
     candle_fetcher_mock: str,
 ) -> None:
     # given
@@ -144,10 +151,10 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
     n_missing = 5
     backend.missing_random_candles = n_missing
 
-    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, CandleFetcher)
     fetcher.log_progress = True
-    res = DydxResolution.ONE_MINUTE
-    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
+    res = resolutions_reduced[0]
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock].get("amount_back")
     market = "ETH-USD"
 
     now_rounded = cu.norm_date(now_utc_iso(), res)
@@ -168,7 +175,7 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
 async def test_fetch_cluster_prints_missing_candles_on_batch_newest_edge_correctly(
     request: pytest.FixtureRequest,
     capsys: pytest.CaptureFixture[str],
-    dydx_candle_backend_mock: DydxCandleBackendMock,
+    dydx_candle_backend_mock: CandleBackendMock,
     candle_fetcher_mock: str,
 ) -> None:
     # given
@@ -176,10 +183,10 @@ async def test_fetch_cluster_prints_missing_candles_on_batch_newest_edge_correct
     n_missing = 5
     backend.missing_candles_on_batch_newest_edge = n_missing
 
-    fetcher = get_typed_fixture(request, candle_fetcher_mock, DydxCandleFetcher)
+    fetcher = get_typed_fixture(request, candle_fetcher_mock, CandleFetcher)
     fetcher.log_progress = True
-    res = DydxResolution.ONE_MINUTE
-    amount_back = mocked_candle_fetchers[candle_fetcher_mock]
+    res = resolutions_reduced[0]
+    amount_back = mocked_candle_fetchers[candle_fetcher_mock].get("amount_back")
     market = "ETH-USD"
 
     now_rounded = cu.norm_date(now_utc_iso(), res)

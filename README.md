@@ -1,5 +1,6 @@
 <div align="center"><img src="icons/halloween_3@3x.png" alt="" width="200"></td></div>
-<center> **LoCaSt**<br> </center>
+<b><center>LoCaSt</center></b>
+
 Local Candle Store - A module to download price candles from exchanges and store them in a database.
 
 # Intro
@@ -54,13 +55,11 @@ This project tries to maintain readable and simple code.
 
 Basic principles like DRY and separation of concerns are mandatory - but following patterns dogmatically is not desired at all.
 
-In fact this project shall (besides being a helpful tool for anybody who needs candle data readily available locally, without the hassle of exchange APIs) be a collaborative effort in which developers interested in it, can learn from each other and discuss their ideas and solutions to. 
-
-Helpful, productive interactions are of more value, than a perfectly shiny codebase. ☺️
+In fact this project shall be a collaborative effort in which developers interested in it, can learn from each other and discuss their ideas and solutions to. Besides, of course, being a tool for anybody who needs candle data available locally, without the hassle of talking to exchange APIs.
 
 To collaborate, just make pull requests on main.
 
-There are #COLLABORATION markers throughout the test suite to mark and explain places that are relevant for new implementations. The general idea is to not require new implementations to come up with their unit and/or integration tests, but rather include them through parametrization and fixtures in the existing test suite. 
+There are # COLLABORATION markers throughout the test suite to mark and explain places that are relevant for new implementations. The general idea is to not require new implementations to come up with their unit and/or integration tests, but rather include their mock and production implementations through parametrization and fixtures in the existing test suite. 
 
 Of course if new test cases are necessary, they most certainly should be implemented for all existing implementations as well. 
 This has the advantage of not having to write tests again and again but also enforces the behavior of new implemntations to be identical to existing ones. 

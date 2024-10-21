@@ -1,12 +1,13 @@
 import random
 from typing import Any, Dict, List
 from locast.candle.exchange import Exchange
+from tests.helper.candle_mockery.candle_backend_mock import CandleBackendMock
 from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
     mock_dydx_candle_dict_batch,
 )
 
 
-class DydxCandleBackendMock:
+class DydxCandleBackendMock(CandleBackendMock):
     _instance = None
 
     def __new__(
@@ -27,12 +28,17 @@ class DydxCandleBackendMock:
             "_missing_random_candles": missing_random_candles,
             "_missing_candles_on_batch_newest_edge": missing_candles_on_batch_newest_edge,
         }
-        for prop, value in properties.items():
-            if not hasattr(self, prop):
-                setattr(self, prop, value)
-                # Initialize corresponding deleted flag
-                deleted_prop = f"{prop}_deleted"
-                setattr(self, deleted_prop, False)
+        try:
+            for prop, value in properties.items():
+                if not hasattr(self, prop):
+                    setattr(self, prop, value)
+                    # Initialize corresponding deleted flag
+                    deleted_prop = f"{prop}_deleted"
+                    setattr(self, deleted_prop, False)
+        except AttributeError as e:
+            print(f"Error setting attribute: {e}")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
 
     @property
     def missing_random_candles(self) -> int:

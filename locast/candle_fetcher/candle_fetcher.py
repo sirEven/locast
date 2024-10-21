@@ -1,11 +1,12 @@
 from datetime import datetime
-from typing import Protocol, List
+from typing import Protocol, List, runtime_checkable
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
 from locast.candle.resolution import ResolutionDetail
 
 
+@runtime_checkable
 class CandleFetcher(Protocol):
     @property
     def exchange(self) -> Exchange: ...
