@@ -37,14 +37,18 @@ mapping_dict_candle: List[Tuple[ExchangeCandleMapping, Dict[str, Any], Candle]] 
 ]
 
 
-@pytest.mark.parametrize("mapping_and_dict", mapping_dict_candle)
+@pytest.mark.parametrize("mapping_dict_candle", mapping_dict_candle)
 def test_maps_single_candle_correctly(
-    mapping_and_dict: Tuple[ExchangeCandleMapping, Dict[str, Any], Candle],
+    mapping_dict_candle: Tuple[
+        ExchangeCandleMapping,
+        Dict[str, Any],
+        Candle,
+    ],
 ) -> None:
     # given
-    mapping = mapping_and_dict[0]
-    candle_dict = mapping_and_dict[1]
-    expected_candle = mapping_and_dict[2]
+    mapping = mapping_dict_candle[0]
+    candle_dict = mapping_dict_candle[1]
+    expected_candle = mapping_dict_candle[2]
 
     mapper = ExchangeCandleMapper(mapping)
 
@@ -55,13 +59,17 @@ def test_maps_single_candle_correctly(
     assert candle == expected_candle
 
 
-@pytest.mark.parametrize("mapping_and_dict", mapping_dict_candle)
+@pytest.mark.parametrize("mapping_dict_candle", mapping_dict_candle)
 def test_mapping_on_faulty_candle_raises_error(
-    mapping_and_dict: Tuple[ExchangeCandleMapping, Dict[str, Any]],
+    mapping_dict_candle: Tuple[
+        ExchangeCandleMapping,
+        Dict[str, Any],
+        Candle,
+    ],
 ) -> None:
     # given
-    mapping = mapping_and_dict[0]
-    faulty_candle_dict = mapping_and_dict[1]
+    mapping = mapping_dict_candle[0]
+    faulty_candle_dict = mapping_dict_candle[1]
     del faulty_candle_dict["startedAt"]
     del faulty_candle_dict["close"]
     mapper = ExchangeCandleMapper(mapping)

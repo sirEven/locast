@@ -12,17 +12,20 @@ from tests.helper.candle_mockery.base_values import copy_base_values
 def mock_candle(exchange: Exchange) -> Candle:
     bv = copy_base_values()
     return Candle(
-        None,
-        exchange,
-        bv["TICKER"],
-        ResolutionDetail(bv["RESOLUTION"]["seconds"], bv["RESOLUTION"]["notation"]),
-        string_to_datetime(bv["STARTED_AT"]),
-        Decimal(bv["PRICE"]),
-        Decimal(bv["PRICE"]),
-        Decimal(bv["PRICE"]),
-        Decimal(bv["PRICE"]),
-        Decimal(bv["BASE_TOKEN_VOLUME"]),
-        bv["TRADES"],
-        Decimal(bv["USD_VOLUME"]),
-        Decimal(bv["STARTING_OPEN_INTEREST"]),
+        id=None,
+        exchange=exchange,
+        market=bv["TICKER"],
+        resolution=ResolutionDetail(
+            bv["RESOLUTION"]["seconds"],
+            bv["RESOLUTION"]["notation"],
+        ),
+        started_at=string_to_datetime(bv["STARTED_AT"]),
+        open=Decimal(bv["PRICE"]),
+        high=Decimal(bv["PRICE"]),
+        low=Decimal(bv["PRICE"]),
+        close=Decimal(bv["PRICE"]),
+        base_token_volume=Decimal(bv["BASE_TOKEN_VOLUME"]),
+        trades=bv["TRADES"],
+        usd_volume=Decimal(bv["USD_VOLUME"]),
+        starting_open_interest=Decimal(bv["STARTING_OPEN_INTEREST"]),
     )
