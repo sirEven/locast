@@ -63,8 +63,8 @@ In fact this project shall be a collaborative effort in which developers interes
 
 Appart from that it is a tool for anybody who needs historic and current candle data available locally, without the hassle of talking to exchange APIs.
 
-# Collaboration
-To collaborate, just make pull requests on main.
+## Contribute
+To contribute, just make pull requests on main.
 
 There are COLLABORATION markers throughout the test suite to mark and explain places that are relevant for new implementations. The general idea is to not require new implementations to come up with their unit and/or integration tests, but rather include their mock and production implementations through parametrization and fixtures in the existing test suite. This has the advantage of not having to write tests again and again but also enforces the behavior of new implemntations to be identical to existing ones. 
 
