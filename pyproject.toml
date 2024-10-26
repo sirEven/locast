@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "locast"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["sirEven <sir_even@icloud.com>"]
 readme = "README.md"
