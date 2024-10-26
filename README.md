@@ -33,6 +33,9 @@ A cluster is a list of candle objects, representing a time series of price data.
 ### Storage Technologies
 - Sqlite
 
+### Examples
+In the notebooks directory there are examples of the already implemented exchanges (starting with "example_"). This is a good starting point to try out and play around.
+
 # Collaboration
 Here are some ideas and guidelines for collaboration.
 
@@ -63,9 +66,8 @@ Appart from that it is a tool for anybody who needs historic and current candle 
 # Collaboration
 To collaborate, just make pull requests on main.
 
-There are COLLABORATION markers throughout the test suite to mark and explain places that are relevant for new implementations. The general idea is to not require new implementations to come up with their unit and/or integration tests, but rather include their mock and production implementations through parametrization and fixtures in the existing test suite. 
-
-Of course if new test cases are necessary, they most certainly should be implemented for all existing implementations as well or at least deserve their own test file per exchange implementation. 
-This has the advantage of not having to write tests again and again but also enforces the behavior of new implemntations to be identical to existing ones. 
+There are COLLABORATION markers throughout the test suite to mark and explain places that are relevant for new implementations. The general idea is to not require new implementations to come up with their unit and/or integration tests, but rather include their mock and production implementations through parametrization and fixtures in the existing test suite. This has the advantage of not having to write tests again and again but also enforces the behavior of new implemntations to be identical to existing ones. 
 
 For example if we implement a new candle fetcher for the 1inch API, it can be implemented in what ever way is best - but it should behave exactly the same as the existing dydx implementations, which is enforced by the typing annotations and then verified by the parametrized test suite.
+
+Of course if new test cases are arise, they most certainly should be implemented for all existing implementations as well or at least deserve their own test file per exchange implementation. 
