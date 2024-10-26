@@ -40,5 +40,5 @@ jobs:
         if: ${{ needs.run_test_suite_workflow.result == 'success' }}
 
         env:
-          PYPI_MAIN_TOKEN: ${{ secrets.PYPI_MAIN_TOKEN }}
-        run: poetry publish --build -u __token__ -p $PYPI_MAIN_TOKEN
+          PYPI_TEMP_TOKEN: ${{ secrets.PYPI_TEMP_TOKEN }} # TODO: Set a new token in remote repo settings
+        run: poetry publish --build -u __token__ -p $PYPI_TEMP_TOKEN
