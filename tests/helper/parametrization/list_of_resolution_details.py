@@ -1,6 +1,6 @@
 from typing import List
 
-from locast.candle.resolution import ResolutionDetail, Seconds
+from locast.candle.exchange_resolution import ResolutionDetail, Seconds
 
 
 resolutions: List[ResolutionDetail] = [

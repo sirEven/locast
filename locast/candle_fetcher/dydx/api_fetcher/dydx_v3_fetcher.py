@@ -6,7 +6,7 @@ from dydx3 import Client  # type: ignore
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle.dydx.dydx_candle_mapping import DydxV3CandleMapping
 from locast.candle.candle_utility import CandleUtility as cu
@@ -15,6 +15,7 @@ from locast.candle_fetcher.dydx.api_fetcher.datetime_format import (
 )
 from locast.candle_fetcher.dydx.api_fetcher.dydx_fetcher import DydxFetcher
 from locast.candle_fetcher.exceptions import APIException
+
 
 class DydxV3Fetcher(DydxFetcher):
     def __init__(self, client: Client, rate_throttle_sec: float = 0.4) -> None:

@@ -11,7 +11,7 @@ from sir_utilities.date_time import string_to_datetime
 
 
 from locast.candle.candle_utility import CandleUtility as cu
-from locast.candle.resolution import ResolutionDetail, Seconds
+from locast.candle.exchange_resolution import ResolutionDetail, Seconds
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v3_fetcher import DydxV3Fetcher
 from locast.candle_fetcher.dydx.api_fetcher.dydx_v4_fetcher import DydxV4Fetcher
 

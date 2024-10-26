@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Session, asc, desc, select, func
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from locast.candle_storage.candle_storage import CandleStorage
 from locast.candle_storage.cluster_info import ClusterInfo
 from locast.candle_storage.database_candle_mapper import DatabaseCandleMapper

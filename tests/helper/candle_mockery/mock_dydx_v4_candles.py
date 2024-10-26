@@ -8,7 +8,7 @@ from locast.candle.candle import Candle
 from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
     mock_dydx_candle_dict_batch,
 )

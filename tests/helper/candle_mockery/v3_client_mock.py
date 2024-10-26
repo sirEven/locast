@@ -7,6 +7,8 @@ from dydx3.helpers.requests import Response  # type: ignore
 from locast.candle.exchange import Exchange
 from tests.helper.candle_mockery.dydx_candle_backend_mock import DydxCandleBackendMock
 
+# TODO: Consider V3 being sunset now. Is it still possible/needed to have its implementation?
+
 
 @dataclass
 class MockResponse(Response):

@@ -7,7 +7,7 @@ from sqlmodel import SQLModel, Session, select
 from sir_utilities.date_time import string_to_datetime
 
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail, Seconds
+from locast.candle.exchange_resolution import ResolutionDetail, Seconds
 from locast.candle_storage.sql.table_utility import TableUtility as tu
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.candle_storage.sql.tables import (

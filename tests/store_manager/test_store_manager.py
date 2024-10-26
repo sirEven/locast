@@ -3,7 +3,7 @@ import pytest
 
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail, Seconds
+from locast.candle.exchange_resolution import ResolutionDetail, Seconds
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.store_manager.store_manager import (
     ExistingClusterException,

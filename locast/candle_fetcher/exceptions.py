@@ -1,5 +1,5 @@
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 
 
 class APIException(Exception):

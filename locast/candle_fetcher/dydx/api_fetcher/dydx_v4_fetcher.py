@@ -10,12 +10,13 @@ from locast.candle.candle import Candle
 from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from locast.candle_fetcher.dydx.api_fetcher.datetime_format import (
     datetime_to_dydx_iso_str,
 )
 from locast.candle_fetcher.dydx.api_fetcher.dydx_fetcher import DydxFetcher
 from locast.candle_fetcher.exceptions import APIException
+
 
 class DydxV4Fetcher(DydxFetcher):
     def __init__(

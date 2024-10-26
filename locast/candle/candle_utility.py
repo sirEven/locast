@@ -3,7 +3,7 @@ from typing import List, TypeVar
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from locast.candle.candle import Candle
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 
 EnumType = TypeVar("EnumType", bound=Enum)
 

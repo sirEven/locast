@@ -4,7 +4,7 @@ from datetime import timezone
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from locast.candle_storage.database_candle_mapping import DatabaseCandleMapping
 from locast.candle_storage.sql.tables import (
     SqliteCandle,

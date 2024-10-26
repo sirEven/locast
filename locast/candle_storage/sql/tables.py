@@ -3,7 +3,7 @@ from sqlalchemy import Index, UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel  # type: ignore
 
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import Seconds
+from locast.candle.exchange_resolution import Seconds
 
 
 class SqliteExchange(SQLModel, table=True):

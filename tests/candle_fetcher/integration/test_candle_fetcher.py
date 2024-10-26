@@ -5,7 +5,7 @@ import pytest
 from sir_utilities.date_time import now_utc_iso, string_to_datetime
 
 from locast.candle.candle_utility import CandleUtility as cu
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from tests.helper.parametrization.list_of_amounts import amounts

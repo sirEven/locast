@@ -3,7 +3,7 @@ from sqlmodel import (
     select,  # type: ignore
 )
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from locast.candle_storage.sql.tables import (
     SqliteExchange,
     SqliteMarket,

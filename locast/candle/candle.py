@@ -2,7 +2,7 @@ from enum import Enum
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from locast.candle.exchange import Exchange
 
 

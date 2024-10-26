@@ -1,4 +1,4 @@
-from locast.candle.resolution import (
+from locast.candle.exchange_resolution import (
     ResolutionDetail,
     Seconds,
     ExchangeResolution,

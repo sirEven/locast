@@ -5,7 +5,7 @@ from sir_utilities.date_time import string_to_datetime
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
 
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from tests.helper.candle_mockery.base_values import copy_base_values
 
 

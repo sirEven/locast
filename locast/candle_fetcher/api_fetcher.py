@@ -3,7 +3,7 @@ from typing import List, Protocol
 
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 
 
 class APIFetcher(Protocol):

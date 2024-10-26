@@ -7,7 +7,7 @@ from locast.candle.candle import Candle
 from locast.candle.candle_utility import CandleUtility as uc
 from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from tests.helper.candle_mockery.mock_dydx_v4_candles import mock_dydx_v4_candles
 from tests.helper.candle_mockery.mock_candle import mock_candle
 

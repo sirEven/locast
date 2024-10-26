@@ -4,7 +4,7 @@ from typing import List
 from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.candle import Candle
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_storage.cluster_info import ClusterInfo
 from locast.candle_storage.candle_storage import CandleStorage

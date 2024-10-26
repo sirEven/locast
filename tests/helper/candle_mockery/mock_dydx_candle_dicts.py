@@ -24,8 +24,8 @@ def replace_date(
 
 def subtract_resolution(date_str: str, resolution: str) -> datetime:
     date = string_to_datetime(date_str)
-    res_sec = DydxResolution.notation_to_seconds(resolution)
-    return date - timedelta(seconds=res_sec)
+    res_detail = DydxResolution.notation_to_resolution_detail(resolution)
+    return date - timedelta(seconds=res_detail.seconds)
 
 
 def mock_dydx_candle_dict_batch(

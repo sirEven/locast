@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 
 from locast.candle.exchange import Exchange
-from locast.candle.resolution import ResolutionDetail
+from locast.candle.exchange_resolution import ResolutionDetail
 
 
 def log_progress(
