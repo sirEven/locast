@@ -43,7 +43,7 @@ Here are some ideas and guidelines for collaboration.
 - Implement additional exchanges 
 - Implement additional storage technologies, if desired
 - Improve code quality and maintainability
-- Help each other out and have great time adding features :)
+- Help each other out and have a great time adding features :-)
 
 ## Branches
 There are two branches:
