@@ -15,7 +15,7 @@ def test_log_progress_prints_correctly(
     result: List[str] = []
 
     # when
-    for done in range(1, total + 1, 1):
+    for done in range(1, total + 1):
         log_progress(emoji, name, action, done, total)
         out, _ = capsys.readouterr()
         result.append(out)
@@ -24,7 +24,7 @@ def test_log_progress_prints_correctly(
 
     # then
     expected: List[str] = []
-    for done in range(1, total + 1, 1):
+    for done in range(1, total + 1):
         msg = f"📀 {done} of {total} {name} {action}.\r"
         expected.append(msg)
 

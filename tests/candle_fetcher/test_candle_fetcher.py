@@ -21,10 +21,6 @@ from tests.helper.fixture_helpers import get_typed_fixture
 # - backend_mock holds the name of the fixture that delivers the mocked backend in use for this mocked candle fetcher conforming to CandleBackendMock
 
 mocked_candle_fetchers: Dict[str, Any] = {
-    "dydx_v3_candle_fetcher_mock": {
-        "amount_back": 199,
-        "backend_mock": "dydx_candle_backend_mock",
-    },
     "dydx_v4_candle_fetcher_mock": {
         "amount_back": 1999,
         "backend_mock": "dydx_candle_backend_mock",

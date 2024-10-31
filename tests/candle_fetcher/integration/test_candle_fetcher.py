@@ -20,12 +20,10 @@ from tests.helper.fixture_helpers import get_typed_fixture
 # They will be included in the integration tests for candle fetcher components.
 
 testnet_candle_fetchers = [
-    "dydx_v3_candle_fetcher_testnet",
     "dydx_v4_candle_fetcher_testnet",
 ]
 
 mainnet_candle_fetchers = [
-    "dydx_v3_candle_fetcher_mainnet",
     "dydx_v4_candle_fetcher_mainnet",
 ]
 

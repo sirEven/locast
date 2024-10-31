@@ -7,10 +7,7 @@ from locast.candle.candle_utility import CandleUtility as cu
 from locast.candle.dydx.dydx_resolution import DydxResolution
 
 from locast.candle.exchange import Exchange
-from tests.helper.candle_mockery.dydx_candle_dicts import (
-    copy_dydx_v3_base_candle_dict,
-    copy_dydx_v4_base_candle_dict,
-)
+from tests.helper.candle_mockery.dydx_candle_dicts import copy_dydx_v4_base_candle_dict
 
 
 def replace_date(
@@ -62,16 +59,12 @@ def mock_dydx_candle_dict_batch(
         or less, if the provided range entails less.
         4) V4 MAINNET backend responds in batch sizes of 1000 candle dicts (default of this function),
         5) V4 TESTNET backend responds in batch sizes of 100 candle dicts.
-        6) V3 MAINNET backend responds in batch sizes of 100 candles dicts
-        7) V3 TESTNET backend responds in batch sizes of 100 candles dicts
+        6) V3 MAINNET backend responds in batch sizes of 100 candles dicts // sunset
+        7) V3 TESTNET backend responds in batch sizes of 100 candles dicts // sunset
     """
 
-    if exchange == Exchange.DYDX_V4:
-        temp_candle_dict = copy_dydx_v4_base_candle_dict()
-        temp_candle_dict["ticker"] = market
-    elif exchange == Exchange.DYDX:
-        temp_candle_dict = copy_dydx_v3_base_candle_dict()
-        temp_candle_dict["market"] = market
+    temp_candle_dict = copy_dydx_v4_base_candle_dict()
+    temp_candle_dict["ticker"] = market
 
     temp_candle_dict = replace_date(
         temp_candle_dict,

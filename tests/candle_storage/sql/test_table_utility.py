@@ -1,6 +1,6 @@
 from sqlmodel import Session
-from locast.candle.dydx.dydx_resolution import DydxResolution
 from locast.candle.exchange import Exchange
+from locast.candle.exchange_resolution import ResolutionDetail, Seconds
 from locast.candle_storage.sql.sqlite_candle_storage import SqliteCandleStorage
 from locast.candle_storage.sql.table_utility import TableUtility
 
@@ -86,7 +86,7 @@ def test_look_up_sql_resolution_returns_none(
     # given a database with empty resolution table
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
-    resolution = DydxResolution.ONE_MINUTE
+    resolution = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
 
     # when
     sql_resolution = table_utility.lookup_sqlite_resolution(
@@ -105,7 +105,7 @@ def test_look_up_sql_resolution_returns_correctly(
     # given a database with non-empty resolution table
     _ = sqlite_candle_storage_memory
     table_utility = TableUtility()
-    resolution = DydxResolution.ONE_MINUTE
+    resolution = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
     table_utility.lookup_or_insert_sqlite_resolution(
         resolution,
         sqlite_session_in_memory,

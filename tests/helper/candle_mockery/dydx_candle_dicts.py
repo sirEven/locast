@@ -21,24 +21,5 @@ dydx_v4_candle_dict: Dict[str, Any] = {
 }
 
 
-dydx_v3_candle_dict: Dict[str, Any] = {
-    "startedAt": bv["STARTED_AT"],
-    "market": bv["TICKER"],
-    "resolution": bv["RESOLUTION"]["notation"],
-    "low": bv["PRICE"],
-    "high": bv["PRICE"],
-    "open": bv["PRICE"],
-    "close": bv["PRICE"],
-    "baseTokenVolume": bv["BASE_TOKEN_VOLUME"],
-    "usdVolume": bv["USD_VOLUME"],
-    "trades": bv["TRADES"],
-    "startingOpenInterest": bv["STARTING_OPEN_INTEREST"],
-}
-
-
 def copy_dydx_v4_base_candle_dict() -> Dict[str, Any]:
     return copy(dydx_v4_candle_dict)
-
-
-def copy_dydx_v3_base_candle_dict() -> Dict[str, Any]:
-    return copy(dydx_v3_candle_dict)

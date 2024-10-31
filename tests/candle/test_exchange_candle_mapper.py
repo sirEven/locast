@@ -2,20 +2,16 @@ from typing import Any, Dict, List, Tuple
 import pytest
 
 from locast.candle.candle import Candle
-from locast.candle.dydx.dydx_candle_mapping import (
-    DydxV3CandleMapping,
-    DydxV4CandleMapping,
-)
+from locast.candle.dydx.dydx_candle_mapping import DydxV4CandleMapping
 from locast.candle.exchange import Exchange
 from locast.candle.exchange_candle_mapper import ExchangeCandleMapper
 from locast.candle.exchange_candle_mapping import ExchangeCandleMapping
 from tests.helper.candle_mockery.mock_candle import mock_candle
 from tests.helper.candle_mockery.dydx_candle_dicts import (
-    copy_dydx_v3_base_candle_dict,
     copy_dydx_v4_base_candle_dict,
 )
 
-# NOTE: Testing strategy is to cover concrete implementations such as specific exchange mappers (e.g.: dydx) by parametrizing them into
+# COLLABORATION: Testing strategy is to cover concrete implementations such as specific exchange mappers (e.g.: dydx) by parametrizing them into
 # the exchange agnostic component tests.
 # Here we have examples of this: ExchangeCandleMapper is agnostic and receives a mapping of exchange unspecific ExchangeCandleMapping.
 # Through the List on top "mapping_dict_candle" we pair up exchange specific mappings with corresponding candle representation dicts & candles,
@@ -28,11 +24,6 @@ mapping_dict_candle: List[Tuple[ExchangeCandleMapping, Dict[str, Any], Candle]] 
         DydxV4CandleMapping(),
         copy_dydx_v4_base_candle_dict(),
         mock_candle(Exchange.DYDX_V4),
-    ),
-    (
-        DydxV3CandleMapping(),
-        copy_dydx_v3_base_candle_dict(),
-        mock_candle(Exchange.DYDX),
     ),
 ]
 

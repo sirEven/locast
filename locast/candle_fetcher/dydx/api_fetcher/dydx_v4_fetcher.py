@@ -50,6 +50,6 @@ class DydxV4Fetcher(DydxFetcher):
             )
 
         except Exception as e:
-            raise APIException(self._exchange, market, resolution, e)
+            raise APIException(self._exchange, market, resolution, e) from e
 
         return self._mapper.to_candles(response["candles"])

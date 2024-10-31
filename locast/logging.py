@@ -27,10 +27,10 @@ def log_missing_candles(
     missing_candle_dates: List[datetime],
 ) -> None:
     n = len(missing_candle_dates)
-    vi = "candles" if n > 1 else "candle"
+    candles = "candles" if n > 1 else "candle"
     detail = f"{market}, {resolution.notation}"
     print(
-        f"{emoji} Attention: {exchange.name} failed to deliver {n} {vi} for {detail} {emoji}"
+        f"{emoji} Attention: {exchange.name} failed to deliver {n} {candles} for {detail} {emoji}"
     )
     for date in missing_candle_dates:
         print(f"    ❌ Candle missing: {date}.")

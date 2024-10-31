@@ -9,6 +9,6 @@ def test_to_database_candle_results_in_error(sqlite_session_in_memory: Session) 
     # given
     mapping = SqliteCandleMapping(sqlite_session_in_memory)
 
-    # when mapping is performed without prior Storage initialization,then
+    # when mapping is performed without prior Storage initialization, then
     with pytest.raises(Exception):
         mapping.to_database_candle(mock_candle(Exchange.DYDX_V4))

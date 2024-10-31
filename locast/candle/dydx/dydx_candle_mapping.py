@@ -44,39 +44,3 @@ class DydxV4CandleMapping(ExchangeCandleMapping):
             )
         except Exception as e:
             raise ValueError(f"Error converting dict to Candle: {str(e)}") from e
-
-
-class DydxV3CandleMapping(ExchangeCandleMapping):
-    def to_candle(self, exchange_candle: Dict[str, Any]) -> Candle:
-        try:
-            started_at = string_to_datetime(exchange_candle["startedAt"])
-            market = exchange_candle["market"]
-            resolution = DydxResolution.notation_to_resolution_detail(
-                exchange_candle["resolution"]
-            )
-            p_low = Decimal(exchange_candle["low"])
-            p_high = Decimal(exchange_candle["high"])
-            p_open = Decimal(exchange_candle["open"])
-            p_close = Decimal(exchange_candle["close"])
-            base_token_volume = Decimal(exchange_candle["baseTokenVolume"])
-            trades = int(exchange_candle["trades"])
-            usd_volume = Decimal(exchange_candle["usdVolume"])
-            starting_open_interest = Decimal(exchange_candle["startingOpenInterest"])
-
-            return Candle(
-                id=None,
-                exchange=Exchange.DYDX,
-                market=market,
-                resolution=resolution,
-                started_at=started_at,
-                open=p_open,
-                high=p_high,
-                low=p_low,
-                close=p_close,
-                base_token_volume=base_token_volume,
-                trades=trades,
-                usd_volume=usd_volume,
-                starting_open_interest=starting_open_interest,
-            )
-        except Exception as e:
-            raise ValueError(f"Error converting dict to Candle: {str(e)}") from e

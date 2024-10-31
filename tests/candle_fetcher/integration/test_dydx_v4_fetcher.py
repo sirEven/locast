@@ -24,7 +24,8 @@ missing_candle_dates: List[str] = [
 @pytest.mark.parametrize("started_at", missing_candle_dates)
 @pytest.mark.asyncio
 async def test_missing_candles_on_mainnet(
-    dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher, started_at: str
+    dydx_v4_candle_fetcher_mainnet: DydxCandleFetcher,
+    started_at: str,
 ) -> None:
     # given
     res = DydxResolution.ONE_MINUTE
