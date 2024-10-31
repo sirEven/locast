@@ -27,7 +27,6 @@ A cluster is a list of candle objects, representing a time series of price data.
 - ... more to come
 
 ### Exchanges
-- dydx (v3) (Is being sunset and will probably be removed from LoCaSt in the future)
 - dydx v4
 
 ### Storage Technologies
