@@ -1,6 +1,6 @@
 from typing import List
 import pytest
-from locast.logging import log_progress
+from locast.logging_functions import log_progress
 
 
 def test_log_progress_prints_correctly(

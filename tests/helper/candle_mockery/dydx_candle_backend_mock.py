@@ -6,6 +6,8 @@ from tests.helper.candle_mockery.mock_dydx_candle_dicts import (
     mock_dydx_candle_dict_batch,
 )
 
+from sir_utilities.date_time import string_to_datetime
+
 
 class DydxCandleBackendMock(CandleBackendMock):
     _instance = None
@@ -24,21 +26,27 @@ class DydxCandleBackendMock(CandleBackendMock):
         missing_random_candles: int = 0,
         missing_candles_on_batch_newest_edge: int = 0,
     ) -> None:
-        properties = {
+        if hasattr(self, "_initialized"):
+            return
+        deletion_properties = {
             "_missing_random_candles": missing_random_candles,
             "_missing_candles_on_batch_newest_edge": missing_candles_on_batch_newest_edge,
         }
         try:
-            for prop, value in properties.items():
+            for prop, value in deletion_properties.items():
                 if not hasattr(self, prop):
                     setattr(self, prop, value)
                     # Initialize corresponding deleted flag
                     deleted_prop = f"{prop}_deleted"
                     setattr(self, deleted_prop, False)
+
         except AttributeError as e:
             print(f"Error setting attribute: {e}")
         except Exception as e:
             print(f"Unexpected error: {e}")
+
+        self._horizon = string_to_datetime("2024-01-01T00:00:00.000Z")
+        self._initialized = True
 
     @property
     def missing_random_candles(self) -> int:
@@ -78,7 +86,10 @@ class DydxCandleBackendMock(CandleBackendMock):
             self._delete_random_candles(candle_dicts_batch)
 
         if self._missing_candles_on_batch_newest_edge:
-            self._delete_on_batch_batch_newest_edge(candle_dicts_batch)
+            self._delete_on_batch_newest_edge(candle_dicts_batch)
+
+        if self._horizon_reached(candle_dicts_batch):
+            return {"candles": []}
 
         return {"candles": candle_dicts_batch}
 
@@ -92,8 +103,13 @@ class DydxCandleBackendMock(CandleBackendMock):
                 del batch[random.randint(10, 20)]
             self._missing_random_candles_deleted = True
 
-    def _delete_on_batch_batch_newest_edge(self, batch: List[Dict[str, Any]]):
+    def _delete_on_batch_newest_edge(self, batch: List[Dict[str, Any]]):
         if not self._missing_candles_on_batch_newest_edge_deleted:
             for _ in range(self._missing_candles_on_batch_newest_edge):
                 del batch[0]
             self._missing_candles_on_batch_newest_edge_deleted = True
+
+    def _horizon_reached(self, batch: List[Dict[str, Any]]) -> bool:
+        return any(
+            string_to_datetime(candle["startedAt"]) < self._horizon for candle in batch
+        )

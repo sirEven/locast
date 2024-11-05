@@ -19,7 +19,7 @@ from locast.candle_storage.sql.tables import (
 )
 
 from locast.candle_storage.sql.table_utility import TableUtility as tu
-from locast.logging import log_progress
+from locast.logging_functions import log_progress
 
 
 class SqliteCandleStorage(CandleStorage):

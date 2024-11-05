@@ -5,6 +5,7 @@ from locast.candle.exchange import Exchange
 from locast.candle.exchange_resolution import ResolutionDetail
 
 
+# TODO: Also print market
 def log_progress(
     emoji: str,
     group_name: str,

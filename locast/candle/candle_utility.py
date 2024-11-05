@@ -190,5 +190,10 @@ class CandleUtility:
             current_date += timedelta(seconds=resolution.seconds)
         return missing_dates
 
+    @classmethod
+    def midpoint(cls, start: datetime, end: datetime) -> datetime:
+        # Calculate the midpoint between two datetime objects.
+        return start + (end - start) / 2
+
 
 # TODO: Check what functions are not needed anymore.

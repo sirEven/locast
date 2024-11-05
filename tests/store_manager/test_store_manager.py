@@ -13,6 +13,7 @@ from locast.store_manager.store_manager import (
 from tests.helper.candle_mockery.mock_dydx_v4_candles import mock_dydx_v4_candle_range
 
 
+# FIXME: WIP - BACKEND MOCK NOT HANDLING HORIZON
 @pytest.mark.asyncio
 async def test_create_cluster_results_in_correct_cluster_state(
     store_manager_mock_memory: StoreManager,

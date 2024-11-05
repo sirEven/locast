@@ -31,3 +31,9 @@ class CandleFetcher(Protocol):
         resolution: ResolutionDetail,
         start_date: datetime,
     ) -> List[Candle]: ...
+
+    async def find_horizon(
+        self,
+        market: str,
+        resolution: ResolutionDetail,
+    ) -> datetime: ...
