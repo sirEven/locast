@@ -12,11 +12,13 @@ def test_log_progress_prints_correctly(
     action = "stored"
     emoji = "📀"
 
+    market = "BTC-USD"
+
     result: List[str] = []
 
     # when
     for done in range(1, total + 1):
-        log_progress(emoji, name, action, done, total)
+        log_progress(emoji, market, name, action, done, total)
         out, _ = capsys.readouterr()
         result.append(out)
 
@@ -25,9 +27,9 @@ def test_log_progress_prints_correctly(
     # then
     expected: List[str] = []
     for done in range(1, total + 1):
-        msg = f"📀 {done} of {total} {name} {action}.\r"
+        msg = f"📀 {done} of {total} {market}-{name} {action}.\r"
         expected.append(msg)
 
-    expected[-1] = f"\r📀 {total} of {total} {name} {action}. ✅\n"
+    expected[-1] = f"\r📀 {total} of {total} {market}-{name} {action}. ✅\n"
 
     assert result == expected

@@ -20,7 +20,6 @@ class ResolutionDetail:
     notation: str
 
 
-# TODO: Consider this ABC generally - or think of functionality that should be moved/created here.
 class ExchangeResolution(ABC):
     @classmethod
     def notation_to_resolution_detail(cls, notation: str) -> ResolutionDetail:

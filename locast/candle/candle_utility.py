@@ -7,6 +7,8 @@ from locast.candle.exchange_resolution import ResolutionDetail
 
 EnumType = TypeVar("EnumType", bound=Enum)
 
+# TODO: Check what functions are not needed anymore.
+
 
 class CandleUtility:
     @classmethod
@@ -129,7 +131,6 @@ class CandleUtility:
         mismatch = f"(candle #{index} is a mismatch: {candle})."
         raise AssertionError(f"{msg} {mismatch}")
 
-    # TODO: Benchmark this func
     @classmethod
     def detect_missing_dates(
         cls,
@@ -194,6 +195,3 @@ class CandleUtility:
     def midpoint(cls, start: datetime, end: datetime) -> datetime:
         # Calculate the midpoint between two datetime objects.
         return start + (end - start) / 2
-
-
-# TODO: Check what functions are not needed anymore.

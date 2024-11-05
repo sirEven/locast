@@ -130,8 +130,8 @@ async def test_fetch_cluster_prints_progress_correctly(
 
     # then
     out, _ = capsys.readouterr()
-    assert f"of {amount_back} candles fetched." in out
-    assert f"🚛 {amount_back} of {amount_back} candles fetched. ✅" in out
+    assert f"of {amount_back} {market}-candles fetched." in out
+    assert f"🚛 {amount_back} of {amount_back} {market}-candles fetched. ✅" in out
 
 
 @pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
@@ -165,7 +165,6 @@ async def test_fetch_cluster_prints_missing_candles_correctly(
     assert out.count("❌ Candle missing:") == n_missing
 
 
-# TODO: TDD approach to (in integration though) for when fetcher hits candle horizon of exchange. This is currently being researched in autogluon spike...
 @pytest.mark.parametrize("candle_fetcher_mock", list(mocked_candle_fetchers.keys()))
 @pytest.mark.asyncio
 async def test_fetch_cluster_prints_missing_candles_on_batch_newest_edge_correctly(

@@ -8,12 +8,12 @@ from locast.candle.exchange_resolution import ResolutionDetail
 from locast.candle_fetcher.candle_fetcher import CandleFetcher
 from locast.candle_storage.cluster_info import ClusterInfo
 from locast.candle_storage.candle_storage import CandleStorage
-from locast.logging_functions import log_redundant_call
+from locast.logging_functions import (
+    log_redundant_call,
+    log_start_date_shifted_to_horizon,
+)
 
-# TODO: Here we could call find_horizon, correct the start date accordingly and right at the beginning print an according message.
-# If horizon <= start_date, all is fine, no correction necessary. Else, user is over fetching into the past, hence we replace start_date with horizon.
-# NOTE: StoreManager might be a valid place to for this, as it allows clean caching of determined horizons, providing them for its life time. Then we could
-#       add find_horizon to the CandleFetcher Protocol. It would also only ever need to be called and cached at the beginning of create_cluster()
+# TODO: Expand API by adding convenience methods such as def retrieve_segment(from, to, exchange, market, resolution) -> List[Candle]: ...
 
 
 class StoreManager:
@@ -133,8 +133,6 @@ class StoreManager:
     ) -> ClusterInfo:
         return await self._candle_storage.get_cluster_info(exchange, market, resolution)
 
-    # TODO: Expand API by adding convenience methods such as def retrieve_segment(from, to, exchange, market, resolution) -> List[Candle]: ...
-
     async def _check_horizon(
         self,
         market: str,
@@ -146,9 +144,12 @@ class StoreManager:
             self._horizon_cache[f"{market}_{resolution.notation}"] = horizon
 
         if start_date < horizon:
-            ex = self._candle_fetcher.exchange.name
-            print(f"Attention: Candles on {ex} only reach back to {horizon}.")
-            print(f"Start date ({start_date}) will be moved, to prevent conflicts.")
+            log_start_date_shifted_to_horizon(
+                "⏭️",
+                self._candle_fetcher.exchange,
+                start_date,
+                horizon,
+            )
             start_date = horizon
         return start_date
 

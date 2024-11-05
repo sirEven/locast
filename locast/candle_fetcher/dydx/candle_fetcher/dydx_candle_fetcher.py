@@ -83,12 +83,11 @@ class DydxCandleFetcher(CandleFetcher):
 
                 if self._log_progress:
                     done += len(candle_batch)
-                    log_progress("🚛", "candles", "fetched", done, total)
+                    log_progress("🚛", market, "candles", "fetched", done, total)
 
                 candles.extend(candle_batch)
                 temp_end_date = candles[-1].started_at
 
-            # TODO: See if ordering total_missing_candles might make sense.
             if total_missing_candles:
                 log_missing_candles(
                     "🚨",
@@ -151,48 +150,43 @@ class DydxCandleFetcher(CandleFetcher):
 
         return candles
 
-    # TODO: Missing candles can eff this up - but chances are tiny...
     async def find_horizon(self, market: str, resolution: ResolutionDetail) -> datetime:
         now = cu.normalized_now(resolution)
-        step = 1000  # TODO: Optimize this value (depending on resolution)
+        step = 1000
         upper_bound = now
         lower_bound = None
 
-        # Step 1: Exponential Back-Off Search
+        # First: Exponential Back-Off Search to quickly reach over the horizon (datetime at which exchange does not provide data)
         while True:
             back_n = cu.subtract_n_resolutions(now, resolution, step)
             back_n_plus_resolution = cu.add_one_resolution(back_n, resolution)
 
-            # Query the single candle over the range [back_n, back_n + resolution]
+            # Query single candle
             candle = await self._fetcher.fetch(
                 market,
                 resolution,
                 back_n,
                 back_n_plus_resolution,
             )
-            # print(f"back_n: {back_n}")
-            # Candle exists, continue back-off
             if candle:
+                # Candle still exists, continue back-off
                 upper_bound = back_n  # Move the upper bound further back
-                step *= 2  # Double the step size
+                step *= 2
             else:
-                lower_bound = back_n  # We've gone too far, set this as the lower bound
+                # Reached over the horizon, candle does not exist
+                lower_bound = back_n  # Set this as the lower bound
                 break
 
-        # Step 2: Binary Search within the determined range
+        # Second: Binary Search within the determined range
         delta = upper_bound - lower_bound
-
         while delta.total_seconds() > resolution.seconds:
             mid_point = cu.norm_date(cu.midpoint(lower_bound, upper_bound), resolution)
             mid_point_plus_resolution = cu.add_one_resolution(mid_point, resolution)
 
-            # Query for a single candle covering [mid_point, mid_point + resolution]
+            # Query single candle
             candle = await self._fetcher.fetch(
                 market, resolution, mid_point, mid_point_plus_resolution
             )
-            # print(f"delta: {delta}")
-            # print(f"upper_bound: {upper_bound}")
-            # print(f"lower_bound: {lower_bound}")
             if candle:
                 # Move the upper bound down (closer to the lower bound)
                 upper_bound = mid_point
@@ -201,7 +195,8 @@ class DydxCandleFetcher(CandleFetcher):
                 lower_bound = mid_point
 
             delta = upper_bound - lower_bound
-        # Step 3: Final Candle Fetch to Confirm the Oldest Available Candle
+
+        # Finally: Fetch to confirm the oldest available candle
         upper_bound_plus_resolution = cu.add_one_resolution(upper_bound, resolution)
         final_candle = await self._fetcher.fetch(
             market, resolution, upper_bound, upper_bound_plus_resolution

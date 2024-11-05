@@ -151,7 +151,8 @@ class SqliteCandleStorage(CandleStorage):
 
                 if self._log_progress:
                     done += len(batch)
-                    log_progress("📀", "candles", "stored", done, total)
+                    market = batch[0].market
+                    log_progress("📀", market, "candles", "stored", done, total)
 
     def _to_candles(self, database_candles: List[SqliteCandle]) -> List[Candle]:
         mapper = DatabaseCandleMapper(SqliteCandleMapping())

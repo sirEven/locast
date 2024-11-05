@@ -8,7 +8,6 @@ from locast.candle.exchange import Exchange
 from tests.helper.candle_mockery.dydx_candle_backend_mock import DydxCandleBackendMock
 
 
-# TODO: Implement horizon - meaning: After n returns, return []
 class V4MarketsClientMock(MarketsClient):
     def __init__(self) -> None:
         pass

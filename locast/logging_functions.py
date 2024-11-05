@@ -5,15 +5,15 @@ from locast.candle.exchange import Exchange
 from locast.candle.exchange_resolution import ResolutionDetail
 
 
-# TODO: Also print market
 def log_progress(
     emoji: str,
+    market: str,
     group_name: str,
     past_tense: str,
     amount_done: int,
     total: int,
 ) -> None:
-    progress_message = f"{amount_done} of {total} {group_name} {past_tense}."
+    progress_message = f"{amount_done} of {total} {market}-{group_name} {past_tense}."
     if amount_done == total:
         print(f"\r{emoji} {progress_message} ✅", end="\n", flush=True)
     else:
@@ -35,6 +35,17 @@ def log_missing_candles(
     )
     for date in missing_candle_dates:
         print(f"    ❌ Candle missing: {date}.")
+
+
+def log_start_date_shifted_to_horizon(
+    emoji: str,
+    exchange: Exchange,
+    start_date: datetime,
+    horizon: datetime,
+) -> None:
+    print(
+        f"{emoji} Attention: Candle data on {exchange.name} only reaches back to {horizon}. To prevent over-fetching, the provided start date ({start_date}) will be shifted. {emoji}"
+    )
 
 
 def log_redundant_call(emoji: str, message: str) -> None:
