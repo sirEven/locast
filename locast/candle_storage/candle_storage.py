@@ -16,6 +16,14 @@ class CandleStorage(Protocol):
         resolution: ResolutionDetail,
     ) -> List[Candle]: ...
 
+    async def retrieve_newest_candles(
+        self,
+        exchange: Exchange,
+        market: str,
+        resolution: ResolutionDetail,
+        amount: int,
+    ) -> List[Candle]: ...
+
     async def delete_cluster(
         self,
         exchange: Exchange,

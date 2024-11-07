@@ -77,7 +77,7 @@ async def test_store_candles_results_in_correct_storage_state(
 
 @pytest.mark.parametrize("amount", few_amounts)
 @pytest.mark.asyncio
-async def test_retrieve_candles_results_in_correct_cluster(
+async def test_retrieve_cluster_results_in_correct_cluster(
     sqlite_candle_storage_memory: SqliteCandleStorage,
     amount: int,
 ) -> None:
@@ -103,7 +103,7 @@ async def test_retrieve_candles_results_in_correct_cluster(
 
 
 @pytest.mark.asyncio
-async def test_retrieve_candles_results_in_empty_list(
+async def test_retrieve_cluster_results_in_empty_list(
     sqlite_candle_storage_memory: SqliteCandleStorage,
 ) -> None:
     # given
@@ -115,6 +115,90 @@ async def test_retrieve_candles_results_in_empty_list(
 
     # when no cluster in storage
     retrieved_candles = await storage.retrieve_cluster(exchange, market, res)
+
+    # then
+    assert len(retrieved_candles) == 0
+
+
+@pytest.mark.asyncio
+async def test_retrieve_newest_candles_results_in_correct_list(
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+    start_date = string_to_datetime("2022-01-01T00:00:00.000Z")
+    market = "ETH-USD"
+    amount_mocked = 100
+    amount_retreived = 10
+
+    candles = mock_dydx_v4_candles(market, res, amount_mocked, start_date)
+    await storage.store_candles(candles)
+
+    # when
+    retrieved_candles = await storage.retrieve_newest_candles(
+        exchange,
+        market,
+        res,
+        amount_retreived,
+    )
+
+    # then
+    assert len(retrieved_candles) == amount_retreived
+    assert candles[0].started_at == retrieved_candles[0].started_at
+
+
+@pytest.mark.asyncio
+async def test_retrieve_newest_candles_corrects_amount_to_cluster_size(
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+    start_date = string_to_datetime("2022-01-01T00:00:00.000Z")
+    market = "ETH-USD"
+    amount_mocked = 50
+    amount_retreived = 60
+
+    candles = mock_dydx_v4_candles(market, res, amount_mocked, start_date)
+    await storage.store_candles(candles)
+
+    # when cluster size is less than requested to retrieve
+    retrieved_candles = await storage.retrieve_newest_candles(
+        exchange,
+        market,
+        res,
+        amount_retreived,
+    )
+
+    # then retrieved size equals cluster size
+    assert len(retrieved_candles) == amount_mocked
+    assert candles[0].started_at == retrieved_candles[0].started_at
+
+
+@pytest.mark.asyncio
+async def test_retrieve_newest_candles_results_in_empty_list(
+    sqlite_candle_storage_memory: SqliteCandleStorage,
+) -> None:
+    # given
+    storage = sqlite_candle_storage_memory
+
+    exchange = Exchange.DYDX_V4
+    res = ResolutionDetail(Seconds.ONE_MINUTE, "1MIN")
+    market = "ETH-USD"
+    amount = 10
+
+    # when no cluster in storage
+    retrieved_candles = await storage.retrieve_newest_candles(
+        exchange,
+        market,
+        res,
+        amount,
+    )
 
     # then
     assert len(retrieved_candles) == 0
