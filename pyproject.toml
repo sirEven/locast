@@ -11,10 +11,10 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4"
-dydx-v4-client = "^1.1.1"
 sir-utilities = "^0.1.3"
 python-dateutil = "^2.9.0.post0"
 sqlmodel = "^0.0.21"
+dydx-v4-client = "^1.1.3"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.5"
