@@ -62,6 +62,38 @@ class SqliteCandleStorage(CandleStorage):
             else:
                 return []
 
+    async def retrieve_newest_candles(
+        self,
+        exchange: Exchange,
+        market: str,
+        resolution: ResolutionDetail,
+        amount: int,
+    ) -> List[Candle]:
+        with Session(self._engine) as session:
+            if foreign_keys := self._look_up_foreign_keys(
+                exchange,
+                market,
+                resolution,
+                session,
+            ):
+                sqlite_exchange, sqlite_market, sqlite_resolution = foreign_keys
+
+                stmnt = (
+                    select(SqliteCandle)
+                    .where(
+                        (SqliteCandle.exchange_id == sqlite_exchange.id)
+                        & (SqliteCandle.market_id == sqlite_market.id)
+                        & (SqliteCandle.resolution_id == sqlite_resolution.id)
+                    )
+                    .order_by(desc(SqliteCandle.started_at))
+                    .limit(amount)
+                )
+
+                results = session.exec(stmnt)
+                return self._to_candles(list(results.all()))
+            else:
+                return []
+
     async def delete_cluster(
         self,
         exchange: Exchange,

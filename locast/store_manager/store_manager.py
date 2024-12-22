@@ -71,12 +71,35 @@ class StoreManager:
     ) -> List[Candle]:
         cluster_info = await self.get_cluster_info(exchange, market, resolution)
 
-        if not cluster_info.newest_candle:
+        if cluster_info.size == 0:
             raise MissingClusterException(
                 f"Cluster does not exist for market {market} and resolution {resolution.notation}."
             )
 
         return await self._candle_storage.retrieve_cluster(exchange, market, resolution)
+
+    async def retrieve_newest_candles(
+        self,
+        exchange: Exchange,
+        market: str,
+        resolution: ResolutionDetail,
+        amount: int,
+    ) -> List[Candle]:
+        cluster_info = await self.get_cluster_info(exchange, market, resolution)
+
+        if cluster_info.size == 0:
+            raise MissingClusterException(
+                f"Cluster does not exist for market {market} and resolution {resolution.notation}."
+            )
+
+        amount_to_retrieve = min(amount, cluster_info.size)
+
+        return await self._candle_storage.retrieve_newest_candles(
+            exchange,
+            market,
+            resolution,
+            amount_to_retrieve,
+        )
 
     async def update_cluster(
         self,
@@ -138,7 +161,7 @@ class StoreManager:
         market: str,
         resolution: ResolutionDetail,
         start_date: datetime,
-    ):
+    ) -> datetime:
         if not (horizon := self._horizon_cache.get(f"{market}_{resolution.notation}")):
             horizon = await self._candle_fetcher.find_horizon(market, resolution)
             self._horizon_cache[f"{market}_{resolution.notation}"] = horizon

@@ -1,4 +1,4 @@
-<div align="center"><img src="icons/halloween_3@3x.png" alt="" width="200"></td></div>
+<div align="center"><img src="icons/fancy_transparent@3x.png" alt="" width="200"></td></div>
 <b><center>LoCaSt</center></b>
 
 Local Candle Store - A module to download price candles from exchanges and store them in a database.
@@ -10,13 +10,14 @@ LoCaSt handles candle data in a very straight forward manner:
 - These clusters are written into an sqlite database and can be updated as needed.
 
 ## Cluster
-A cluster is a list of candle objects, representing a time series of price data. Per exchange (e.g.: dydx v4), market (e.g.: ETH) and resolution (e.g.: One minute), there can be exactly one cluster in the database. A **cluster** can be interacted with in the following ways.
+A **cluster** is a list of candle objects, representing a time series of price data. Per exchange (e.g.: dydx v4), market (e.g.: ETH) and resolution (e.g.: One minute), there can be exactly one **cluster** in the database. A **cluster** can be interacted with in the following ways.
 
 ## Currently implemented
 
 ### Features
 - Create cluster
 - Retrieve cluster 
+- Retrieve n newest candles of a cluster
 - Update cluster 
 - Delete cluster
 - Get info about cluster
