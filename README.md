@@ -1,4 +1,4 @@
-<div align="center"><img src="icons/halloween_3@3x.png" alt="" width="200"></td></div>
+<div align="center"><img src="icons/fancy_transparent@3x.png" alt="" width="200"></td></div>
 <b><center>LoCaSt</center></b>
 
 Local Candle Store - A module to download price candles from exchanges and store them in a database.
