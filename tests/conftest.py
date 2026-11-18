@@ -1,6 +1,5 @@
-from typing import AsyncGenerator, Generator, List
+from typing import Generator, List
 import pytest
-import pytest_asyncio
 
 from dydx_v4_client.indexer.rest.indexer_client import IndexerClient  # type: ignore
 from dydx_v4_client.network import TESTNET, make_mainnet  # type: ignore
@@ -85,27 +84,27 @@ def dydx_candle_backend_mock() -> Generator[DydxCandleBackendMock, None, None]:
 
 
 # region - dYdX v4
-@pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_fetcher_mock() -> AsyncGenerator[DydxV4Fetcher, None]:
+@pytest.fixture
+def dydx_v4_fetcher_mock() -> Generator[DydxV4Fetcher, None, None]:
     mock_client = V4IndexerClientMock()
     yield DydxV4Fetcher(mock_client)
 
 
-@pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_candle_fetcher_mock(
+@pytest.fixture
+def dydx_v4_candle_fetcher_mock(
     dydx_v4_fetcher_mock: DydxV4Fetcher,
-) -> AsyncGenerator[DydxCandleFetcher, None]:
+) -> Generator[DydxCandleFetcher, None, None]:
     yield DydxCandleFetcher(api_fetcher=dydx_v4_fetcher_mock)
 
 
-@pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_candle_fetcher_testnet() -> AsyncGenerator[DydxCandleFetcher, None]:
+@pytest.fixture
+def dydx_v4_candle_fetcher_testnet() -> Generator[DydxCandleFetcher, None, None]:
     testnet_client = IndexerClient(TESTNET.rest_indexer)
     yield DydxCandleFetcher(api_fetcher=DydxV4Fetcher(testnet_client))
 
 
-@pytest_asyncio.fixture  # type: ignore
-async def dydx_v4_candle_fetcher_mainnet() -> AsyncGenerator[DydxCandleFetcher, None]:
+@pytest.fixture
+def dydx_v4_candle_fetcher_mainnet() -> Generator[DydxCandleFetcher, None, None]:
     mainnet_client = IndexerClient(MAINNET.rest_indexer)
     yield DydxCandleFetcher(api_fetcher=DydxV4Fetcher(mainnet_client))
 
