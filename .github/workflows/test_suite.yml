@@ -28,17 +28,14 @@ jobs:
       - name: Install Poetry
         run: | 
           python -m pip install --upgrade pip
-          pip install poetry
+          pip install "poetry==2.5.1"
 
       - name: Configure GITHUB_TOKEN for Poetry
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate lock file
-        run: poetry lock
-
-      - name: Install dependencies
+      - name: Install dependencies from the committed lock file
         run: poetry install --no-root --with dev
 
       - name: Run tests
