@@ -28,7 +28,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Poetry
-        run: | 
+        run: |
           python -m pip install --upgrade pip
           pip install "poetry==2.5.1"
 
@@ -36,13 +36,25 @@ jobs:
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+
       - name: Install dependencies from the committed lock file
         run: poetry install --no-root --with dev
-      
+
+      # Fail fast and readably when the version in pyproject.toml is already on
+      # PyPI: `poetry publish` would otherwise wait for a confirmation prompt it
+      # can never get in CI, or die with an opaque 400 from the index.
+      - name: Check the version is not already published
+        run: |
+          version=$(python -c "import tomllib,pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['tool']['poetry']['version'])")
+          echo "locast version in pyproject.toml: ${version}"
+          if curl -fsS --max-time 15 "https://pypi.org/pypi/locast/${version}/json" >/dev/null 2>&1; then
+            echo "::error::locast ${version} is already on PyPI - bump the version in pyproject.toml before releasing"
+            exit 1
+          fi
+          echo "not published yet - proceeding"
+
       - name: Build Python package and publish to PyPI
         if: ${{ needs.run_test_suite_workflow.result == 'success' }}
-
         env:
-          PYPI_LOCAST_TOKEN: ${{ secrets.PYPI_LOCAST_TOKEN }} 
-        run: poetry publish --build -u __token__ -p $PYPI_LOCAST_TOKEN
+          PYPI_LOCAST_TOKEN: ${{ secrets.PYPI_LOCAST_TOKEN }}
+        run: poetry publish --build --no-interaction -u __token__ -p "$PYPI_LOCAST_TOKEN"
